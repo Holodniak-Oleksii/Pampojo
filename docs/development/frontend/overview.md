@@ -30,7 +30,7 @@ Static assets: images that are part of the bundle are imported (`import logo fro
 
 ## Internationalization
 
-UI text goes through `t()` from `react-i18next` from the first screen, even while English is the only locale. Adding a locale later is then a translation job, not a refactor.
+UI text goes through `t()` from `react-i18next`. The app ships in English and Ukrainian (`en`, `uk`); every new string needs both catalog entries, and `pnpm i18n:check` fails CI when `uk` misses one. The locale comes from the `lang` cookie, then `Accept-Language`; URLs carry no locale. Format numbers and dates through `Intl` with the active locale.
 
 The key is the English source string: `t('Start workout')`, not `t('today.startButton')`. Always pass a literal to `t()`; never a variable or a template literal. Extraction (`i18next-parser`) reads source code statically, so a computed key is invisible to it and silently stays untranslated.
 

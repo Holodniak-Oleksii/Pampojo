@@ -1,0 +1,44 @@
+.zed/
+.envrc
+.DS_Store
+scratch/review/
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+__screenshots__/
+
+# next.js
+/.next/
+/out/
+/build
+
+# misc
+*.pem
+
+# debug
+npm-debug.log*
+.pnpm-debug.log*
+
+# Env files (only .env.example is committed)
+.env*
+!.env.example
+
+# Vercel CLI project link
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Vitest browser failure screenshots
+.vitest/
+
+# Lighthouse CI reports
+.lighthouseci/

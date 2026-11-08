@@ -5,7 +5,7 @@ Each line is a spec in `docs/specs/`. Specs are delivered in order; a milestone 
 ## M0 — Foundation
 
 - `00-project-setup` — Next.js app, tooling, database, CI, deploy.
-- `01-design-system` — tokens, shadcn theme, brand assets, base components, i18n setup.
+- `01-design-system` — tokens, shadcn theme, brand assets, base components, i18n setup (English and Ukrainian).
 - `02-landing` — public landing page.
 - `03-auth` — email and Google sign in.
 - `04-onboarding-profile` — onboarding steps and profile basics.
@@ -49,4 +49,4 @@ Each line is a spec in `docs/specs/`. Specs are delivered in order; a milestone 
 ## M6 — Later
 
 - `26-trainer-mode` — clients, assigning workouts and plans.
-- Ukrainian locale, Capacitor wrapper, push reminders.
+- Capacitor wrapper, push reminders.

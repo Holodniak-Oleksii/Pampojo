@@ -39,7 +39,7 @@ flowchart LR
 | Files | Supabase Storage | Exercise images and animations |
 | Auth | Better Auth (email + password, Google) with the Drizzle adapter | ADR 0003 |
 | Charts | Recharts (through shadcn charts) | |
-| i18n | i18next + react-i18next, English source strings as keys | `docs/development/frontend/overview.md` |
+| i18n | i18next + react-i18next, English source strings as keys; `en` and `uk`, cookie-based, no locale in URLs | `docs/development/frontend/overview.md` |
 | AI | Provider SDK on the server only, structured output via Zod | `docs/tech/AI.md` |
 | Tests | Vitest (node + browser mode), Playwright e2e | `docs/development/*/testing.md` |
 | CI/CD | GitHub Actions, Vercel previews | Spec 00 |
@@ -59,9 +59,11 @@ flowchart LR
 
 ## Environments
 
-- Local: `pnpm dev` against a Supabase project (dev) or local Postgres.
-- Preview: Vercel preview per PR, dev database.
-- Production: Vercel production, prod Supabase project.
+- Local: `pnpm dev` against the `Pampojo` Supabase project.
+- Preview: Vercel preview per PR, same database.
+- Production: Vercel production, same database.
+
+Until public launch there is one database, so migrations are additive only (spec 00). Separate databases are revisited before launch.
 
 Secrets live in Vercel and `.env.local`. The list is `.env.example`.
 

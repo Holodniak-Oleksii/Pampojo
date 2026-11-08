@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Pampojo</title>
+  <rect width="1024" height="1024" rx="232" fill="#262626"/>
+  <mask id="pampojo-db" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+    <rect width="1024" height="1024" fill="#fff"/>
+    <g fill="#000"><rect x="348" y="350" width="34" height="140" rx="17"/><rect x="394" y="304" width="66" height="232" rx="33"/><rect x="440" y="391" width="160" height="58" rx="29"/><rect x="580" y="304" width="66" height="232" rx="33"/><rect x="658" y="350" width="34" height="140" rx="17"/></g>
+  </mask>
+  <path d="M324 220 H544 A200 200 0 0 1 544 620 H440 V780 A24 24 0 0 1 416 804 H324 A24 24 0 0 1 300 780 V244 A24 24 0 0 1 324 220 Z" fill="#F59A62" mask="url(#pampojo-db)"/>
+</svg>
