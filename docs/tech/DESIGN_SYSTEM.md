@@ -21,13 +21,15 @@ Define as CSS variables in `src/app/globals.css` and map them in the Tailwind th
 | `--border` | `#E6DED4` | Hairlines where needed; prefer shadows |
 | `--radius` | `24px` | Cards; buttons and inputs are pills |
 
-Exact values can be tuned for contrast; text on `--accent` must pass WCAG AA (use charcoal text on peach).
+Text on `--accent` and `--accent-soft` must pass WCAG AA; use charcoal text on peach. `--muted-foreground` on `--background` (3.98:1) and `--destructive` as text (3.5:1) are below AA; this is accepted for now (spec 01).
+
+Avatar backgrounds `--avatar-1` … `--avatar-8`: `#FBD9C3` peach, `#F9C9A0` apricot, `#F6E3A1` butter, `#CFE3C8` sage, `#C5E6DE` mint, `#C9DDF0` sky, `#DCD3EE` lavender, `#F3C9CF` rose. The 24 avatar emoji are listed in spec 01.
 
 Dark theme is out of scope for the MVP; keep colors in tokens so it can be added.
 
 ## Typography
 
-Plus Jakarta Sans through `next/font`. Weights 400, 600, 800. Headlines bold and large, body 16px minimum on mobile, numbers in session mode 28px+ with tabular figures.
+Manrope through `next/font`, subsets `latin` and `cyrillic` (the UI is English and Ukrainian; Plus Jakarta Sans has no basic Cyrillic, Nunito was too soft). Weights 400, 600, 800. Headlines bold and large, body 16px minimum on mobile, numbers in session mode 28px+ with tabular figures.
 
 ## Shape and depth
 
@@ -55,7 +57,7 @@ Plus Jakarta Sans through `next/font`. Weights 400, 600, 800. Headlines bold and
 
 ## Brand
 
-`docs/brand/pampojo-icon.svg` (app icon: orange P with dumbbell cut-out on charcoal) and `docs/brand/pampojo-wordmark.svg`. Spec 01 copies them into `public/brand/` and generates favicons and PWA icons.
+`docs/brand/pampojo-icon.svg` (app icon: orange P with dumbbell cut-out on charcoal) and `docs/brand/pampojo-wordmark.svg` (the app icon as the "P", followed by "ampojo" in charcoal; the icon's P sits on the x-height and the baseline, the square ends at the descenders). Spec 01 copies them into `public/brand/` and generates favicons and PWA icons.
 
 ## Accessibility
 

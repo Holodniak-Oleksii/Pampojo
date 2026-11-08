@@ -1,0 +1,15 @@
+docs
+scratch
+.claude
+prompts
+evals
+*.md
+pnpm-lock.yaml
+pnpm-workspace.yaml
+src/server/db/migrations
+.next
+next-env.d.ts
+test-results
+playwright-report
+.vitest
+.lighthouseci

@@ -22,6 +22,7 @@ Where frontend code belongs and how a component folder looks.
 | Types used by independent areas | `src/types/` |
 | Zod schemas shared with the server | `src/shared/schemas/` |
 | Test utilities and mock factories | `src/test/` |
+| i18n setup, catalogs, locale resolution, formatters | `src/i18n/` |
 
 Keep a feature's hooks, helpers, types and constants inside the feature. Move them to a shared directory only when an unrelated area needs them. Promoting early turns an implementation detail into a global API that is hard to change.
 
@@ -29,20 +30,24 @@ Keep a feature's hooks, helpers, types and constants inside the feature. Move th
 
 ```text
 src/app/
-├── (marketing)/page.tsx          # landing
-├── (auth)/login/page.tsx
-├── (auth)/signup/page.tsx
-├── onboarding/page.tsx
-├── (app)/layout.tsx              # app shell: nav, top bar, auth guard
-├── (app)/today/page.tsx
-├── (app)/library/...
-├── (app)/calendar/page.tsx
-├── (app)/progress/page.tsx
-├── (app)/profile/...
-├── session/[id]/page.tsx         # full-screen, no nav
-├── s/[token]/page.tsx            # shared workout
-└── api/...                       # backend, see backend guide
+├── [lang]/                       # hidden locale segment; src/proxy.ts rewrites /x → /<lang>/x
+│   ├── layout.tsx                # root layout: <html lang>, font, i18n provider
+│   ├── (marketing)/page.tsx      # landing
+│   ├── (auth)/login/page.tsx
+│   ├── (auth)/signup/page.tsx
+│   ├── onboarding/page.tsx
+│   ├── (app)/layout.tsx          # app shell: nav, top bar, auth guard
+│   ├── (app)/today/page.tsx
+│   ├── (app)/library/...
+│   ├── (app)/calendar/page.tsx
+│   ├── (app)/progress/page.tsx
+│   ├── (app)/profile/...
+│   ├── session/[id]/page.tsx     # full-screen, no nav
+│   └── s/[token]/page.tsx        # shared workout
+└── api/...                       # backend, outside [lang]; see backend guide
 ```
+
+Users never see the `[lang]` segment: links and redirects use unprefixed paths (`/today`). Server code reads the locale with `lang()` from `next/root-params`.
 
 Route files assemble features and handle routing concerns (params, redirects, metadata). Business behavior that could be reused outside one route belongs in a feature.
 

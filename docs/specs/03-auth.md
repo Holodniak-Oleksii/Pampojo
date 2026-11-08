@@ -13,6 +13,8 @@ Users can create an account and sign in with email and password or Google, and s
 - Email verification: decide in drill (see open questions).
 - Pages `/login`, `/signup`, `/forgot-password`, `/reset-password` with the design from the auth prompt: form card, tabs Log in / Sign up, Google button, divider, fields, links. Desktop: two columns with a brand panel.
 - Route protection: `(app)`, `/onboarding` and `/session/*` require a session; `/login` and `/signup` redirect a signed-in user to `/today` (or `/onboarding` if not completed).
+- `/` redirects a signed-in user to `/today`. The check runs in `src/proxy.ts` on the session cookie, so the landing page stays statically prerendered (moved here from spec 02).
+- Replace the landing's "Continue with Google" link (`/signup` placeholder) with Google sign-in.
 - Log out action (button lands in Profile in spec 04; the offline guard comes in spec 17).
 - `getSession()` server helper used by `withHandler`.
 
@@ -30,6 +32,7 @@ Magic links, other OAuth providers, 2FA, account deletion (later).
 - [ ] AC6: API routes under `/api/v1` (except health and share preview) return 401 without a session.
 - [ ] AC7: The session survives closing and reopening the browser for at least 30 days.
 - [ ] AC8: Forms validate with the shared Zod schemas and show field errors; submit is disabled while pending.
+- [ ] AC9: A signed-in user opening `/` lands on `/today`; a visitor without a session sees the landing page.
 
 ## Depends on
 
