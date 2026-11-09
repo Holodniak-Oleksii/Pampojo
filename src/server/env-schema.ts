@@ -30,7 +30,9 @@ const envSchema = z
 export type Env = z.infer<typeof envSchema>;
 
 export function parseEnv(source: Record<string, string | undefined>): Env {
-  const result = envSchema.safeParse(source);
+  // `vercel pull` writes unavailable system variables (VERCEL_URL, …) as empty strings outside Vercel.
+  const defined = Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ''));
+  const result = envSchema.safeParse(defined);
   if (result.success) return result.data;
 
   // Only names and Zod messages are printed; values may hold credentials.
