@@ -164,6 +164,48 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** The "P" is the app icon (charcoal rounded square, orange P, dumbbell cut-out); "ampojo" stays charcoal on the page. The icon's P aligns with the x-height and baseline, and the square ends at the descenders. Used in the header (mobile and desktop) and footer.
 **Why:** Ties the wordmark to the app icon and reads cleanly on cream.
 
+## 2026-11-08 — Account emails postponed
+
+**Context:** Spec 03; sending email to real users needs a provider and an own domain the lead does not have yet.
+**Decision:** Password reset, email verification and Google linking move to a new spec 27, planned in M4 before sharing (19). Spec 03 ships email + password and Google without them.
+**Why:** Unblocks auth now; email delivery is set up once, with a domain.
+
+## 2026-11-08 — No Google account linking (until 27)
+
+**Context:** Without email verification, auto-linking Google to an existing password account allows account pre-hijacking.
+**Decision:** No linking. Google sign-in with an email that has a password account fails with "registered with a password"; email sign-up with a Google account's email fails with "already exists".
+**Why:** Safe by default; spec 27 enables linking for verified emails.
+
+## 2026-11-08 — Post-auth landing before onboarding exists
+
+**Context:** `/onboarding` and the onboarding flag arrive in spec 04, `/today` in 05.
+**Decision:** Spec 03 adds a protected `/today` placeholder (signed-in email + Log out) and sends every successful auth there; spec 04 adds the onboarding redirect, spec 05 replaces the page.
+**Why:** Everything in 03 is testable without pulling in 04.
+
+## 2026-11-08 — Auth rate limiting
+
+**Context:** Better Auth's default in-memory limiter is ineffective on serverless.
+**Decision:** Database storage (`rate_limit` table); sign-in and sign-up 10 requests / 60 s per IP.
+**Why:** No new service; works across Vercel instances.
+
+## 2026-11-08 — Google sign-in on previews
+
+**Context:** Google OAuth needs exact redirect URIs; every preview has a new domain.
+**Decision:** Google sign-in only on localhost and production; previews hide the Google buttons.
+**Why:** No per-preview OAuth setup; email + password covers preview testing.
+
+## 2026-11-08 — Session lifetime
+
+**Context:** Spec 03 AC requires staying signed in on the phone for at least 30 days.
+**Decision:** Database sessions, 30-day sliding expiry refreshed at most daily; HTTP-only, `SameSite=Lax`, `Secure` in production.
+**Why:** Meets the requirement with Better Auth defaults adjusted, decided during drill.
+
+## 2026-11-09 — Auth form validation and layout
+
+**Context:** After the spec 03 review, the lead looked at the sign-up form.
+**Decision:** Field errors appear only after the first submit, then update as the user types (no on-blur errors). No "At least 8 characters" hint on sign-up. The password field's placeholder is `••••••••` on both pages (not translated). On desktop the auth page fits one screen without scrolling.
+**Why:** Early errors and the duplicated hint made the form noisy; the lead's call.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

@@ -25,12 +25,40 @@ describe('parseEnv', () => {
   it('accepts a postgres URL', () => {
     const env = parseEnv({
       DATABASE_URL: 'postgresql://user:password@example.com:6543/postgres',
+      BETTER_AUTH_SECRET: 'x'.repeat(32),
       NODE_ENV: 'test',
     });
 
     expect(env).toEqual({
       DATABASE_URL: 'postgresql://user:password@example.com:6543/postgres',
+      BETTER_AUTH_SECRET: 'x'.repeat(32),
       NODE_ENV: 'test',
     });
+  });
+
+  it('requires a 32-character BETTER_AUTH_SECRET', () => {
+    expect(() =>
+      parseEnv({
+        DATABASE_URL: 'postgresql://user:password@example.com:6543/postgres',
+        BETTER_AUTH_SECRET: 'short',
+      }),
+    ).toThrow(/BETTER_AUTH_SECRET/);
+  });
+
+  it('requires BETTER_AUTH_URL on Vercel production only', () => {
+    const base = {
+      DATABASE_URL: 'postgresql://user:password@example.com:6543/postgres',
+      BETTER_AUTH_SECRET: 'x'.repeat(32),
+    };
+
+    expect(() => parseEnv({ ...base, VERCEL_ENV: 'production' })).toThrow(/BETTER_AUTH_URL/);
+    expect(() =>
+      parseEnv({
+        ...base,
+        VERCEL_ENV: 'production',
+        BETTER_AUTH_URL: 'https://pampojo.vercel.app',
+      }),
+    ).not.toThrow();
+    expect(() => parseEnv({ ...base, VERCEL_ENV: 'preview' })).not.toThrow();
   });
 });

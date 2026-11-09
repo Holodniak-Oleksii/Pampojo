@@ -16,7 +16,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | Status | When |
 | --- | --- |
 | 400 | Validation failed (`details` holds Zod issues) |
-| 401 | No session |
+| 401 | No session (`UNAUTHORIZED`; every `/api/v1` route except health and the share preview declares `auth: 'required'`) |
 | 403 | Authenticated but not allowed (for example, offline-only client trying an online action is not a server concern) |
 | 404 | Not found **or not owned** — never reveal other users' rows |
 | 409 | Conflicting state (revoked link, stale version) |
@@ -28,7 +28,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 
 | Method and path | Purpose | Spec |
 | --- | --- | --- |
-| `/api/auth/*` | Better Auth endpoints | 03 |
+| `/api/auth/*` | Better Auth endpoints (sign-up, sign-in, Google, sign-out, session) | 03 |
 | `GET/PATCH /api/v1/me/profile` | Profile | 04 |
 | `GET /api/v1/exercises` | Catalog (system + own), filters, search | 06 |
 | `GET /api/v1/exercises/{id}` | Exercise details | 06 |
