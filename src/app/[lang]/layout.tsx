@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Manrope } from 'next/font/google';
+import { QueryProvider } from '@/api/QueryProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { I18nProvider } from '@/i18n/client';
 import { LOCALES } from '@/i18n/config';
@@ -34,8 +35,10 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]'>) {
     <html lang={locale} className={`${manrope.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale} catalog={catalog}>
-          {children}
-          <Toaster />
+          <QueryProvider>
+            {children}
+            <Toaster />
+          </QueryProvider>
         </I18nProvider>
       </body>
     </html>

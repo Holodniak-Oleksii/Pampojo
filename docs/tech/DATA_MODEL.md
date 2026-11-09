@@ -20,16 +20,16 @@ Conventions:
 | userId | uuid PK → user | |
 | displayName | text | |
 | avatarEmoji | text | One emoji from the allowed set |
-| avatarColor | text | Token name from the avatar palette |
+| avatarColor | smallint | 1–8, the `--avatar-N` token |
 | sex | text | `male`, `female` (needed for BMI context and future norms) |
-| birthYear | int | Age is derived, so it stays current |
-| heightCm | numeric | |
+| birthDate | date | Age is derived on read, so it stays current |
+| heightCm | numeric | Rounded to 0.1 |
 | unitSystem | text | `metric`, `imperial` (display only) |
-| locale | text | `en` for now |
 | timeZone | text | IANA zone, from the device at onboarding |
-| onboardingCompletedAt | timestamptz null | |
+| onboardingCompletedAt | timestamptz | Set when onboarding finishes |
+| createdAt, updatedAt | timestamptz | |
 
-Current weight comes from the latest `body_measurement` of type `weight`.
+Current weight comes from the latest `body_measurement` of type `weight`. The language is not stored; it lives in the `lang` cookie. A user without a `profile` row has not finished onboarding (spec 04).
 
 ## exercise
 
@@ -132,7 +132,7 @@ Occurrences are computed, not stored. An `occurrence_exception` table (skip or m
 
 ## body_measurement
 
-`id`, `userId`, `type` (`weight`, `chest`, `waist`, `hips`, `biceps_left`, `biceps_right`, `thigh_left`, `thigh_right`, `body_fat_pct`, …), `value numeric` (canonical unit), `measuredOn date`, `createdAt`, `updatedAt`, `deletedAt`.
+`id`, `userId`, `type` (`weight`, `chest`, `waist`, `hips`, `biceps_left`, `biceps_right`, `thigh_left`, `thigh_right`, `body_fat_pct`, …), `value numeric` (canonical unit), `measuredOn date`, `createdAt`, `updatedAt`, `deletedAt`. Index `(userId, type, measuredOn)`. Spec 04 writes only `weight`, at most one row per day from the profile edit.
 
 ## share_link
 

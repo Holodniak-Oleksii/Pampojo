@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { render as renderInBrowser } from 'vitest-browser-react';
 import { I18nProvider } from '@/i18n/client';
@@ -7,12 +8,24 @@ import uk from '@/i18n/locales/uk.json';
 
 const catalogs: Record<Locale, Catalog> = { en, uk };
 
-// QueryClient joins these providers in the first spec that adds a query.
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+}
+
+export function createQueryWrapper(client: QueryClient = createTestQueryClient()) {
+  return function QueryWrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  };
+}
+
 export function render(ui: ReactNode, { locale = 'en' }: { locale?: Locale } = {}) {
+  const client = createTestQueryClient();
   function AppProviders({ children }: { children: ReactNode }) {
     return (
       <I18nProvider locale={locale} catalog={catalogs[locale]}>
-        {children}
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
       </I18nProvider>
     );
   }

@@ -12,8 +12,14 @@ const globalForDb = globalThis as typeof globalThis & { pampojoDb?: Db };
 // Created on first use so `next build` and module imports never open a connection.
 export function getDb(): Db {
   globalForDb.pampojoDb ??= drizzle(
-    // The Supabase transaction pooler does not support prepared statements.
-    postgres(getEnv().DATABASE_URL, { prepare: false, max: 5, connect_timeout: 5 }),
+    // The Supabase transaction pooler does not support prepared statements, and it stalls queries
+    // that postgres.js pipelines onto a busy connection, so each connection runs one query at a time.
+    postgres(getEnv().DATABASE_URL, {
+      prepare: false,
+      max: 5,
+      max_pipeline: 1,
+      connect_timeout: 5,
+    }),
     { schema },
   );
   return globalForDb.pampojoDb;

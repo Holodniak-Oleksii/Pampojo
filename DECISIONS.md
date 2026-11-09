@@ -206,6 +206,72 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** Field errors appear only after the first submit, then update as the user types (no on-blur errors). No "At least 8 characters" hint on sign-up. The password field's placeholder is `••••••••` on both pages (not translated). On desktop the auth page fits one screen without scrolling.
 **Why:** Early errors and the duplicated hint made the form noisy; the lead's call.
 
+## 2026-11-09 — Onboarding fields are required
+
+**Context:** Spec 04; skippable fields would leave BMI and future norms without data.
+**Decision:** Name, avatar, sex, birth date, height and weight are all required. Sex is `male` / `female`. A user without a `profile` row has not finished onboarding.
+**Why:** The flow is three short steps; complete profiles keep later features simple.
+
+## 2026-11-09 — Minimum age 16
+
+**Context:** Spec 04 stores body data; the EU digital consent age is 13–16 by country.
+**Decision:** Age must be 16–100. Under 16 is a field error; the account is not blocked.
+**Why:** Safe for every EU country without parental consent.
+
+## 2026-11-09 — Birth date instead of birth year
+
+**Context:** Spec 04; the data model had `birthYear`.
+**Decision:** Onboarding asks for the date of birth (three numeric fields DD / MM / YYYY in both languages); `profile.birthDate date` replaces `birthYear`. Age is computed in full years on today's date.
+**Why:** Lead wants the profile to show the exact current age.
+
+## 2026-11-09 — Onboarding draft and finish
+
+**Context:** Spec 04 AC2 needs values to survive a reload mid-onboarding.
+**Decision:** The draft lives in `localStorage` per user, cleared on finish and log out. Finish is one idempotent `PUT /api/v1/me/profile` that creates the profile and first weight and sets `onboardingCompletedAt`; a repeat changes nothing. Edits use `PATCH` with only changed fields; `GET` / `PATCH` return 404 `PROFILE_NOT_FOUND` before onboarding.
+**Why:** No half-filled profiles in the database; one request to make safe.
+
+## 2026-11-09 — Onboarding avatar and name
+
+**Context:** Spec 04 step 1.
+**Decision:** A random emoji and color are pre-selected and can be changed. Name 1–40 characters, trimmed, prefilled only for Google sign-ups; saving it also updates `user.name`.
+**Why:** Lead's choice for the avatar; the email local part looks odd as a name.
+
+## 2026-11-09 — Weight edits in the profile
+
+**Context:** Spec 04 Edit profile; weight lives in `body_measurement`.
+**Decision:** Changing the weight writes today's weight measurement (profile time zone): update it if one exists today, else insert. Older ones stay as history.
+**Why:** Keeps a history for spec 14 without duplicate rows per day.
+
+## 2026-11-09 — Units and precision
+
+**Context:** Spec 04 metric/imperial input.
+**Decision:** The step 3 toggle sets `profile.unitSystem`; the same toggle is in Edit profile. Height in whole cm or ft + in, weight with one decimal; stored in cm and kg rounded to 0.1.
+**Why:** Enough precision for a weight trend; no separate Settings block yet.
+
+## 2026-11-09 — Language is not stored
+
+**Context:** `DATA_MODEL.md` had `profile.locale`, while the language lives in the `lang` cookie.
+**Decision:** No language column. The cookie stays the only source.
+**Why:** Lead: the language is a client-side preference only.
+
+## 2026-11-09 — Log out and profile entry before the app shell
+
+**Context:** Spec 04 ships `/profile` before spec 05 adds navigation.
+**Decision:** The `/today` placeholder links to `/profile` instead of showing Log out. The onboarding header has a small Log out button.
+**Why:** Profile is reachable, and a user in the wrong account is not stuck in onboarding.
+
+## 2026-11-09 — TanStack Query arrives with spec 04
+
+**Context:** Scratch 04; ADR 0006 and `state-and-data.md` prescribe TanStack Query and `src/api/http.ts`, neither existed yet.
+**Decision:** Spec 04 adds `@tanstack/react-query`, `src/api/http.ts`, `src/api/query-client.ts` and the provider; `/profile` uses `useProfileQuery` with server-loaded initial data.
+**Why:** Follows the guide from the first screen with server data; specs 05 and 06 build on it.
+
+## 2026-11-10 — No query pipelining on the transaction pooler
+
+**Context:** Review of spec 04; with about 6+ parallel requests, postgres.js pipelined queries onto busy connections and the Supabase transaction pooler stalled them forever (backends stuck in `ClientRead`).
+**Decision:** The app's Drizzle client sets `max_pipeline: 1` (one query in flight per connection), keeping `prepare: false` and `max: 5`.
+**Why:** Fixes the hang without a new pooler or a bigger pool; a full queue now waits instead of stalling. Approved by the lead.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.
