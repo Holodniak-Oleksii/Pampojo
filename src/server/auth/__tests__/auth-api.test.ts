@@ -1,12 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getDb } from '@/server/db/client';
 import { session, user } from '@/server/db/schema';
 import { getEnv } from '@/server/env';
 import { deleteRateLimitsByKey, deleteUsersByEmail } from '@/test/db';
 import { createAuth, getAuth } from '../auth';
 import { getSession } from '../session';
+
+// Every request hashes a password and talks to the remote database; on CI one sign-in takes ~1 s,
+// so the 11-request rate-limit test alone exceeds the 5 s default.
+vi.setConfig({ testTimeout: 30_000 });
 
 const ORIGIN = 'http://localhost:3000';
 const PASSWORD = 'Password123!';

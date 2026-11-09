@@ -7,6 +7,9 @@ import { json } from '../response';
 import { getAuth } from '@/server/auth/auth';
 import { deleteUsersByEmail } from '@/test/db';
 
+// The auth tests sign up a real user against the remote database, which takes seconds on CI.
+vi.setConfig({ testTimeout: 30_000 });
+
 const post = (body: string) =>
   new Request('http://localhost/api/v1/things', { method: 'POST', body });
 
