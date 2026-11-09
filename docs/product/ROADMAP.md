@@ -7,7 +7,7 @@ Each line is a spec in `docs/specs/`. Specs are delivered in order; a milestone 
 - `00-project-setup` — Next.js app, tooling, database, CI, deploy.
 - `01-design-system` — tokens, shadcn theme, brand assets, base components, i18n setup (English and Ukrainian).
 - `02-landing` — public landing page.
-- `03-auth` — email and Google sign in.
+- `03-auth` — email and Google sign in (no password reset or verification yet, see 27).
 - `04-onboarding-profile` — onboarding steps and profile basics.
 - `05-app-shell` — navigation, top bar, Today skeleton, status pill placeholder.
 
@@ -35,6 +35,7 @@ Each line is a spec in `docs/specs/`. Specs are delivered in order; a milestone 
 - `16-offline-data-sync` — local database, outbox, sync API.
 - `17-offline-ux` — status pill, offline restrictions, logout guard, image caching.
 - `18-exercise-substitution` — deterministic swap suggestions.
+- `27-account-email` — password reset, email verification, Google account linking (needs a domain).
 - `19-share-import` — share links, file export, import as copy.
 
 ## M5 — AI

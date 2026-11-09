@@ -1,6 +1,9 @@
 /* eslint-disable no-restricted-syntax -- fixtures below contain the very patterns the rules forbid */
 import { ESLint } from 'eslint';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// ESLint loads the whole type-aware config on the first lint, which takes several seconds.
+vi.setConfig({ testTimeout: 30_000 });
 
 const eslint = new ESLint({ cwd: process.cwd() });
 

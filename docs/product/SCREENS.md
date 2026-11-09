@@ -14,7 +14,8 @@ Mobile-first. Desktop reuses the same routes with a wider layout.
 | Route | Screen | Spec |
 | --- | --- | --- |
 | `/` | Landing for visitors; redirects to `/today` with a session | 02 |
-| `/login`, `/signup`, `/forgot-password` | Auth | 03 |
+| `/login`, `/signup` | Auth | 03 |
+| `/forgot-password`, `/reset-password` | Password reset | 27 |
 | `/onboarding` | 3–4 steps: name and avatar, sex and age, height and weight | 04 |
 | `/today` | Next planned workout, week strip, adherence, last session | 05, 12 |
 | `/library/workouts` | Workouts list, create, import | 09, 19 |

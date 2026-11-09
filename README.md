@@ -44,6 +44,10 @@ Copy `.env.example` to `.env.local` and fill both values from the Supabase proje
 | --- | --- | --- |
 | `DATABASE_URL` | Transaction pooler, port `6543` | the app at runtime |
 | `DATABASE_MIGRATION_URL` | Session pooler, port `5432` | drizzle-kit migrations |
+| `BETTER_AUTH_SECRET` | `openssl rand -base64 32` | session signing (required) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Cloud → OAuth client (Web application) | Google sign-in (optional; hidden when unset) |
+
+For local Google sign-in add the redirect URI `http://localhost:3000/api/auth/callback/google` to the OAuth client. Google sign-in never runs on Vercel previews.
 
 Replace `[YOUR-PASSWORD]` including the brackets. Percent-encode special characters in the password (`?` → `%3F`, `$` → `%24`, `@` → `%40`, `#` → `%23`, `/` → `%2F`), or reset it to letters and digits under **Project Settings → Database**. Do not use the Direct connection: on the free tier it is IPv6-only.
 
@@ -91,7 +95,9 @@ Because PR CI applies migrations to that database before merge, **migrations are
 
 Vercel's automatic production deploy from Git is disabled in `vercel.json`; production deploys come only from the `main` workflow. Preview deploys per PR stay automatic.
 
-**Vercel → Settings → Environment Variables**: `DATABASE_URL` and `DATABASE_MIGRATION_URL`, same values for Production, Preview and Development. If preview builds fail to detect the pnpm version, also add `ENABLE_EXPERIMENTAL_COREPACK=1`.
+**Vercel → Settings → Environment Variables**: `DATABASE_URL`, `DATABASE_MIGRATION_URL` and `BETTER_AUTH_SECRET`, same values for Production, Preview and Development. Production also needs `BETTER_AUTH_URL` (the production URL; env validation fails the production build without it) and `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` (with `<prod URL>/api/auth/callback/google` as a redirect URI). If preview builds fail to detect the pnpm version, also add `ENABLE_EXPERIMENTAL_COREPACK=1`.
+
+The auth rate limiter keys requests by the `x-forwarded-for` header. Vercel sets it from the real client IP. When self-hosting, put the app behind a proxy that overwrites this header, or clients can spoof it and bypass the limit.
 
 **GitHub → Settings → Secrets and variables → Actions**:
 
@@ -99,6 +105,7 @@ Vercel's automatic production deploy from Git is disabled in `vercel.json`; prod
 | --- | --- | --- |
 | `DATABASE_URL` | secret | Transaction pooler URL |
 | `DATABASE_MIGRATION_URL` | secret | Session pooler URL |
+| `BETTER_AUTH_SECRET` | secret | Same value as in Vercel |
 | `VERCEL_TOKEN` | secret | Vercel → Account Settings → Tokens |
 | `VERCEL_ORG_ID` | secret | `orgId` in `.vercel/project.json` after `pnpm dlx vercel link` |
 | `VERCEL_PROJECT_ID` | secret | `projectId` in the same file |

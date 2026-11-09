@@ -24,7 +24,14 @@ export default defineConfig({
       },
       {
         plugins: [react()],
-        resolve: { alias },
+        resolve: {
+          alias: {
+            ...alias,
+            'next/image': fileURLToPath(new URL('./src/test/next-image-stub.tsx', import.meta.url)),
+          },
+        },
+        // next/image and next/link read process.env, which does not exist in the browser runner.
+        define: { 'process.env': JSON.stringify({ NODE_ENV: 'test' }) },
         test: {
           name: 'browser',
           include: ['src/**/__tests__/**/*.test.tsx'],

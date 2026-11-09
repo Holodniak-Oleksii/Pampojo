@@ -11,6 +11,7 @@ concurrency:
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DATABASE_MIGRATION_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+  BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
 
 jobs:
   checks:

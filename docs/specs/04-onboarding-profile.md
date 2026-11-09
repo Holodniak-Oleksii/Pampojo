@@ -14,6 +14,9 @@ Collect the few details the app needs (name, avatar, sex, age, height, weight) i
 - Time zone captured from the device.
 - Skippable fields: decide in drill. Name and avatar are required.
 - `onboardingCompletedAt` set on finish; redirect to `/today`.
+- Extend spec 03's post-auth redirect: a signed-in user without `onboardingCompletedAt` goes to `/onboarding` from sign-up, log in, Google sign-in and protected `(app)` routes.
+- Replace the temporary `user.name` (email local part, set in spec 03) with the onboarding name.
+- Move Log out from the `/today` placeholder (spec 03) to `/profile`.
 - `/profile` first version: avatar, name, age, height, latest weight, Edit profile sheet with the same fields, Log out.
 - `GET/PATCH /api/v1/me/profile`.
 

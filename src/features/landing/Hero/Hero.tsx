@@ -2,7 +2,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import googleG from '@/assets/google-g.svg';
+import { GoogleSignInButton } from '@/features/auth/GoogleSignInButton';
 import { getI18n } from '@/i18n/server';
+import { isGoogleEnabled } from '@/server/auth/google';
 import { HeroPhone } from '../HeroPhone';
 
 export async function Hero() {
@@ -26,12 +28,16 @@ export async function Hero() {
           <Button asChild size="lg">
             <Link href="/signup">{t('Get started')}</Link>
           </Button>
-          <Button asChild variant="secondary" size="lg">
-            <Link href="/signup">
-              <Image src={googleG} alt="" width={20} height={20} />
-              {t('Continue with Google')}
-            </Link>
-          </Button>
+          {isGoogleEnabled() ? (
+            <GoogleSignInButton next={null} />
+          ) : (
+            <Button asChild variant="secondary" size="lg">
+              <Link href="/signup">
+                <Image src={googleG} alt="" width={20} height={20} />
+                {t('Continue with Google')}
+              </Link>
+            </Button>
+          )}
         </div>
         <p className="text-sm text-muted-foreground">
           {t('Free • Works on iPhone, Android and laptop')}

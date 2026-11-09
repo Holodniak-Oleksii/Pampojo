@@ -1,8 +1,14 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { DomainError } from '../errors';
 import { withHandler } from '../handler';
 import { json } from '../response';
+import { getAuth } from '@/server/auth/auth';
+import { deleteUsersByEmail } from '@/test/db';
+
+// The auth tests sign up a real user against the remote database, which takes seconds on CI.
+vi.setConfig({ testTimeout: 30_000 });
 
 const post = (body: string) =>
   new Request('http://localhost/api/v1/things', { method: 'POST', body });
@@ -84,5 +90,44 @@ describe('json', () => {
     const response = json({}, { headers: { 'Cache-Control': 'no-store' } });
 
     expect(response.headers.get('Cache-Control')).toBe('no-store');
+  });
+});
+
+describe('withHandler auth', () => {
+  const authed = withHandler({ auth: 'required' }, async ({ userId }) => json({ userId }));
+
+  afterAll(async () => {
+    await deleteUsersByEmail('test-handler-%@example.com');
+  });
+
+  it('returns 401 UNAUTHORIZED without a session', async () => {
+    const response = await authed(new Request('http://localhost/api/v1/me'));
+
+    expect(response.status).toBe(401);
+    expect((await response.json()).error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('passes the signed-in user id to the handler', async () => {
+    const email = `test-handler-${randomUUID()}@example.com`;
+    const signUp = await getAuth().handler(
+      new Request('http://localhost:3000/api/auth/sign-up/email', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          origin: 'http://localhost:3000',
+          'x-forwarded-for': '203.0.113.200',
+        },
+        body: JSON.stringify({ email, password: 'Password123!', name: 'test' }),
+      }),
+    );
+    const cookie = (signUp.headers.get('set-cookie') ?? '').split(';')[0] ?? '';
+    const { user: created } = await signUp.json();
+
+    const response = await authed(
+      new Request('http://localhost/api/v1/me', { headers: { cookie } }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ userId: created.id });
   });
 });
