@@ -53,6 +53,22 @@ describe('withHandler', () => {
     expect((await response.json()).error.code).toBe('VALIDATION_FAILED');
   });
 
+  it('passes repeated query keys as arrays and single keys as strings', async () => {
+    const handler = withHandler(
+      {
+        auth: 'none',
+        query: z.object({ muscle: z.array(z.string()), q: z.string() }).strict(),
+      },
+      async ({ query }) => json(query),
+    );
+
+    const response = await handler(
+      new Request('http://localhost/api/v1/things?muscle=chest&muscle=triceps&q=press'),
+    );
+
+    expect(await response.json()).toEqual({ muscle: ['chest', 'triceps'], q: 'press' });
+  });
+
   it('maps a DomainError code to its status and envelope', async () => {
     const handler = withHandler({ auth: 'none' }, async () => {
       throw new DomainError('NOT_FOUND', 'Thing not found');

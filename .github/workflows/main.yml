@@ -12,6 +12,7 @@ env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DATABASE_MIGRATION_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
   BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+  SUPABASE_URL: ${{ vars.SUPABASE_URL }}
 
 jobs:
   checks:
@@ -44,6 +45,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - run: pnpm db:migrate
+      - run: pnpm db:seed
 
   # Vercel's Git auto-deploy for main is off (vercel.json), so code never ships before its schema.
   deploy:

@@ -17,7 +17,7 @@ export function AppShellSkeleton() {
       </div>
       <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
         <div className="pt-[env(safe-area-inset-top)]">
-          <div className="mx-auto flex h-14 w-full max-w-[960px] items-center gap-3 px-4 lg:px-6">
+          <div className="mx-auto flex h-14 w-full max-w-[960px] lg:mx-0 lg:max-w-none items-center gap-3 px-4 lg:px-8">
             <div className="-ml-1.5 flex size-11 items-center justify-center lg:hidden">
               <Skeleton className="size-8 rounded-xl" />
             </div>
@@ -25,14 +25,14 @@ export function AppShellSkeleton() {
             <Skeleton className="ml-auto h-8 w-20 rounded-full" />
           </div>
         </div>
-        <div className="mx-auto flex w-full max-w-[960px] flex-1 flex-col gap-6 px-4 pt-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:px-6 lg:pt-6 lg:pb-12">
+        <div className="mx-auto flex w-full max-w-[960px] lg:mx-0 lg:max-w-none flex-1 flex-col gap-6 px-4 pt-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:px-8 lg:pt-6 lg:pb-12">
           <Skeleton className="h-10 w-40" />
           <Skeleton className="h-32 w-full rounded-[32px]" />
           <Skeleton className="h-32 w-full rounded-[32px]" />
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-0 rounded-t-[28px] bg-primary pb-[env(safe-area-inset-bottom)] lg:hidden">
-        <div className="mx-auto grid h-16 max-w-[600px] grid-cols-5 items-center px-2">
+      <div className="fixed inset-x-0 bottom-0 rounded-t-[28px] bg-primary pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="mx-auto grid h-[76px] max-w-[600px] grid-cols-5 items-center px-2">
           {NAV_SLOTS.map((slot) => (
             <div key={slot} className="flex justify-center">
               <Skeleton className="size-8 rounded-xl bg-primary-foreground/15" />

@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { TodaySkeleton } from '@/features/today/TodaySkeleton';
 import { TodayView } from '@/features/today/TodayView';
 import { getI18n } from '@/i18n/server';
 import { getRequestSession } from '@/server/auth/request-session';
-import { getProfile } from '@/server/profile/service';
+import { findProfile } from '@/server/profile/service';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -12,10 +13,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function TodayContent() {
-  // The (app) gate already redirected users without a session or a profile; the page still scopes by the session itself.
+  // Next.js renders this page in parallel with the (app) gate, so a user the gate is redirecting can
+  // reach it without a profile; redirect too instead of throwing, which would log a server error.
   const session = await getRequestSession();
   if (!session) return null;
-  const profile = await getProfile(session.user.id);
+  const profile = await findProfile(session.user.id);
+  if (!profile) redirect('/onboarding');
   return (
     <TodayView
       displayName={profile.displayName}
@@ -27,7 +30,7 @@ async function TodayContent() {
 
 export default function TodayPage() {
   return (
-    <div className="flex w-full max-w-[600px] flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <Suspense fallback={<TodaySkeleton />}>
         <TodayContent />
       </Suspense>

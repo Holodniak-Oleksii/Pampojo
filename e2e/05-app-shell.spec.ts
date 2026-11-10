@@ -214,7 +214,6 @@ test.describe('app shell in English', () => {
       ['/calendar', 'Calendar', 'Nothing scheduled yet'],
       ['/progress', 'Progress', 'No progress yet'],
       ['/library/workouts', 'Library', 'No workouts yet'],
-      ['/library/exercises', 'Library', 'Exercise catalog is coming soon.'],
     ] as const;
     for (const [route, title, empty] of sections) {
       await page.goto(route);

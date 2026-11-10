@@ -73,14 +73,19 @@ function toProfile(
   };
 }
 
-export async function getProfile(userId: string): Promise<Profile> {
+export async function findProfile(userId: string): Promise<Profile | null> {
   const db = getDb();
   const [row, weight] = await Promise.all([
     findProfileRow(db, userId),
     findLatestWeight(db, userId),
   ]);
-  if (!row) throw new DomainError(PROFILE_ERROR.NOT_FOUND, 'Profile not found');
-  return toProfile(row, weight);
+  return row ? toProfile(row, weight) : null;
+}
+
+export async function getProfile(userId: string): Promise<Profile> {
+  const profile = await findProfile(userId);
+  if (!profile) throw new DomainError(PROFILE_ERROR.NOT_FOUND, 'Profile not found');
+  return profile;
 }
 
 export async function completeOnboarding(

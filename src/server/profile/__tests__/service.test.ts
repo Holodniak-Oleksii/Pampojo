@@ -8,6 +8,7 @@ import { completeOnboardingInputSchema } from '@/shared/schemas/profile';
 import { deleteUsersByEmail } from '@/test/db';
 import {
   completeOnboarding,
+  findProfile,
   getOnboardingPrefill,
   getProfile,
   isOnboardingComplete,
@@ -108,6 +109,17 @@ describe('getProfile', () => {
     await completeOnboarding(owner, input());
 
     await expect(getProfile(stranger)).rejects.toMatchObject({ code: 'PROFILE_NOT_FOUND' });
+  });
+});
+
+describe('findProfile', () => {
+  it('returns null before onboarding and the profile after', async () => {
+    const userId = await createUser();
+    expect(await findProfile(userId)).toBeNull();
+
+    await completeOnboarding(userId, input());
+
+    expect(await findProfile(userId)).toMatchObject({ displayName: 'John Smith' });
   });
 });
 

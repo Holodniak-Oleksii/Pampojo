@@ -48,9 +48,9 @@ export function BottomNav({ section, onStart }: BottomNavProps) {
   return (
     <nav
       aria-label={t('Main navigation')}
-      className="fixed inset-x-0 bottom-0 z-40 rounded-t-[28px] bg-primary pb-[env(safe-area-inset-bottom)] text-primary-foreground lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 rounded-t-[28px] bg-primary pb-[max(0.5rem,env(safe-area-inset-bottom))] text-primary-foreground lg:hidden"
     >
-      <ul className="mx-auto grid h-16 max-w-[600px] grid-cols-5 items-center px-2">
+      <ul className="mx-auto grid h-[76px] max-w-[600px] grid-cols-5 items-center px-2">
         {BEFORE_START.map(renderLink)}
         <li className="flex justify-center">
           <button

@@ -18,6 +18,7 @@ export const ERROR_STATUS: Record<string, number> = {
   UNAUTHORIZED: 401,
   NOT_FOUND: 404,
   PROFILE_NOT_FOUND: 404,
+  EXERCISE_NOT_FOUND: 404,
   CONFLICT: 409,
   INTERNAL: 500,
 };

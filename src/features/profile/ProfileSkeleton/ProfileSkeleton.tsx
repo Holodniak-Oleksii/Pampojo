@@ -8,9 +8,12 @@ export function ProfileSkeleton() {
         <Skeleton className="size-20 rounded-full" />
         <Skeleton className="h-8 w-48" />
       </div>
-      <Skeleton className="h-14 w-full rounded-3xl" />
-      <Skeleton className="h-14 w-full rounded-3xl" />
-      <Skeleton className="h-14 w-full rounded-3xl" />
+      <div className="grid gap-3 lg:grid-cols-2">
+        <Skeleton className="h-14 w-full rounded-[20px]" />
+        <Skeleton className="h-14 w-full rounded-[20px]" />
+        <Skeleton className="h-14 w-full rounded-[20px]" />
+        <Skeleton className="h-14 w-full rounded-[20px]" />
+      </div>
     </div>
   );
 }
