@@ -86,7 +86,7 @@ test.describe('onboarding and profile in English', () => {
 
     await page.getByRole('link', { name: 'Profile' }).click();
     await page.waitForURL('**/profile');
-    await expect(page.getByText('John Smith')).toBeVisible();
+    await expect(page.getByRole('main').getByText('John Smith', { exact: true })).toBeVisible();
     await expect(page.getByText('180 cm')).toBeVisible();
     await expect(page.getByText('79.8 kg')).toBeVisible();
 
@@ -164,12 +164,16 @@ test.describe('onboarding and profile in English', () => {
     await expect(page.getByRole('button', { name: 'Finish' })).toBeEnabled();
   });
 
-  test('the /today placeholder links to the profile and has no log out', async ({ page }) => {
+  test('Profile is reachable from the navigation and /today has no log out', async ({ page }) => {
     await signUp(page);
     await completeOnboardingViaApi(page);
     await page.goto('/today');
 
-    await expect(page.getByRole('link', { name: 'Profile' })).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Main navigation' })
+        .getByRole('link', { name: 'Profile' }),
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Log out' })).toHaveCount(0);
   });
 });

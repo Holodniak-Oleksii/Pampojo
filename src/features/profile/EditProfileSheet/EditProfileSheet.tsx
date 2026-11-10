@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { useUpdateProfileMutation } from '@/api/profile';
 import { OfflineNotice } from '@/components/OfflineNotice';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { scrollToFirstError } from '../scrollToFirstError';
 import type { Profile } from '@/shared/schemas/profile';
@@ -25,22 +26,7 @@ import {
   type ProfileFormValues,
 } from '../form';
 
-const DESKTOP_QUERY = '(min-width: 1024px)';
 const ALL_GROUPS = [FIELD_GROUP.NAME, FIELD_GROUP.SEX_BIRTH, FIELD_GROUP.BODY] as const;
-
-function subscribeDesktop(onChange: () => void) {
-  const query = window.matchMedia(DESKTOP_QUERY);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
-}
-
-function useIsDesktop(): boolean {
-  return useSyncExternalStore(
-    subscribeDesktop,
-    () => window.matchMedia(DESKTOP_QUERY).matches,
-    () => false,
-  );
-}
 
 export interface EditProfileSheetProps {
   profile: Profile;

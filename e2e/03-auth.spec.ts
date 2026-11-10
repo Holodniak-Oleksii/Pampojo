@@ -49,9 +49,14 @@ test.describe('auth in English', () => {
   test.use({ locale: 'en-US' });
 
   test('sign up lands on /today and / redirects there', async ({ page }) => {
-    const email = await signUp(page);
+    await signUp(page);
 
-    await expect(page.getByText(`Signed in as ${email}`)).toBeVisible();
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: /^Good (morning|afternoon|evening), John Smith$/,
+      }),
+    ).toBeVisible();
     await page.goto('/');
     await expect(page).toHaveURL(/\/today$/);
   });
@@ -170,12 +175,17 @@ for (const [locale, copy] of [
       login: 'Welcome back',
       signup: 'Create your account',
       tab: 'Sign up',
-      today: "You're signed in",
+      today: /^Good (morning|afternoon|evening), /,
     },
   ],
   [
     'uk-UA',
-    { login: 'З поверненням', signup: 'Створи акаунт', tab: 'Реєстрація', today: 'Ти в акаунті' },
+    {
+      login: 'З поверненням',
+      signup: 'Створи акаунт',
+      tab: 'Реєстрація',
+      today: /^Доброго (ранку|дня|вечора), /,
+    },
   ],
 ] as const) {
   test.describe(`auth pages in ${locale}`, () => {

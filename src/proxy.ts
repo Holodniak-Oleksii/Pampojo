@@ -6,13 +6,19 @@ import { resolveLocale } from '@/i18n/resolve-locale';
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
+const PROTECTED_PREFIXES = [
+  '/today',
+  '/onboarding',
+  '/profile',
+  '/calendar',
+  '/library',
+  '/progress',
+  '/session',
+];
+
 function isProtected(pathname: string): boolean {
-  return (
-    pathname === '/today' ||
-    pathname === '/onboarding' ||
-    pathname === '/profile' ||
-    pathname.startsWith('/profile/') ||
-    pathname.startsWith('/session/')
+  return PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }
 

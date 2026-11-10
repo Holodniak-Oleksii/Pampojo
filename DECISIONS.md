@@ -272,6 +272,60 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** The app's Drizzle client sets `max_pipeline: 1` (one query in flight per connection), keeping `prepare: false` and `max: 5`.
 **Why:** Fixes the hang without a new pooler or a bigger pool; a full queue now waits instead of stalling. Approved by the lead.
 
+## 2026-11-10 — Reaching Today from the navigation
+
+**Context:** Spec 05; the bottom bar has Calendar, Library, Start, Progress, Profile and no Today, yet Today is the post-auth home.
+**Decision:** The bottom bar stays as in `SCREENS.md`. On mobile the app icon in the top bar links to `/today`; on desktop the sidebar wordmark links there and Today is also a sidebar item.
+**Why:** Keeps five slots with a central Start; Today stays one tap away.
+
+## 2026-11-10 — Icon-only bottom bar
+
+**Context:** Spec 05 bottom bar labels.
+**Decision:** Mobile bottom bar shows icons only; names are accessible names. The desktop sidebar shows icons with labels.
+**Why:** Lead's choice: cleaner bar, Ukrainian labels would not fit.
+
+## 2026-11-10 — Library routes in the shell
+
+**Context:** Spec 05 placeholder Library; `SCREENS.md` has `/library/workouts` and `/library/exercises`.
+**Decision:** `/library` redirects to `/library/workouts`. Both sub-routes exist from spec 05 with link tabs Workouts / Exercises and empty states; specs 06 and 09 fill them.
+**Why:** Routes and tabs are fixed once; later specs only replace content.
+
+## 2026-11-10 — Time-of-day greeting
+
+**Context:** Spec 05 Today greeting.
+**Decision:** "Good morning / afternoon / evening, {name}" by the device clock (05–11, 12–17, 18–04), computed on the client after hydration.
+**Why:** Friendlier than a static "Hi"; the device clock avoids server time zone mismatches.
+
+## 2026-11-10 — Top bar and page titles
+
+**Context:** Spec 05 top bar vs the pages' own `PageHeader`.
+**Decision:** A small top bar (title + `StatusPill`) on every `(app)` screen; pages keep their large `h1` in the content.
+**Why:** Lead's choice.
+
+## 2026-11-10 — Language switch for signed-in users
+
+**Context:** The `LanguageSwitcher` lives only on the landing, which signed-in users never see.
+**Decision:** Spec 05 adds a Language row with the existing switcher to `/profile`. Still cookie only.
+**Why:** Signed-in users could not change the language at all.
+
+## 2026-11-10 — Choose workout sheet
+
+**Context:** Spec 05 Start button before specs 09–11 exist.
+**Decision:** Bottom sheet on mobile, right side sheet on desktop (like Edit profile). It shows only the empty state; "Create workout" closes it and goes to `/library/workouts`.
+**Why:** One sheet pattern across the app; later specs add the list and the resume / planned branches.
+
+## 2026-11-10 — Shell loading state
+
+**Context:** Scratch 05; the `(app)` gate renders `null` while it checks the session and onboarding (noted in the spec 04 review).
+**Decision:** The shell stays inside the gate, as spec 05 says. The gate's `Suspense` fallback becomes a static shell skeleton with the same geometry; navigation shows only for a verified user.
+**Why:** Lead's choice over rendering the navigation before the gate.
+
+## 2026-11-10 — Narrow pages align with the top bar
+
+**Context:** Spec 05 review: on desktop the top-bar title sat about 150px left of the `h1` on the 600px `/today` and `/profile`.
+**Decision:** Narrow pages keep 600px and sit at the left edge of the 960px content column instead of being centered.
+**Why:** The lead asked to fix the offset; the spec still allows pages narrower than 960px.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

@@ -4,8 +4,8 @@ Mobile-first. Desktop reuses the same routes with a wider layout.
 
 ## Navigation
 
-- **Mobile:** charcoal bottom bar with Calendar, Library, a large central "Start workout" button, Progress, Profile.
-- **Desktop:** left sidebar with the same sections and "Start workout" as the primary button at the top.
+- **Mobile:** charcoal bottom bar with Calendar, Library, a large central "Start workout" button, Progress, Profile (icons only). The app icon in the top bar links to Today.
+- **Desktop:** left sidebar with the wordmark, "Start workout" as the primary button, then Today and the same sections.
 - **Top bar:** page title and the online/offline pill with the pending-changes count, on every in-app screen.
 - Session mode hides the navigation.
 
