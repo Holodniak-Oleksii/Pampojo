@@ -5,8 +5,8 @@ import { getEnv } from '@/server/env';
 import { seedCatalog } from '../catalog';
 import { seedCatalogSchema } from '../seed-schema';
 
-// Seeds the whole catalog twice against the remote database.
-vi.setConfig({ testTimeout: 120_000 });
+// Seeds the whole catalog twice against the remote database (two statements per run).
+vi.setConfig({ testTimeout: 30_000 });
 
 const entries = seedCatalogSchema.parse(
   JSON.parse(readFileSync(new URL('../exercises.json', import.meta.url), 'utf8')),

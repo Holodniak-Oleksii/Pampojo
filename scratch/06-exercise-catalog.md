@@ -820,3 +820,11 @@ With this, every AC passes. Finding 5 (seed speed) is still open.
   - exercises tests: 20 passed (feature) and 36 in total with server and route.
   - e2e `05` + `06`: 43 passed.
   - Live check: hover switches `0-thumb` → `1-thumb` → back on leave at 1440 and 1920 (`Hover-*-card.png`).
+
+## 18. CI fix: batched seed — 2026-11-10
+
+- **CI failure.** The first PR run failed: `catalog.test.ts` timed out at 120s in CI. That was review finding 5: about 630 statements, one round trip each to the remote database.
+- **Fix.** `seedCatalog` now runs two statements, one bulk upsert for exercises and one for translations, both through `jsonb_to_recordset`.
+- **Run time.** The seed test went from about 90s to about 1s, and `pnpm db:seed` from about 40s to 0.6s.
+- **Test.** The assertions are unchanged; the timeout is back to 30s.
+- Finding 5 is closed.
