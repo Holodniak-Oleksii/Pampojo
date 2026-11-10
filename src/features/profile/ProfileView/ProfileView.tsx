@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { UNIT_SYSTEM } from '@/constants/profile';
 import { LogOutButton } from '@/features/auth/LogOutButton';
+import { LanguageSwitcher } from '@/features/i18n/LanguageSwitcher';
 import { useFormat } from '@/i18n/client';
 import { feetInchesFromCm, formatFeetInches, lbFromKg } from '@/lib/units';
 import type { Profile } from '@/shared/schemas/profile';
@@ -59,6 +60,10 @@ export function ProfileView({ initialProfile }: ProfileViewProps) {
           </div>
         ))}
       </dl>
+      <div className="flex items-center justify-between gap-4 rounded-3xl bg-card px-5 py-3 shadow-soft">
+        <span className="text-muted-foreground">{t('Language')}</span>
+        <LanguageSwitcher />
+      </div>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button size="lg" className="sm:flex-1" onClick={() => setEditing(true)}>
           {t('Edit profile')}

@@ -1,36 +1,36 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
-import { PageHeader } from '@/components/PageHeader';
-import { Button } from '@/components/ui/button';
+import { TodaySkeleton } from '@/features/today/TodaySkeleton';
+import { TodayView } from '@/features/today/TodayView';
 import { getI18n } from '@/i18n/server';
 import { getRequestSession } from '@/server/auth/request-session';
+import { getProfile } from '@/server/profile/service';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: t('Pampojo') };
+  return { title: { absolute: t('Today · Pampojo') } };
 }
 
-async function SignedInSummary() {
-  const { t } = await getI18n();
+async function TodayContent() {
+  // The (app) gate already redirected users without a session or a profile; the page still scopes by the session itself.
   const session = await getRequestSession();
+  if (!session) return null;
+  const profile = await getProfile(session.user.id);
   return (
-    <p className="text-lg">{t('Signed in as {{email}}', { email: session?.user.email ?? '' })}</p>
+    <TodayView
+      displayName={profile.displayName}
+      avatarEmoji={profile.avatarEmoji}
+      avatarColor={profile.avatarColor}
+    />
   );
 }
 
-// Placeholder until spec 05 builds the real Today screen.
-export default async function TodayPage() {
-  const { t } = await getI18n();
+export default function TodayPage() {
   return (
-    <main className="mx-auto flex w-full max-w-[600px] flex-col gap-6 px-4 py-10 md:px-6">
-      <PageHeader title={t("You're signed in")} />
-      <Suspense fallback={null}>
-        <SignedInSummary />
+    <div className="mx-auto flex w-full max-w-[600px] flex-col gap-6">
+      <Suspense fallback={<TodaySkeleton />}>
+        <TodayContent />
       </Suspense>
-      <Button asChild variant="secondary" className="self-start">
-        <Link href="/profile">{t('Profile')}</Link>
-      </Button>
-    </main>
+    </div>
   );
 }

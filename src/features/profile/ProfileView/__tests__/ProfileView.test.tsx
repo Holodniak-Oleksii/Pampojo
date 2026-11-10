@@ -48,6 +48,13 @@ describe('ProfileView', () => {
     await expect.element(screen.getByRole('button', { name: 'Log out' })).toBeVisible();
   });
 
+  it('shows a Language row with the switcher', async () => {
+    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+
+    await expect.element(screen.getByText('Language', { exact: true })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Language: English' })).toBeVisible();
+  });
+
   it('shows imperial values for an imperial profile', async () => {
     const screen = await render(
       <ProfileView initialProfile={getProfileMock({ unitSystem: 'imperial', age: 1 })} />,
