@@ -1,29 +1,36 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
-import { deleteE2eUsers } from './helpers/db';
+import { deleteE2eUsers, e2eRunPrefix } from './helpers/db';
+import { completeOnboardingViaApi } from './helpers/onboarding';
 
 const PASSWORD = 'Password123!';
+const PREFIX = e2eRunPrefix('auth');
 
 let ipCounter = 0;
+let testIp = '';
 // Each test gets its own client IP so the 10-per-minute sign-in limit never spans tests.
 test.beforeEach(async ({ context }, testInfo) => {
   ipCounter += 1;
   const octet = ((testInfo.workerIndex * 50 + ipCounter) % 250) + 1;
-  await context.setExtraHTTPHeaders({ 'x-forwarded-for': `198.51.100.${octet}` });
+  testIp = `198.51.100.${octet}`;
+  await context.setExtraHTTPHeaders({ 'x-forwarded-for': testIp });
 });
 
 test.afterAll(async () => {
-  await deleteE2eUsers();
+  await deleteE2eUsers(PREFIX, '198.51.100');
 });
 
-const newEmail = () => `e2e-${randomUUID()}@example.com`;
+const newEmail = () => `e2e-${PREFIX}-${randomUUID()}@example.com`;
 
 async function signUp(page: Page, email = newEmail()) {
   await page.goto('/signup');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Create account' }).click();
-  await page.waitForURL('**/today');
+  // New users are sent to onboarding (spec 04); these tests are about auth, so finish it via the API.
+  await page.waitForURL('**/onboarding');
+  await completeOnboardingViaApi(page);
+  await page.goto('/today');
   return email;
 }
 
@@ -62,6 +69,7 @@ test.describe('auth in English', () => {
     await signUp(page);
     const cookies = await context.cookies();
 
+    await page.goto('/profile');
     await page.getByRole('button', { name: 'Log out' }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(
@@ -75,7 +83,10 @@ test.describe('auth in English', () => {
 
   test('protected routes redirect to login and come back', async ({ page, browser }) => {
     const email = await signUp(page);
-    const fresh = await browser.newPage({ locale: 'en-US' });
+    const fresh = await browser.newPage({
+      locale: 'en-US',
+      extraHTTPHeaders: { 'x-forwarded-for': testIp },
+    });
 
     await fresh.goto('/today');
     expect(path(fresh)).toBe('/login?next=%2Ftoday');
@@ -86,7 +97,10 @@ test.describe('auth in English', () => {
 
   test('ignores an unsafe next', async ({ page, browser }) => {
     const email = await signUp(page);
-    const fresh = await browser.newPage({ locale: 'en-US' });
+    const fresh = await browser.newPage({
+      locale: 'en-US',
+      extraHTTPHeaders: { 'x-forwarded-for': testIp },
+    });
 
     await fresh.goto('/login?next=https%3A%2F%2Fevil.example');
     await logIn(fresh, email);
@@ -97,7 +111,10 @@ test.describe('auth in English', () => {
 
   test('wrong credentials show one generic error', async ({ page, browser }) => {
     const email = await signUp(page);
-    const fresh = await browser.newPage({ locale: 'en-US' });
+    const fresh = await browser.newPage({
+      locale: 'en-US',
+      extraHTTPHeaders: { 'x-forwarded-for': testIp },
+    });
 
     await fresh.goto('/login');
     await logIn(fresh, email, 'not-the-password');
@@ -109,7 +126,10 @@ test.describe('auth in English', () => {
 
   test('an existing email cannot sign up again', async ({ page, browser }) => {
     const email = await signUp(page);
-    const fresh = await browser.newPage({ locale: 'en-US' });
+    const fresh = await browser.newPage({
+      locale: 'en-US',
+      extraHTTPHeaders: { 'x-forwarded-for': testIp },
+    });
 
     await fresh.goto('/signup');
     await fresh.getByLabel('Email').fill(email);
@@ -179,7 +199,9 @@ for (const [locale, copy] of [
       await page.getByLabel(/Email/).fill(newEmail());
       await page.locator('input[type="password"]').fill(PASSWORD);
       await page.locator('button[type="submit"]').click();
-      await page.waitForURL('**/today');
+      await page.waitForURL('**/onboarding');
+      await completeOnboardingViaApi(page);
+      await page.goto('/today');
       await expect(page.getByRole('heading', { level: 1, name: copy.today })).toBeVisible();
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       expect(overflow).toBeLessThanOrEqual(0);

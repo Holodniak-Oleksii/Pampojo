@@ -29,7 +29,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | Method and path | Purpose | Spec |
 | --- | --- | --- |
 | `/api/auth/*` | Better Auth endpoints (sign-up, sign-in, Google, sign-out, session) | 03 |
-| `GET/PATCH /api/v1/me/profile` | Profile | 04 |
+| `GET/PUT/PATCH /api/v1/me/profile` | Profile; `PUT` finishes onboarding | 04 |
 | `GET /api/v1/exercises` | Catalog (system + own), filters, search | 06 |
 | `GET /api/v1/exercises/{id}` | Exercise details | 06 |
 | `PUT/PATCH/DELETE /api/v1/exercises/{id}` | Custom exercises | 07 |

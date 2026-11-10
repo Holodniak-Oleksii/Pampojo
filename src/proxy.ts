@@ -7,7 +7,13 @@ import { resolveLocale } from '@/i18n/resolve-locale';
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
 function isProtected(pathname: string): boolean {
-  return pathname === '/today' || pathname === '/onboarding' || pathname.startsWith('/session/');
+  return (
+    pathname === '/today' ||
+    pathname === '/onboarding' ||
+    pathname === '/profile' ||
+    pathname.startsWith('/profile/') ||
+    pathname.startsWith('/session/')
+  );
 }
 
 // Pages live under a hidden [lang] segment; users only ever see unprefixed URLs.

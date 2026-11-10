@@ -8,6 +8,13 @@
       "when": 1794175387944,
       "tag": "0000_silly_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794261379847,
+      "tag": "0001_strange_dracula",
+      "breakpoints": true
     }
   ]
 }

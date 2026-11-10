@@ -87,18 +87,17 @@ describe('email sign-up', () => {
 
   it('refuses an email that already exists', async () => {
     const { email } = await signUp();
-    const before = await getDb()
-      .select({ count: sql<number>`count(*)::int` })
-      .from(user);
 
     const response = await post('/sign-up/email', { email, password: PASSWORD, name: 'test' });
 
     expect(response.status).toBe(422);
     expect((await response.json()).code).toMatch(/^USER_ALREADY_EXISTS/);
-    const after = await getDb()
+    // Only this email's rows: other test files create and delete users in parallel.
+    const rows = await getDb()
       .select({ count: sql<number>`count(*)::int` })
-      .from(user);
-    expect(after[0]?.count).toBe(before[0]?.count);
+      .from(user)
+      .where(eq(user.email, email));
+    expect(rows[0]?.count).toBe(1);
   });
 });
 

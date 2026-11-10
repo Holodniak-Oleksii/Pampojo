@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Suspense } from 'react';
 import { PageHeader } from '@/components/PageHeader';
-import { LogOutButton } from '@/features/auth/LogOutButton';
+import { Button } from '@/components/ui/button';
 import { getI18n } from '@/i18n/server';
 import { getRequestSession } from '@/server/auth/request-session';
 
@@ -27,7 +28,9 @@ export default async function TodayPage() {
       <Suspense fallback={null}>
         <SignedInSummary />
       </Suspense>
-      <LogOutButton />
+      <Button asChild variant="secondary" className="self-start">
+        <Link href="/profile">{t('Profile')}</Link>
+      </Button>
     </main>
   );
 }
