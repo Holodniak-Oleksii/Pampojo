@@ -61,4 +61,30 @@ describe('parseEnv', () => {
     ).not.toThrow();
     expect(() => parseEnv({ ...base, VERCEL_ENV: 'preview' })).not.toThrow();
   });
+
+  it('treats empty variables as unset, as `vercel pull` writes them outside Vercel', () => {
+    const env = parseEnv({
+      DATABASE_URL: 'postgresql://user:password@example.com:6543/postgres',
+      BETTER_AUTH_SECRET: 'x'.repeat(32),
+      NODE_ENV: 'production',
+      VERCEL_ENV: 'production',
+      BETTER_AUTH_URL: 'https://pampojo.vercel.app',
+      VERCEL_URL: '',
+      VERCEL_BRANCH_URL: '',
+    });
+
+    expect(env.VERCEL_URL).toBeUndefined();
+    expect(env.VERCEL_BRANCH_URL).toBeUndefined();
+  });
+
+  it('still requires BETTER_AUTH_URL on production when it is empty', () => {
+    expect(() =>
+      parseEnv({
+        DATABASE_URL: 'postgresql://user:password@example.com:6543/postgres',
+        BETTER_AUTH_SECRET: 'x'.repeat(32),
+        VERCEL_ENV: 'production',
+        BETTER_AUTH_URL: '',
+      }),
+    ).toThrow(/BETTER_AUTH_URL: Required on Vercel production/);
+  });
 });

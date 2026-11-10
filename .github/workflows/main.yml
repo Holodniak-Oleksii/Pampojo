@@ -57,5 +57,13 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - run: pnpm dlx vercel@65.12.1 pull --yes --environment=production --token="$VERCEL_TOKEN"
+      # The URL is public; brackets expose stray quotes, spaces or a missing https:// in the stored value.
+      - name: Show the pulled BETTER_AUTH_URL
+        run: |
+          if grep -q '^BETTER_AUTH_URL=' .vercel/.env.production.local; then
+            grep '^BETTER_AUTH_URL=' .vercel/.env.production.local | sed 's/^BETTER_AUTH_URL=\(.*\)$/BETTER_AUTH_URL=[\1]/'
+          else
+            echo 'BETTER_AUTH_URL is missing from the pulled production env'
+          fi
       - run: pnpm dlx vercel@65.12.1 build --prod --token="$VERCEL_TOKEN"
       - run: pnpm dlx vercel@65.12.1 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
