@@ -12,6 +12,7 @@ const envSchema = z
     BETTER_AUTH_URL: z.url().optional(),
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+    SUPABASE_URL: z.url().optional(),
     VERCEL_ENV: z.enum(['production', 'preview', 'development']).optional(),
     VERCEL_URL: z.string().min(1).optional(),
     VERCEL_BRANCH_URL: z.string().min(1).optional(),

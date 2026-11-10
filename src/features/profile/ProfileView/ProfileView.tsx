@@ -49,22 +49,25 @@ export function ProfileView({ initialProfile }: ProfileViewProps) {
         <EmojiAvatar emoji={profile.avatarEmoji} color={profile.avatarColor} size="lg" />
         <p className="min-w-0 text-2xl font-extrabold break-words">{profile.displayName}</p>
       </div>
-      <dl className="flex flex-col gap-3">
-        {rows.map((row) => (
-          <div
-            key={row.label}
-            className="flex items-center justify-between gap-4 rounded-3xl bg-card px-5 py-4 shadow-soft"
-          >
-            <dt className="text-muted-foreground">{row.label}</dt>
-            <dd className="text-lg font-semibold tabular-nums">{row.value}</dd>
-          </div>
-        ))}
-      </dl>
-      <div className="flex items-center justify-between gap-4 rounded-3xl bg-card px-5 py-3 shadow-soft">
-        <span className="text-muted-foreground">{t('Language')}</span>
-        <LanguageSwitcher />
+      {/* One column on mobile; from lg the rows and the language row share a two-column grid. */}
+      <div className="grid gap-3 lg:grid-cols-2">
+        <dl className="flex flex-col gap-3 lg:contents">
+          {rows.map((row) => (
+            <div
+              key={row.label}
+              className="flex items-center justify-between gap-4 rounded-[20px] bg-card px-5 py-4 shadow-soft"
+            >
+              <dt className="text-muted-foreground">{row.label}</dt>
+              <dd className="text-lg font-semibold tabular-nums">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="flex items-center justify-between gap-4 rounded-[20px] bg-card px-5 py-3 shadow-soft">
+          <span className="text-muted-foreground">{t('Language')}</span>
+          <LanguageSwitcher />
+        </div>
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row lg:max-w-[600px]">
         <Button size="lg" className="sm:flex-1" onClick={() => setEditing(true)}>
           {t('Edit profile')}
         </Button>

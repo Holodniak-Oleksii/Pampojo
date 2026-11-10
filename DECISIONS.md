@@ -326,10 +326,111 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** Narrow pages keep 600px and sit at the left edge of the 960px content column instead of being centered.
 **Why:** The lead asked to fix the offset; the spec still allows pages narrower than 960px.
 
+## 2026-11-10 — Exercise dataset
+
+**Context:** Spec 06 seed source.
+**Decision:** free-exercise-db (Unlicense), about 200 gym strength exercises with both frames. The agent writes the missing fields (description, mistakes, aliases, pattern, laterality, popularity); image origin is checked before seeding.
+**Why:** Public domain with images and no attribution; wger is CC-BY-SA with per-image licenses.
+
+## 2026-11-10 — Catalog content in two languages
+
+**Context:** Spec 06; the UI is `en` + `uk` from day one.
+**Decision:** All exercise text is in both languages, in a new `exercise_translation` table keyed by `(exerciseId, locale)`. Search covers both languages. Own exercises have one row shown in every locale.
+**Why:** A Ukrainian UI with English instructions would be half-translated; a table adds languages without schema changes.
+
+## 2026-11-10 — Muscle taxonomy
+
+**Context:** Spec 06 chips and sections; specs 18 and 25 need fine-grained muscles.
+**Decision:** The 17 free-exercise-db muscles are stored and shown as they are, in a fixed top-to-bottom order.
+**Why:** Lead's choice; one list for storage and UI.
+
+## 2026-11-10 — Catalog filters
+
+**Context:** Spec 06 AC3.
+**Decision:** Muscle chips and equipment are multi-select. Muscles match primary muscles only; OR inside a filter, AND between filters and search. Filters live in the URL.
+**Why:** "Chest + triceps" is a common query; secondary muscles would flood results.
+
+## 2026-11-10 — Catalog order
+
+**Context:** Spec 06 list order.
+**Decision:** Without search: sections by first primary muscle, popularity inside (new `exercise.popularity`). With search: flat, by relevance. Infinite scroll by 30 with a "Show more" fallback.
+**Why:** Lead's choice; browsing by body part, staples first.
+
+## 2026-11-10 — Exercise frames
+
+**Context:** Spec 06 details; the dataset has start and end photos.
+**Decision:** Details alternate the two frames every second; reduced motion keeps the start frame and a tap switches. The list shows the first frame.
+**Why:** Lead's choice; reads as movement without video.
+
+## 2026-11-10 — Profile-not-found log noise
+
+**Context:** CI logs showed `PROFILE_NOT_FOUND` server errors: the page renders in parallel with the redirecting `(app)` gate.
+**Decision:** Fixed in spec 06: `/today` and `/profile` redirect to `/onboarding` when the profile is missing.
+**Why:** Keeps server error logs meaningful.
+
+## 2026-11-10 — Exercise media pipeline
+
+**Context:** Scratch 06; free-exercise-db frames are JPG, the catalog needs WebP in two sizes.
+**Decision:** Media lives in the public Storage bucket `exercise-media`, never in git. `pnpm db:seed:media` downloads the originals from a pinned free-exercise-db commit, converts them with `sharp` (new devDependency) and uploads through the Storage REST API with `fetch`.
+**Why:** No binaries in the repo and no Supabase SDK; sharp runs only in the script.
+
+## 2026-11-10 — Storage env
+
+**Context:** Scratch 06 media URLs and uploads.
+**Decision:** `SUPABASE_URL` (not secret; Vercel, CI, `.env.local`) builds public media URLs on the server; without it images fall back to the placeholder. `SUPABASE_SERVICE_ROLE_KEY` is only in the lead's `.env.local` for the media script.
+**Why:** The service key never reaches the app or Vercel.
+
+## 2026-11-10 — Search normalization in code
+
+**Context:** Scratch 06 AC2, case- and diacritic-insensitive search.
+**Decision:** `normalizeSearch()` (lowercase, NFD, marks stripped) for the query and for stored `exercise_translation.searchName` / `searchAliases`. No Postgres extension.
+**Why:** The same function will serve custom exercises (07) and offline search in Dexie (16).
+
+## 2026-11-10 — Catalog seed in CI
+
+**Context:** One shared database; e2e needs the catalog.
+**Decision:** `pnpm db:seed` (rows only) runs after `pnpm db:migrate` in `ci.yml` and `main.yml`. Media is uploaded by the lead by hand.
+**Why:** Idempotent, so the catalog always matches the repo.
+
+## 2026-11-10 — Catalog photos with unclear rights
+
+**Context:** Implement 06, step 2: free-exercise-db data is Unlicense, but its photos come from wrkout/exercises.json, whose author says they were scraped and he does not own the copyright (part traced to bodybuilding.com).
+**Decision:** Use the photos anyway, as planned. Exercise text is our own; only metadata comes from the dataset. The risk is recorded in `src/server/db/seed/README.md`.
+**Why:** Lead's choice after the risk was raised; revisit before public launch.
+
+## 2026-11-10 — Content column next to the sidebar
+
+**Context:** Spec 06 review; at 1440px the centered 960px column left a wide gap after the sidebar.
+**Decision:** From `lg` the content column (and the top bar) starts right after the sidebar with a 32px gutter and fills the rest of the screen, with no max width. The catalog grid has 3 columns from `xl` and 4 from `2xl`. Below `lg` nothing changes. Supersedes "centered, max 960px" in spec 05.
+**Why:** Lead's choice: less empty space, room for three catalog cards per row.
+
+## 2026-11-10 — Softer catalog cards
+
+**Context:** Spec 06 review; 32px card radius and the 24px-based `rounded-2xl` turned rows into pills and thumbnails into circles.
+**Decision:** Catalog cards, the details page, `EmptyState`, Profile rows and the Today skeleton use 20px; thumbnails 12px; fixed values. On mobile each muscle section is one card with dividers instead of separate pills.
+**Why:** Lead did not like the rounding.
+
+## 2026-11-10 — Today and Profile use the full column
+
+**Context:** After the column moved next to the sidebar, the 600px Today and Profile pages left the right half of wide screens empty.
+**Decision:** Today and Profile fill the content column (up to 1120px). From `lg` the Profile rows sit in two columns and the action buttons stay within 600px. Supersedes "Narrow pages align with the top bar".
+**Why:** Lead's choice; the later Today widgets (specs 11–12) will need the width anyway.
+
+## 2026-11-10 — Taller mobile bottom bar
+
+**Context:** The Start button almost touched the edges of the 64px bar.
+**Decision:** The bar is 76px tall with at least 8px bottom padding (more with the safe-area inset); content bottom padding grows to 6.5rem.
+**Why:** Lead asked for more vertical space.
+
+## 2026-11-10 — Catalog cards animate on hover
+
+**Context:** Spec 06 review; the lead wanted the details page frame animation on catalog cards too.
+**Decision:** Hover or keyboard focus on a card alternates its frames every second; leaving resets to the start frame; reduced motion disables it. List items in `GET /api/v1/exercises` gain an additive `frames` array (same shape as details).
+**Why:** Lead's request; an additive field does not break clients.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.
 
 - Data layer before spec 15: write sessions straight to the server, or build the local Dexie layer from spec 10? (spec 10)
-- Exercise dataset source and its license. (spec 06)
 - Speech-to-text and image generation providers. (specs 20, 24)

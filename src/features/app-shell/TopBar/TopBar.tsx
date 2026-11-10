@@ -19,7 +19,7 @@ export function TopBar({ section }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-20 bg-background pt-[env(safe-area-inset-top)]">
-      <div className="mx-auto flex h-14 w-full max-w-[960px] items-center gap-3 px-4 lg:px-6">
+      <div className="mx-auto flex h-14 w-full max-w-[960px] lg:mx-0 lg:max-w-none items-center gap-3 px-4 lg:px-8">
         <Link
           href="/today"
           aria-label={t('Pampojo, Today')}

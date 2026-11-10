@@ -1,3 +1,4 @@
+import type { Exercise, ExerciseListItem } from '@/shared/schemas/exercise';
 import type { Profile } from '@/shared/schemas/profile';
 import type { DeepPartial } from '@/types/utils';
 
@@ -35,6 +36,67 @@ export function getProfileMock(override?: DeepPartial<Profile>): Profile {
       unitSystem: 'metric',
       timeZone: 'Europe/Kyiv',
       onboardingCompletedAt: '2026-11-09T10:00:00Z',
+    },
+    override,
+  );
+}
+
+export function getExerciseListItemMock(
+  override?: DeepPartial<ExerciseListItem>,
+): ExerciseListItem {
+  return mergeMock<ExerciseListItem>(
+    {
+      id: '6f1c2b9e-3a4d-4c5b-8e7f-9a0b1c2d3e4f',
+      name: 'Bench Press',
+      primaryMuscles: ['chest'],
+      equipment: ['barbell'],
+      thumbnailUrl: 'https://example.com/bench-0-thumb.webp',
+      imageUrl: 'https://example.com/bench-0-full.webp',
+      frames: [
+        {
+          thumbUrl: 'https://example.com/bench-0-thumb.webp',
+          fullUrl: 'https://example.com/bench-0-full.webp',
+        },
+        {
+          thumbUrl: 'https://example.com/bench-1-thumb.webp',
+          fullUrl: 'https://example.com/bench-1-full.webp',
+        },
+      ],
+      section: 'chest',
+      isOwn: false,
+    },
+    override,
+  );
+}
+
+export function getExerciseMock(override?: DeepPartial<Exercise>): Exercise {
+  return mergeMock<Exercise>(
+    {
+      id: '6f1c2b9e-3a4d-4c5b-8e7f-9a0b1c2d3e4f',
+      name: 'Bench Press',
+      aliases: ['Flat bench press'],
+      description: 'Press a barbell from your chest while lying on a flat bench.',
+      instructions: ['Lie on the bench.', 'Lower the bar to your chest.', 'Press it back up.'],
+      commonMistakes: ['Bouncing the bar off the chest.'],
+      primaryMuscles: ['chest'],
+      secondaryMuscles: ['shoulders', 'triceps'],
+      equipment: ['barbell'],
+      movementPattern: 'horizontal_push',
+      mechanic: 'compound',
+      laterality: 'bilateral',
+      trackingType: 'weight_reps',
+      difficulty: 2,
+      frames: [
+        {
+          thumbUrl: 'https://example.com/0-thumb.webp',
+          fullUrl: 'https://example.com/0-full.webp',
+        },
+        {
+          thumbUrl: 'https://example.com/1-thumb.webp',
+          fullUrl: 'https://example.com/1-full.webp',
+        },
+      ],
+      isOwn: false,
     },
     override,
   );

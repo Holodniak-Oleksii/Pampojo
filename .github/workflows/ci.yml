@@ -12,6 +12,7 @@ env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DATABASE_MIGRATION_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
   BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+  SUPABASE_URL: ${{ vars.SUPABASE_URL }}
 
 jobs:
   checks:
@@ -25,6 +26,8 @@ jobs:
       - run: pnpm typecheck
       # The database is shared with production, so PR migrations must be additive only.
       - run: pnpm db:migrate
+      # Idempotent upsert of the system exercise catalog, so tests and e2e see the repo's data.
+      - run: pnpm db:seed
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test
       - run: pnpm build

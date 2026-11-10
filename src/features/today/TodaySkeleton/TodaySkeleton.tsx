@@ -7,7 +7,7 @@ export function TodaySkeleton() {
         <Skeleton className="size-20 rounded-full" />
         <Skeleton className="h-9 w-56 md:h-10" />
       </div>
-      <Skeleton className="h-48 w-full rounded-[32px]" />
+      <Skeleton className="h-48 w-full rounded-[20px]" />
     </div>
   );
 }

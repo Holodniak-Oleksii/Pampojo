@@ -38,11 +38,6 @@ Current weight comes from the latest `body_measurement` of type `weight`. The la
 | id | uuid PK | |
 | ownerId | uuid null → user | `null` for the system catalog |
 | slug | text | Unique for system rows |
-| name | text | |
-| aliases | text[] | Search synonyms |
-| description | text | |
-| instructions | text[] | Ordered technique steps |
-| commonMistakes | text[] | |
 | primaryMuscles | text[] | Values from `MUSCLE_GROUPS` |
 | secondaryMuscles | text[] | |
 | movementPattern | text | `horizontal_push`, `vertical_pull`, `hinge`, `squat`, `lunge`, `carry`, `isolation`, … |
@@ -51,9 +46,29 @@ Current weight comes from the latest `body_measurement` of type `weight`. The la
 | laterality | text | `bilateral`, `unilateral` |
 | trackingType | text | `weight_reps`, `reps`, `time`, `distance` |
 | difficulty | smallint | 1–3 |
-| media | jsonb | `{ imageKey?, frameKeys?: string[] }` → Storage paths |
+| popularity | smallint null | 1–100, system rows only; orders the catalog (spec 06) |
+| media | jsonb | Start and end frames, each in two sizes → Storage paths (shape set in scratch 06) |
 | sourceExerciseId | uuid null | Set when copied through import |
 | createdAt, updatedAt, deletedAt | | |
+
+Text lives in `exercise_translation`, so the catalog is in English and Ukrainian.
+
+## exercise_translation
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| exerciseId | uuid → exercise | PK with `locale` |
+| locale | text | `en`, `uk` |
+| name | text | |
+| aliases | text[] | Search synonyms |
+| description | text | |
+| instructions | text[] | Ordered technique steps |
+| commonMistakes | text[] | |
+| searchName | text | `normalizeSearch(name)`: lowercase, no diacritics; written with the row |
+| searchAliases | text | Normalized aliases joined by a newline |
+| createdAt, updatedAt | timestamptz | |
+
+System exercises have both locales. When the request locale is missing, the other one is used; own exercises (spec 07) have one row, shown in every locale.
 
 ## gym_profile
 

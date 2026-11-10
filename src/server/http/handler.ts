@@ -48,6 +48,16 @@ function parseWith<S extends Schema | undefined>(schema: S | undefined, input: u
   return result.data as Parsed<S>;
 }
 
+/** A repeated key (`?muscle=a&muscle=b`) becomes an array; a single key stays a string. */
+function readQuery(params: URLSearchParams): Record<string, string | string[]> {
+  const query: Record<string, string | string[]> = {};
+  for (const key of new Set(params.keys())) {
+    const values = params.getAll(key);
+    query[key] = values.length === 1 ? (values[0] ?? '') : values;
+  }
+  return query;
+}
+
 async function readJson(request: Request): Promise<unknown> {
   const text = await request.text();
   if (text === '') return undefined;
@@ -84,10 +94,7 @@ export function withHandler<
         auth = { userId: session.user.id };
       }
       const params = parseWith<P>(options.params, (await context.params) ?? {});
-      const query = parseWith<Q>(
-        options.query,
-        Object.fromEntries(new URL(request.url).searchParams),
-      );
+      const query = parseWith<Q>(options.query, readQuery(new URL(request.url).searchParams));
       const body = parseWith<B>(options.body, options.body ? await readJson(request) : undefined);
       return await fn({ request, params, query, body, ...(auth as AuthedContext<A>) });
     } catch (error) {
