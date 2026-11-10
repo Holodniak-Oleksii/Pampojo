@@ -361,6 +361,9 @@ Removed keys: `You're signed in`, `Signed in as {{email}}`.
   - e2e on the lead's running dev server: `03`, `04`, `05` — 61 passed, 5 skipped (viewport-specific tests in 05). `00`–`02`: 41 passed, 2 skipped, 1 failed once (`02` "renders the legal placeholders", mobile); it passed 3 of 3 reruns and touches no code from this spec.
   - Not run against the production server (`pnpm start`), because the lead's dev server holds port 3000.
 - **Not checked automatically:** the iPhone home-indicator clearance (Chromium reports `env()` insets as 0) and the look of `AppShellSkeleton`. Both are for `/review`.
+- **Review fixes.**
+  - `AppShellSkeleton` has a 44px top-bar icon slot on mobile, so the title no longer shifts when the shell replaces it (finding 1).
+  - `/today` and `/profile` keep 600px but are left-aligned in the 960px column instead of centered, so on desktop the top-bar title lines up with the page `h1` (finding 2).
 
 ## 12. Review — 2026-11-10
 

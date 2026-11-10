@@ -19,7 +19,7 @@ async function ProfileContent() {
 
 export default function ProfilePage() {
   return (
-    <div className="mx-auto flex w-full max-w-[600px] flex-col gap-6">
+    <div className="flex w-full max-w-[600px] flex-col gap-6">
       <Suspense fallback={<ProfileSkeleton />}>
         <ProfileContent />
       </Suspense>

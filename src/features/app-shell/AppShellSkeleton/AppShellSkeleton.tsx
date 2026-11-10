@@ -18,6 +18,9 @@ export function AppShellSkeleton() {
       <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
         <div className="pt-[env(safe-area-inset-top)]">
           <div className="mx-auto flex h-14 w-full max-w-[960px] items-center gap-3 px-4 lg:px-6">
+            <div className="-ml-1.5 flex size-11 items-center justify-center lg:hidden">
+              <Skeleton className="size-8 rounded-xl" />
+            </div>
             <Skeleton className="h-5 w-24" />
             <Skeleton className="ml-auto h-8 w-20 rounded-full" />
           </div>

@@ -320,6 +320,12 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** The shell stays inside the gate, as spec 05 says. The gate's `Suspense` fallback becomes a static shell skeleton with the same geometry; navigation shows only for a verified user.
 **Why:** Lead's choice over rendering the navigation before the gate.
 
+## 2026-11-10 — Narrow pages align with the top bar
+
+**Context:** Spec 05 review: on desktop the top-bar title sat about 150px left of the `h1` on the 600px `/today` and `/profile`.
+**Decision:** Narrow pages keep 600px and sit at the left edge of the 960px content column instead of being centered.
+**Why:** The lead asked to fix the offset; the spec still allows pages narrower than 960px.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

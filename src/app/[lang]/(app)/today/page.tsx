@@ -27,7 +27,7 @@ async function TodayContent() {
 
 export default function TodayPage() {
   return (
-    <div className="mx-auto flex w-full max-w-[600px] flex-col gap-6">
+    <div className="flex w-full max-w-[600px] flex-col gap-6">
       <Suspense fallback={<TodaySkeleton />}>
         <TodayContent />
       </Suspense>
