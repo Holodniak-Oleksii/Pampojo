@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useIsOnline } from '@/hooks/useIsOnline';
-import { scrollToFirstError } from '../scrollToFirstError';
+import { scrollToFirstError } from '@/lib/scroll-to-first-error';
 import type { Profile } from '@/shared/schemas/profile';
 import { BodyFields } from '../fields/BodyFields';
 import { NameAvatarFields } from '../fields/NameAvatarFields';

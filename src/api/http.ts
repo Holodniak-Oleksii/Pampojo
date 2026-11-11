@@ -62,15 +62,17 @@ export async function http<S extends z.ZodType | undefined = undefined>(
   for (let attempt = 0; ; attempt++) {
     let response: Response;
     try {
+      // FormData sets its own multipart content type with the boundary.
+      const isForm = body instanceof FormData;
       response = await fetch(path, {
         method,
         credentials: 'same-origin',
         headers: {
           accept: 'application/json',
-          ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+          ...(body === undefined || isForm ? {} : { 'content-type': 'application/json' }),
           ...headers,
         },
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
       });
     } catch {
       if (retryable && attempt < MAX_RETRIES) {
@@ -80,6 +82,7 @@ export async function http<S extends z.ZodType | undefined = undefined>(
       throw new ApiError(NETWORK_ERROR);
     }
     if (response.ok) {
+      if (response.status === 204) return undefined as Result<S>;
       const data: unknown = await response.json();
       return (schema ? schema.parse(data) : data) as Result<S>;
     }

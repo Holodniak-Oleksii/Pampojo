@@ -15,7 +15,7 @@ export interface ExerciseFramesProps {
 
 const FRAME_CLASS = 'aspect-[4/3] w-full rounded-[20px]';
 
-/** Start and end positions alternate like a slow animation; with reduced motion a tap switches them. */
+/** Frames cycle in order like a slow animation; with reduced motion a tap shows the next one. */
 export function ExerciseFrames({ name, frames }: ExerciseFramesProps) {
   const { t } = useTranslation();
   const reducedMotion = usePrefersReducedMotion();
@@ -25,26 +25,36 @@ export function ExerciseFrames({ name, frames }: ExerciseFramesProps) {
   useEffect(() => {
     if (!animated) return;
     const timer = setInterval(
-      () => setIndex((current) => (current === 0 ? 1 : 0)),
+      () => setIndex((current) => (current + 1) % frames.length),
       FRAME_INTERVAL_MS,
     );
     return () => clearInterval(timer);
-  }, [animated]);
+  }, [animated, frames.length]);
 
   if (frames.length === 0) return <ExerciseImage src={null} name={name} className={FRAME_CLASS} />;
 
-  const positions = [t('Start position'), t('End position')];
-  const current = frames.length > 1 ? index : 0;
+  const current = index % frames.length;
+  // Two frames are the catalog's start and end positions; three or four are numbered.
+  const label = (frameIndex: number) =>
+    frames.length === 1
+      ? name
+      : frames.length === 2
+        ? `${name}, ${frameIndex === 0 ? t('Start position') : t('End position')}`
+        : t('{{name}}, frame {{n}} of {{total}}', {
+            name,
+            n: frameIndex + 1,
+            total: frames.length,
+          });
   const stack = (
     <div className={cn('relative', FRAME_CLASS)}>
-      {frames.slice(0, 2).map((frame, frameIndex) => (
-        // Both frames stay rendered so the switch does not flash while an image loads.
+      {frames.map((frame, frameIndex) => (
+        // Every frame stays rendered so the switch does not flash while an image loads.
         <ExerciseImage
           key={frame.fullUrl}
           src={frame.fullUrl}
           sizes="(min-width: 1024px) 456px, 100vw"
           name={name}
-          alt={frameIndex === current ? `${name}, ${positions[frameIndex] ?? ''}` : ''}
+          alt={frameIndex === current ? label(frameIndex) : ''}
           className={cn(
             'absolute inset-0 rounded-[20px] transition-opacity duration-300 motion-reduce:transition-none',
             frameIndex === current ? 'opacity-100' : 'opacity-0',
@@ -59,8 +69,8 @@ export function ExerciseFrames({ name, frames }: ExerciseFramesProps) {
       <button
         type="button"
         aria-label={t('Switch position')}
-        aria-pressed={current === 1}
-        onClick={() => setIndex((value) => (value === 0 ? 1 : 0))}
+        aria-pressed={frames.length === 2 ? current === 1 : undefined}
+        onClick={() => setIndex((value) => (value + 1) % frames.length)}
         className="block w-full rounded-[20px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {stack}

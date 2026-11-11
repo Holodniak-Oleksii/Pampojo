@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import type { ExerciseListItem as Item } from '@/shared/schemas/exercise';
 import { FRAME_INTERVAL_MS } from '../constants';
@@ -14,6 +15,7 @@ export interface ExerciseListItemProps {
 
 /** A compact row on mobile, a card with the photo on top in the desktop grid. */
 export function ExerciseListItem({ item }: ExerciseListItemProps) {
+  const { t } = useTranslation();
   const labels = useExerciseLabels();
   const reducedMotion = usePrefersReducedMotion();
   const [active, setActive] = useState(false);
@@ -69,7 +71,14 @@ export function ExerciseListItem({ item }: ExerciseListItemProps) {
         className="size-14 shrink-0 rounded-[12px] lg:aspect-[4/3] lg:size-auto lg:w-full lg:rounded-none"
       />
       <span className="flex min-w-0 flex-col gap-0.5 lg:gap-1 lg:p-4">
-        <span className="line-clamp-2 font-semibold">{item.name}</span>
+        <span className="flex items-start gap-2">
+          <span className="line-clamp-2 font-semibold">{item.name}</span>
+          {item.isOwn ? (
+            <span className="shrink-0 rounded-full bg-primary px-2 text-xs leading-5 font-semibold text-primary-foreground">
+              {t('Mine', { context: 'badge' })}
+            </span>
+          ) : null}
+        </span>
         <span className="truncate text-sm text-muted-foreground">{muscles}</span>
         <span className="flex flex-wrap gap-1">
           {item.equipment.map((equipment) => (

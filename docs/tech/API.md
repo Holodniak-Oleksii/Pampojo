@@ -32,7 +32,8 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `GET/PUT/PATCH /api/v1/me/profile` | Profile; `PUT` finishes onboarding | 04 |
 | `GET /api/v1/exercises` | Catalog (system + own), filters, search | 06 |
 | `GET /api/v1/exercises/{id}` | Exercise details | 06 |
-| `PUT/PATCH/DELETE /api/v1/exercises/{id}` | Custom exercises | 07 |
+| `PUT/PATCH/DELETE /api/v1/exercises/{id}` | Custom exercises (`PUT` creates with a client id) | 07 |
+| `PUT/DELETE /api/v1/exercises/{id}/frames/{frameId}` | Upload (multipart) or remove one photo frame of an own exercise | 07 |
 | `GET/PUT /api/v1/me/gym` | Gym equipment | 08 |
 | `GET /api/v1/workouts`, `GET/PUT/PATCH/DELETE /api/v1/workouts/{id}` | Workouts with exercises | 09 |
 | `PUT /api/v1/sessions/{id}`, `PATCH`, `GET` list/detail | Sessions | 10 |

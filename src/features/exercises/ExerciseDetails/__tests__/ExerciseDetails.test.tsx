@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getExerciseMock } from '@/test/mocks';
 import { render } from '@/test/render';
 import { CATALOG_QUERY_STORAGE_KEY } from '../../constants';
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
+const frame = (n: number) => ({
+  id: `00000000-0000-4000-8000-00000000000${n}`,
+  thumbUrl: `data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=#${n}-t`,
+  fullUrl: `data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=#${n}-f`,
+});
 import { ExerciseDetails } from '../ExerciseDetails';
 
 function mockReducedMotion(reduce: boolean) {
@@ -122,18 +130,20 @@ describe('ExerciseDetails', () => {
     const screen = await render(
       <ExerciseDetails
         exercise={getExerciseMock({
-          frames: [{ thumbUrl: '/missing-0-thumb.webp', fullUrl: '/missing-0-full.webp' }],
+          frames: [
+            { id: null, thumbUrl: '/missing-0-thumb.webp', fullUrl: '/missing-0-full.webp' },
+          ],
         })}
       />,
     );
     // The failed <img> is swapped for the name tile, which carries the same accessible name.
     await vi.waitFor(() =>
-      expect(
-        screen.getByRole('img', { name: 'Bench Press, Start position' }).element().tagName,
-      ).toBe('SPAN'),
+      expect(screen.getByRole('img', { name: 'Bench Press', exact: true }).element().tagName).toBe(
+        'SPAN',
+      ),
     );
     await expect
-      .element(screen.getByRole('img', { name: 'Bench Press, Start position' }))
+      .element(screen.getByRole('img', { name: 'Bench Press', exact: true }))
       .toHaveTextContent('Bench Press');
   });
 
@@ -145,5 +155,55 @@ describe('ExerciseDetails', () => {
     await expect
       .element(screen.getByRole('link', { name: 'Exercises' }))
       .toHaveAttribute('href', '/library/exercises?muscle=chest');
+  });
+
+  it('offers only Duplicate on a system exercise and Edit and Delete on an own one (AC3)', async () => {
+    mockReducedMotion(false);
+    const screen = await render(<ExerciseDetails exercise={getExerciseMock()} />);
+    await expect
+      .element(screen.getByRole('link', { name: 'Duplicate as my own' }))
+      .toHaveAttribute('href', `/library/exercises/new?from=${getExerciseMock().id}`);
+    expect(screen.getByRole('link', { name: 'Edit' }).elements()).toHaveLength(0);
+    expect(screen.getByRole('button', { name: 'Delete' }).elements()).toHaveLength(0);
+  });
+
+  it('shows Edit and Delete for an own exercise and confirms before deleting (AC6)', async () => {
+    mockReducedMotion(false);
+    const screen = await render(<ExerciseDetails exercise={getExerciseMock({ isOwn: true })} />);
+
+    await expect.element(screen.getByRole('link', { name: 'Edit' })).toBeVisible();
+    await screen.getByRole('button', { name: 'Delete' }).click();
+    await expect
+      .element(screen.getByRole('heading', { name: 'Delete this exercise?' }))
+      .toBeVisible();
+  });
+
+  it('disables changes offline with a hint (AC11)', async () => {
+    mockReducedMotion(false);
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    const screen = await render(<ExerciseDetails exercise={getExerciseMock({ isOwn: true })} />);
+
+    await expect.element(screen.getByRole('button', { name: 'Edit' })).toBeDisabled();
+    await expect.element(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+    await expect.element(screen.getByText('Needs internet')).toBeVisible();
+  });
+
+  it('cycles three frames in order and steps through them with reduced motion (AC5)', async () => {
+    mockReducedMotion(false);
+    const frames = [frame(1), frame(2), frame(3)];
+    const screen = await render(<ExerciseDetails exercise={getExerciseMock({ frames })} />);
+    await expect
+      .element(screen.getByRole('img', { name: 'Bench Press, frame 1 of 3' }))
+      .toBeInTheDocument();
+
+    vi.useFakeTimers();
+    await vi.advanceTimersByTimeAsync(1000);
+    await expect
+      .element(screen.getByRole('img', { name: 'Bench Press, frame 2 of 3' }))
+      .toBeInTheDocument();
+    await vi.advanceTimersByTimeAsync(2000);
+    await expect
+      .element(screen.getByRole('img', { name: 'Bench Press, frame 1 of 3' }))
+      .toBeInTheDocument();
   });
 });

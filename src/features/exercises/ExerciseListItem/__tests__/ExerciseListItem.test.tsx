@@ -17,7 +17,11 @@ function mockReducedMotion(reduce: boolean) {
 
 // Real image data, so the <img> loads instead of falling back to the name tile.
 const PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=';
-const frame = (n: number) => ({ thumbUrl: `${PIXEL}#${n}-thumb`, fullUrl: `${PIXEL}#${n}-full` });
+const frame = (n: number) => ({
+  id: null,
+  thumbUrl: `${PIXEL}#${n}-thumb`,
+  fullUrl: `${PIXEL}#${n}-full`,
+});
 const item = () =>
   getExerciseListItemMock({
     thumbnailUrl: frame(0).thumbUrl,
@@ -57,5 +61,32 @@ describe('ExerciseListItem', () => {
     await expect
       .element(screen.getByRole('presentation'))
       .toHaveAttribute('src', frame(0).thumbUrl);
+  });
+
+  it('shows the Mine badge on own exercises', async () => {
+    mockReducedMotion(false);
+    const screen = await render(<ExerciseListItem item={{ ...item(), isOwn: true }} />);
+    await expect.element(screen.getByText('Mine', { exact: true })).toBeVisible();
+  });
+
+  it('shows no badge on system exercises', async () => {
+    mockReducedMotion(false);
+    const screen = await render(<ExerciseListItem item={item()} />);
+    await expect.element(screen.getByRole('link')).toBeVisible();
+    expect(screen.getByText('Mine', { exact: true }).elements()).toHaveLength(0);
+  });
+
+  it('cycles every frame on hover, not just two', async () => {
+    mockReducedMotion(false);
+    const screen = await render(
+      <ExerciseListItem item={{ ...item(), frames: [frame(0), frame(1), frame(2)] }} />,
+    );
+    const image = screen.getByRole('presentation');
+    await expect.element(image).toHaveAttribute('src', frame(0).thumbUrl);
+
+    vi.useFakeTimers();
+    await screen.getByRole('link').hover();
+    await vi.advanceTimersByTimeAsync(2000);
+    await expect.element(image).toHaveAttribute('src', frame(2).thumbUrl);
   });
 });

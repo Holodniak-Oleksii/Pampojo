@@ -1,6 +1,6 @@
 'use client';
 
-import { SearchX } from 'lucide-react';
+import { Dumbbell, Plus, SearchX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NETWORK_ERROR } from '@/api/http';
@@ -14,7 +14,8 @@ import { SEARCH_DEBOUNCE_MS } from '../constants';
 import { EquipmentFilter } from '../EquipmentFilter';
 import { ExerciseCatalogSkeleton } from '../ExerciseCatalogSkeleton';
 import { ExerciseListItem } from '../ExerciseListItem';
-import { MuscleChips } from '../MuscleChips';
+import { chipClass, MuscleChips } from '../MuscleChips';
+import { OnlineLinkButton } from '../OnlineLinkButton';
 import { useCatalogParams } from '../hooks/useCatalogParams';
 import { useExerciseLabels } from '../hooks/useExerciseLabels';
 import type { ExerciseListItem as Item } from '@/shared/schemas/exercise';
@@ -52,7 +53,7 @@ function groupBySection(items: Item[], bySection: boolean): Group[] {
 export function ExerciseCatalog() {
   const { t } = useTranslation();
   const labels = useExerciseLabels();
-  const { filters, setQuery, toggleMuscle, setEquipment, clear } = useCatalogParams();
+  const { filters, setQuery, toggleMuscle, toggleMine, setEquipment, clear } = useCatalogParams();
   const query = useExercisesInfiniteQuery(filters);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError } = query;
 
@@ -87,7 +88,14 @@ export function ExerciseCatalog() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
 
   const items = data?.pages.flatMap((page) => page.items) ?? [];
-  const hasFilters = filters.q !== '' || filters.muscles.length > 0 || filters.equipment.length > 0;
+  const narrowed = filters.q !== '' || filters.muscles.length > 0 || filters.equipment.length > 0;
+  const hasFilters = narrowed || filters.mine;
+  const createButton = (
+    <OnlineLinkButton href="/library/exercises/new" size="sm">
+      <Plus aria-hidden="true" />
+      {t('Create exercise')}
+    </OnlineLinkButton>
+  );
   // Offline, TanStack Query pauses the request; a fetch that fails on the way is a network error.
   const offline = query.fetchStatus === 'paused' || isNetworkError(query.error);
   const offlineNotice = (
@@ -108,6 +116,21 @@ export function ExerciseCatalog() {
         );
       }
       return <ExerciseCatalogSkeleton />;
+    }
+
+    if (items.length === 0 && filters.mine && !narrowed) {
+      return (
+        <EmptyState
+          icon={Dumbbell}
+          title={t('No exercises of your own yet')}
+          description={t('Create one for anything the catalog misses.')}
+          action={
+            <OnlineLinkButton href="/library/exercises/new">
+              {t('Create exercise')}
+            </OnlineLinkButton>
+          }
+        />
+      );
     }
 
     if (items.length === 0) {
@@ -169,6 +192,7 @@ export function ExerciseCatalog() {
         // Capped and scrollable on desktop: a sticky column taller than the viewport would hide its end.
         className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100dvh-6rem)] lg:gap-5 lg:overflow-y-auto lg:p-1"
       >
+        <div className="hidden lg:block">{createButton}</div>
         <Input
           type="search"
           value={draft}
@@ -178,9 +202,23 @@ export function ExerciseCatalog() {
           aria-label={t('Search exercises')}
           onChange={(event) => setDraft(event.target.value)}
         />
-        <MuscleChips selected={filters.muscles} onToggle={toggleMuscle} />
-        <div className="lg:hidden">
+        <MuscleChips
+          selected={filters.muscles}
+          onToggle={toggleMuscle}
+          before={
+            <button
+              type="button"
+              aria-pressed={filters.mine}
+              onClick={toggleMine}
+              className={chipClass(filters.mine)}
+            >
+              {t('Mine')}
+            </button>
+          }
+        />
+        <div className="flex flex-wrap items-start gap-3 lg:hidden">
           <EquipmentFilter variant="menu" selected={filters.equipment} onChange={setEquipment} />
+          {createButton}
         </div>
         <div className="hidden lg:block">
           <EquipmentFilter variant="list" selected={filters.equipment} onChange={setEquipment} />

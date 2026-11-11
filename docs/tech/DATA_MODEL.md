@@ -47,7 +47,7 @@ Current weight comes from the latest `body_measurement` of type `weight`. The la
 | trackingType | text | `weight_reps`, `reps`, `time`, `distance` |
 | difficulty | smallint | 1–3 |
 | popularity | smallint null | 1–100, system rows only; orders the catalog (spec 06) |
-| media | jsonb | Start and end frames, each in two sizes → Storage paths (shape set in scratch 06) |
+| media | jsonb | `{ frames: [{ id?, thumb, full }] }`, Storage keys of each frame in two sizes. System: 2 frames in the public bucket `exercise-media`. Own (spec 07): up to 4 frames with an `id`, in the private bucket `exercise-user-media` |
 | sourceExerciseId | uuid null | Set when copied through import |
 | createdAt, updatedAt, deletedAt | | |
 
@@ -68,7 +68,7 @@ Text lives in `exercise_translation`, so the catalog is in English and Ukrainian
 | searchAliases | text | Normalized aliases joined by a newline |
 | createdAt, updatedAt | timestamptz | |
 
-System exercises have both locales. When the request locale is missing, the other one is used; own exercises (spec 07) have one row, shown in every locale.
+System exercises have both locales. When the request locale is missing, the other one is used; own exercises (spec 07) have one row, in the UI locale at creation, shown in every locale. An own exercise's name is unique per owner after `normalizeSearch` (checked in the service).
 
 ## gym_profile
 

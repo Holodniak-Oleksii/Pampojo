@@ -1,11 +1,14 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Copy, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Exercise } from '@/shared/schemas/exercise';
+import { useIsOnline } from '@/hooks/useIsOnline';
+import { DeleteExerciseDialog } from '../DeleteExerciseDialog';
 import { ExerciseFrames } from '../ExerciseFrames';
+import { OnlineLinkButton } from '../OnlineLinkButton';
 import { useCatalogBackHref } from '../hooks/useCatalogBackHref';
 import { useExerciseLabels } from '../hooks/useExerciseLabels';
 
@@ -26,6 +29,7 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
   const { t } = useTranslation();
   const labels = useExerciseLabels();
   const backHref = useCatalogBackHref();
+  const online = useIsOnline();
   const join = <T extends string>(values: T[], map: Record<T, string>) =>
     values.map((value) => map[value]).join(', ');
 
@@ -39,6 +43,22 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
         {t('Exercises')}
       </Link>
       <h1 className="text-3xl font-extrabold md:text-4xl">{exercise.name}</h1>
+      <div className="flex flex-wrap items-start gap-3">
+        {exercise.isOwn ? (
+          <>
+            <OnlineLinkButton href={`/library/exercises/${exercise.id}/edit`} variant="secondary">
+              <Pencil aria-hidden="true" />
+              {t('Edit')}
+            </OnlineLinkButton>
+            <DeleteExerciseDialog exerciseId={exercise.id} disabled={!online} />
+          </>
+        ) : (
+          <OnlineLinkButton href={`/library/exercises/new?from=${exercise.id}`} variant="secondary">
+            <Copy aria-hidden="true" />
+            {t('Duplicate as my own')}
+          </OnlineLinkButton>
+        )}
+      </div>
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
         <div className="lg:sticky lg:top-20">
           <ExerciseFrames name={exercise.name} frames={exercise.frames} />
@@ -81,7 +101,9 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
                 <Row term={t('Movement')}>{labels.pattern[exercise.movementPattern]}</Row>
               ) : null}
               {exercise.mechanic ? (
-                <Row term={t('Type')}>{labels.mechanic[exercise.mechanic]}</Row>
+                <Row term={t('Type', { context: 'mechanic' })}>
+                  {labels.mechanic[exercise.mechanic]}
+                </Row>
               ) : null}
               {exercise.laterality ? (
                 <Row term={t('Sides')}>{labels.laterality[exercise.laterality]}</Row>

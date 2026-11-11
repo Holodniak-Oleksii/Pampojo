@@ -27,7 +27,7 @@ import type {
   ListExercisesQuery,
 } from '@/shared/schemas/exercise';
 import { EXERCISE_ERROR } from './errors';
-import { firstFrame, toFrames } from './media';
+import { resolveFrames } from './media';
 import { findExerciseRow, listExerciseRows, type Executor } from './queries';
 
 const cursorSchema = z.object({ o: z.number().int().min(0).max(100_000) }).strict();
@@ -76,17 +76,21 @@ export async function listExercises(
     muscles: query.muscle,
     equipment: query.equipment,
     pattern: query.pattern ?? null,
+    mine: query.mine === '1',
     offset,
     limit: query.limit,
   });
 
-  const items: ExerciseListItem[] = rows.slice(0, query.limit).map((row) => ({
+  const page = rows.slice(0, query.limit);
+  const frames = await resolveFrames(page);
+  const items: ExerciseListItem[] = page.map((row, index) => ({
     id: row.id,
     name: row.name,
     primaryMuscles: only<MuscleGroup>(MUSCLE_GROUPS, row.primary_muscles),
     equipment: only<Equipment>(EQUIPMENT_LIST, row.equipment),
-    ...firstFrame(row.media),
-    frames: toFrames(row.media),
+    thumbnailUrl: frames[index]?.[0]?.thumbUrl ?? null,
+    imageUrl: frames[index]?.[0]?.fullUrl ?? null,
+    frames: frames[index] ?? [],
     section: orNull<MuscleGroup>(MUSCLE_GROUPS, row.section),
     isOwn: row.owner_id === userId,
   }));
@@ -121,13 +125,19 @@ export async function findExercise(
     laterality: orNull<Laterality>(Object.values(LATERALITY), row.laterality),
     trackingType,
     difficulty: orNull<Difficulty>(DIFFICULTIES, row.difficulty),
-    frames: toFrames(row.media),
+    frames: (await resolveFrames([row]))[0] ?? [],
     isOwn: row.owner_id === userId,
+    sourceExerciseId: row.source_exercise_id,
   };
 }
 
-export async function getExercise(userId: string, locale: Locale, id: string): Promise<Exercise> {
-  const exercise = await findExercise(userId, locale, id);
+export async function getExercise(
+  userId: string,
+  locale: Locale,
+  id: string,
+  db: Executor = getDb(),
+): Promise<Exercise> {
+  const exercise = await findExercise(userId, locale, id, db);
   if (!exercise) throw new DomainError(EXERCISE_ERROR.NOT_FOUND, 'Exercise not found');
   return exercise;
 }
