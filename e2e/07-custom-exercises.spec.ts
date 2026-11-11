@@ -64,6 +64,8 @@ test.describe('custom exercises', () => {
     page,
   }) => {
     test.skip(!STORAGE_READY, STORAGE_SKIP);
+    // Two uploads, an edit and a delete against real Storage take longer than 30s on CI runners.
+    test.slow();
     await signUp(page);
     await page.goto('/library/exercises');
     await page.getByRole('link', { name: 'Create exercise' }).first().click();

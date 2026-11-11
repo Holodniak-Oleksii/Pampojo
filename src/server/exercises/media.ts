@@ -1,4 +1,5 @@
 import 'server-only';
+import { unstable_rethrow } from 'next/navigation';
 import {
   EXERCISE_MEDIA_BUCKET,
   EXERCISE_USER_MEDIA_BUCKET,
@@ -37,6 +38,8 @@ export async function resolveFrames(rows: readonly MediaRow[]): Promise<Exercise
     ownKeys.length > 0 && isStorageConfigured()
       ? await signUrls(EXERCISE_USER_MEDIA_BUCKET, ownKeys, SIGNED_URL_TTL_SECONDS).catch(
           (error: unknown) => {
+            // A prerender that ends early rejects its fetches; Next must see that error, not a log line.
+            unstable_rethrow(error);
             console.error('[storage] signing failed', error);
             return new Map<string, string>();
           },
