@@ -13,4 +13,4 @@ export {
 } from './form';
 export { ProfileSkeleton } from './ProfileSkeleton';
 export { ProfileView, type ProfileViewProps } from './ProfileView';
-export { scrollToFirstError } from './scrollToFirstError';
+export { scrollToFirstError } from '@/lib/scroll-to-first-error';

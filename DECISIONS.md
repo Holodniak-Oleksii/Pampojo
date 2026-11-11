@@ -428,6 +428,54 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** Hover or keyboard focus on a card alternates its frames every second; leaving resets to the start frame; reduced motion disables it. List items in `GET /api/v1/exercises` gain an additive `frames` array (same shape as details).
 **Why:** Lead's request; an additive field does not break clients.
 
+## 2026-11-11 — Deleting own exercises
+
+**Context:** Spec 07 open question; workouts (09) and sessions (10) will reference own exercises.
+**Decision:** Delete asks for confirmation, listing the workouts and history sessions that use the exercise with links; after confirming it is removed everywhere, including history. The exercise row is soft deleted for sync; 09 and 10 add the lists and the removal.
+**Why:** Lead's choice: a deleted exercise should not linger anywhere.
+
+## 2026-11-11 — Own exercise photos
+
+**Context:** Spec 07 photo upload; catalog exercises have 2 animated frames.
+**Decision:** Up to 4 frames (2 slots by default), reorderable, cycling in order every second; JPEG/PNG/WebP, original at most 5 MB; the browser scales to 1600px before upload; the server stores WebP 160/800px in the private bucket `exercise-user-media` and returns 1-hour signed URLs.
+**Why:** Lead's choice; the browser step keeps requests under Vercel's 4.5 MB body limit.
+
+## 2026-11-11 — Server Storage key
+
+**Context:** Spec 07 uploads run on the server; "Storage env" kept the secret key local only.
+**Decision:** A dedicated Supabase secret key (`SUPABASE_SERVICE_ROLE_KEY`) is set as a secret in Vercel (Production, Preview) and GitHub Actions, read only under `src/server`. Supersedes the "never in Vercel" part of "Storage env".
+**Why:** The server must write user photos; a separate key can be revoked on its own.
+
+## 2026-11-11 — Own exercises in the catalog
+
+**Context:** Spec 07 catalog integration.
+**Decision:** Own exercises sort together with system ones (no popularity, so after them in a section) with a "Mine" badge; a "Mine" chip first in the row filters to own ones (`?mine=1`, AND with other filters).
+**Why:** Lead's choice.
+
+## 2026-11-11 — Own exercise rules
+
+**Context:** Spec 07 limits and form.
+**Decision:** The form is a full page (`/library/exercises/new`, `/[id]/edit`). Names are unique per user ignoring case and diacritics (409); at most 300 own exercises; text is kept in one language; system exercises are read-only (403); offline, all changes are disabled with "Needs internet".
+**Why:** Lead confirmed the proposed defaults.
+
+## 2026-11-11 — sharp at runtime
+
+**Context:** Scratch 07; the server converts user photos during the upload request.
+**Decision:** `sharp` moves from devDependencies to dependencies.
+**Why:** Same library as the seed; Vercel's Node runtime needs it installed.
+
+## 2026-11-11 — Discard-changes prompt
+
+**Context:** Scratch 07 AC13; the App Router cannot intercept browser Back or shell navigation.
+**Decision:** The "Discard changes?" dialog appears on the form's Cancel button and its back link; reload or tab close uses the browser's `beforeunload` prompt. Browser Back and shell navigation leave without asking.
+**Why:** Lead's choice; no shell changes.
+
+## 2026-11-11 — Exercise form polish
+
+**Context:** Spec 07 review; the lead walked the form.
+**Decision:** Steps and photo frames reorder by dragging a six-dot handle (press and hold ~200ms; arrow keys on a focused handle); no up/down buttons. Common mistakes are one text field, one mistake per line (stored as the same list, up to 5). A new frame is inserted between the start and the end slot. Selects use an inset chevron; confirm dialogs stack or share the width so long labels fit.
+**Why:** Lead's feedback; no new dependency, the drag hook is our own.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

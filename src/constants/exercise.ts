@@ -93,3 +93,16 @@ export const EXERCISE_PAGE_SIZE = 30;
 export const LIST_LIMIT = { default: 50, max: 200 } as const;
 
 export const EXERCISE_MEDIA_BUCKET = 'exercise-media';
+
+export const OWN_EXERCISE_LIMIT = 300;
+export const FRAME_LIMIT = 4;
+export const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+/** The browser scales photos down to this long side before upload. */
+export const IMAGE_UPLOAD_MAX_SIDE = 1600;
+export const DESCRIPTION_MAX = 500;
+export const STEP_MAX = 200;
+export const STEPS_MAX_COUNT = 10;
+export const MISTAKES_MAX_COUNT = 5;
+export const EXERCISE_USER_MEDIA_BUCKET = 'exercise-user-media';
+export const SIGNED_URL_TTL_SECONDS = 3600;

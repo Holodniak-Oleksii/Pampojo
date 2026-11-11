@@ -73,4 +73,21 @@ describe('http', () => {
     await expect(http('/x')).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it('sends FormData as is, without a JSON content type', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { ok: true }));
+    const form = new FormData();
+    form.set('file', new Blob(['x']), 'photo');
+
+    await http('/api/v1/exercises/a/frames/b', { method: 'PUT', body: form });
+
+    const init = fetchMock.mock.calls[0]?.[1];
+    expect(init?.body).toBe(form);
+    expect(init?.headers).not.toHaveProperty('content-type');
+  });
+
+  it('returns undefined for 204 No Content', async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+    await expect(http('/api/v1/exercises/a', { method: 'DELETE' })).resolves.toBeUndefined();
+  });
 });

@@ -1,1 +1,1 @@
-export { MuscleChips, type MuscleChipsProps } from './MuscleChips';
+export { chipClass, MuscleChips, type MuscleChipsProps } from './MuscleChips';

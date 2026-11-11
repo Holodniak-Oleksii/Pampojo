@@ -230,4 +230,55 @@ describe('ExerciseCatalog', () => {
 
     await expect.element(screen.getByRole('link', { name: /Scrolled In/ })).toBeVisible();
   });
+
+  it('toggles the Mine chip into the URL and the API request (AC1)', async () => {
+    withUrl('mine=1');
+    respond(() => page([item(1, { isOwn: true })]));
+    const screen = await render(<ExerciseCatalog />);
+
+    await expect
+      .element(screen.getByRole('button', { name: 'Mine', exact: true }))
+      .toHaveAttribute('aria-pressed', 'true');
+    expect(requestedUrls()[0]?.searchParams.get('mine')).toBe('1');
+
+    await screen.getByRole('button', { name: 'Mine', exact: true }).click();
+    expect(replace).toHaveBeenLastCalledWith(null, '', '/library/exercises');
+  });
+
+  it('shows the Mine empty state with a create link', async () => {
+    withUrl('mine=1');
+    respond(() => page([]));
+    const screen = await render(<ExerciseCatalog />);
+
+    await expect
+      .element(screen.getByRole('heading', { name: 'No exercises of your own yet' }))
+      .toBeVisible();
+    await expect
+      .element(screen.getByRole('link', { name: 'Create exercise' }).last())
+      .toHaveAttribute('href', '/library/exercises/new');
+  });
+
+  it('disables Create exercise offline (AC11)', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    respond(() => page([item(1)]));
+    const screen = await render(<ExerciseCatalog />);
+
+    await expect
+      .element(screen.getByRole('button', { name: 'Create exercise' }).first())
+      .toBeDisabled();
+    expect(screen.getByRole('link', { name: 'Create exercise' }).elements()).toHaveLength(0);
+  });
+
+  it('keeps the Mine chip outside the Muscles group', async () => {
+    respond(() => page([item(1)]));
+    const screen = await render(<ExerciseCatalog />);
+
+    await expect.element(screen.getByRole('button', { name: 'Mine', exact: true })).toBeVisible();
+    expect(
+      screen
+        .getByRole('group', { name: 'Muscles' })
+        .getByRole('button', { name: 'Mine', exact: true })
+        .elements(),
+    ).toHaveLength(0);
+  });
 });

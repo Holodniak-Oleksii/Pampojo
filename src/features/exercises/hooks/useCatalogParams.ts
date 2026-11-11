@@ -17,6 +17,7 @@ function toSearch(filters: CatalogFilters): string {
   if (filters.q) params.set('q', filters.q);
   for (const muscle of filters.muscles) params.append('muscle', muscle);
   for (const item of filters.equipment) params.append('equipment', item);
+  if (filters.mine) params.set('mine', '1');
   const search = params.toString();
   return search ? `?${search}` : '';
 }
@@ -35,6 +36,7 @@ export function useCatalogParams() {
       // Constant order, unknown values dropped, so the query key stays stable.
       muscles: MUSCLE_GROUPS.filter((muscle) => muscles.has(muscle)),
       equipment: EQUIPMENT_LIST.filter((item) => equipment.has(item)),
+      mine: current.get('mine') === '1',
     };
   }, [search]);
 
@@ -69,6 +71,10 @@ export function useCatalogParams() {
       (equipment: Equipment[]) => replace({ ...filters, equipment }),
       [filters, replace],
     ),
-    clear: useCallback(() => replace({ q: '', muscles: [], equipment: [] }), [replace]),
+    toggleMine: useCallback(() => replace({ ...filters, mine: !filters.mine }), [filters, replace]),
+    clear: useCallback(
+      () => replace({ q: '', muscles: [], equipment: [], mine: false }),
+      [replace],
+    ),
   };
 }

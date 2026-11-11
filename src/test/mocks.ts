@@ -54,10 +54,12 @@ export function getExerciseListItemMock(
       imageUrl: 'https://example.com/bench-0-full.webp',
       frames: [
         {
+          id: null,
           thumbUrl: 'https://example.com/bench-0-thumb.webp',
           fullUrl: 'https://example.com/bench-0-full.webp',
         },
         {
+          id: null,
           thumbUrl: 'https://example.com/bench-1-thumb.webp',
           fullUrl: 'https://example.com/bench-1-full.webp',
         },
@@ -88,15 +90,18 @@ export function getExerciseMock(override?: DeepPartial<Exercise>): Exercise {
       difficulty: 2,
       frames: [
         {
+          id: null,
           thumbUrl: 'https://example.com/0-thumb.webp',
           fullUrl: 'https://example.com/0-full.webp',
         },
         {
+          id: null,
           thumbUrl: 'https://example.com/1-thumb.webp',
           fullUrl: 'https://example.com/1-full.webp',
         },
       ],
       isOwn: false,
+      sourceExerciseId: null,
     },
     override,
   );
