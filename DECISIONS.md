@@ -506,9 +506,72 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** The spec 07 form gets an optional "Gym equipment needed" chip picker, where ticked items are all required. Empty, including older own exercises, means always available. Duplicate keeps the system alternatives.
 **Why:** Lead's choice; deriving requirements from the coarse `machine` value is impossible.
 
+## 2026-11-13 — Visual language refresh
+
+**Context:** The spec 01 look (cream, peach, soft pill cards, icon bubbles) read as generated. Directions were compared on a Design canvas.
+**Decision:**
+- Character comes from content and hierarchy, with the diamond as the brand sign.
+- "Warm stone" palette, sharp corners (cards 6px, controls 4px), lists instead of stacked cards.
+- A hexagonal bottom nav with a cut-out Play diamond.
+- Manrope stays. No display numerals.
+- Full rules and tokens are in `docs/tech/VISUAL_LANGUAGE.md`; it supersedes the spec 01 palette and shape rules.
+**Why:** The lead rejected "Training floor" (bright accent, big condensed numbers) and picked the warm, sharp variant, the "Warm stone" palette and Manrope from side-by-side mockups.
+
+## 2026-11-13 — Muscle family colours
+
+**Context:** Visual refresh D3; statuses and muscles were all shades of peach.
+**Decision:** 17 muscle groups fold into 6 families, each with a muted colour. The colour always sits next to its label: in filter chips, section headings and charts, never in exercise rows. Day and set statuses differ by diamond shape (fill or outline).
+**Why:** The lead chose muted muscle colours over shape-only.
+
+## 2026-11-13 — Custom icons and motion
+
+**Context:** Visual refresh D8 and D11.
+**Decision:**
+- Lucide plus five custom diamond icons: workout, set done, record, rest, my gym. No icons on tinted circles.
+- Motion only answers an action: press 120ms, sheet 240ms, and one signature "click" when a set is done. Everything is off under reduced motion.
+**Why:** The lead approved the icon set and the motion demo.
+
+## 2026-11-13 — Offline presentation and dark session
+
+**Context:** Visual refresh D10 and D15.
+**Decision:**
+- Offline shows a dark status pill with a pending count. It opens a sync sheet, and a quiet strip explains that training works.
+- The active session screen (spec 10) follows the system dark theme; the rest of the app stays light.
+**Why:** Offline is the product's core promise and must be visible without alarming. Gyms are often dark.
+
+## 2026-11-13 — Copy rules
+
+**Context:** Visual refresh D14.
+**Decision:**
+- Ukrainian uses «підходи» for sets.
+- No bullet or middle-dot separators in meta lines.
+- The landing CTA is «Записуй наступне тренування тут»; the footer and OG tagline is «Журнал тренувань, який працює без мережі».
+- The details "Gym equipment" row lists one requirement per line; this changes spec 08.
+- Draft strings from the mockups are confirmed in the specs that own their screens.
+**Why:** The lead's choices; template slogans and separators read as generated.
+
+## 2026-11-13 — Design step in the workflow
+
+**Context:** The lead wants every feature's screens designed before planning.
+**Decision:** The new step 2 is `/design <spec>`, between `/drill` and `/scratch`.
+- It uses the `frontend-design` skill inside `VISUAL_LANGUAGE.md` and mocks up every screen and state on a Design canvas at 390 and 1440.
+- It writes a `## Design` section into the spec.
+- `/scratch` refuses a spec with UI and no Design section, and `/review` compares the UI against the design.
+**Why:** The lead's request; it catches a generated-looking UI before code exists.
+
+## 2026-11-13 — Visual refresh delivery and brand colour
+
+**Context:** Open questions from the visual language document.
+**Decision:**
+- Spec `28-visual-refresh` ships the refresh. It is numbered 28 because 09–27 are taken, and it sits after 08 in the roadmap.
+- The logo moves to the new accent `#EC8447` and charcoal `#24221F`.
+- Day statuses: done late is an accent outline diamond, missed is a destructive outline diamond.
+**Why:** Lead's answers; one palette for the logo and the UI.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.
+
 
 - Data layer before spec 15: write sessions straight to the server, or build the local Dexie layer from spec 10? (spec 10)
 - Speech-to-text and image generation providers. (specs 20, 24)
