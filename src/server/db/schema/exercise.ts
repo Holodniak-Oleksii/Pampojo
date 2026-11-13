@@ -24,6 +24,7 @@ import {
 } from '@/constants/exercise';
 import { LOCALES } from '@/i18n/config';
 import type { ExerciseMedia } from '@/shared/schemas/exercise';
+import type { GymRequirements } from '@/shared/schemas/gym';
 import { user } from './auth';
 import { inList, subsetOf } from './utils';
 
@@ -46,6 +47,7 @@ export const exercise = pgTable(
     difficulty: smallint('difficulty'),
     popularity: smallint('popularity'),
     media: jsonb('media').$type<ExerciseMedia>().notNull().default({ frames: [] }),
+    gymEquipment: jsonb('gym_equipment').$type<GymRequirements>().notNull().default([]),
     sourceExerciseId: uuid('source_exercise_id').references((): AnyPgColumn => exercise.id, {
       onDelete: 'set null',
     }),
@@ -65,6 +67,8 @@ export const exercise = pgTable(
     check('exercise_secondary_muscles', subsetOf(table.secondaryMuscles, MUSCLE_GROUPS)),
     check('exercise_equipment_present', sql`cardinality(${table.equipment}) >= 1`),
     check('exercise_equipment', subsetOf(table.equipment, EQUIPMENT_LIST)),
+    // Key validity is enforced by Zod at the API and the seed; SQL only guards the shape.
+    check('exercise_gym_equipment_array', sql`jsonb_typeof(${table.gymEquipment}) = 'array'`),
     check(
       'exercise_movement_pattern',
       inList(table.movementPattern, Object.values(MOVEMENT_PATTERN)),

@@ -30,11 +30,11 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | --- | --- | --- |
 | `/api/auth/*` | Better Auth endpoints (sign-up, sign-in, Google, sign-out, session) | 03 |
 | `GET/PUT/PATCH /api/v1/me/profile` | Profile; `PUT` finishes onboarding | 04 |
-| `GET /api/v1/exercises` | Catalog (system + own), filters, search | 06 |
+| `GET /api/v1/exercises` | Catalog (system + own), filters, search; `gym=1` keeps exercises the saved gym allows (ignored without one) | 06, 08 |
 | `GET /api/v1/exercises/{id}` | Exercise details | 06 |
 | `PUT/PATCH/DELETE /api/v1/exercises/{id}` | Custom exercises (`PUT` creates with a client id) | 07 |
 | `PUT/DELETE /api/v1/exercises/{id}/frames/{frameId}` | Upload (multipart) or remove one photo frame of an own exercise | 07 |
-| `GET/PUT /api/v1/me/gym` | Gym equipment | 08 |
+| `GET/PUT /api/v1/me/gym` | Gym equipment `{ equipment, updatedAt }`; `GET` is 404 `GYM_PROFILE_NOT_FOUND` before the first save; `PUT` upserts | 08 |
 | `GET /api/v1/workouts`, `GET/PUT/PATCH/DELETE /api/v1/workouts/{id}` | Workouts with exercises | 09 |
 | `PUT /api/v1/sessions/{id}`, `PATCH`, `GET` list/detail | Sessions | 10 |
 | `PUT/PATCH/DELETE /api/v1/sets/{id}` | Set logs | 10 |

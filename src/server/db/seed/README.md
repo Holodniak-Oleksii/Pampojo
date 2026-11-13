@@ -27,6 +27,12 @@ The lead decided on 2026-11-10 to use the photos anyway (`DECISIONS.md`, "Catalo
 
 Some entries override the dataset where it is wrong or too coarse (for example dips are `bodyweight`, the deadlift lists hamstrings and glutes as primary).
 
+## Gym equipment
+
+`gymEquipment` lists what an exercise needs from `GYM_EQUIPMENT` (`src/constants/gym.ts`), separate from the coarse `equipment` used by the catalog filter. Every group must be met, and any item inside a group meets it: Goblet Squat is `[["dumbbells", "kettlebells"]]`, Push-Up is `[]` (always available).
+
+Tagging rule: the smallest setup a typical gym needs for the exercise as described, with an alternatives group where either item works. A barbell implies plates, so `weight_plates` is tagged only where a plate is the load on its own.
+
 ## Scripts
 
 ```bash

@@ -2,11 +2,20 @@ import { onlineManager } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExerciseListResponse } from '@/shared/schemas/exercise';
-import { getExerciseListItemMock } from '@/test/mocks';
+import { fetchGym } from '@/api/gym';
+import { getExerciseListItemMock, getGymMock } from '@/test/mocks';
 import { render } from '@/test/render';
 import { ExerciseCatalog } from '../ExerciseCatalog';
 
 vi.mock('next/navigation', () => ({ useSearchParams: vi.fn() }));
+vi.mock('@/api/gym', async () => {
+  const { useQuery } = await import('@tanstack/react-query');
+  const fetchGym = vi.fn();
+  return {
+    fetchGym,
+    useGymQuery: () => useQuery({ queryKey: ['gym', 'me'], queryFn: fetchGym }),
+  };
+});
 
 let replace: ReturnType<typeof vi.fn<History['replaceState']>>;
 const fetchMock = vi.fn<typeof fetch>();
@@ -59,6 +68,7 @@ beforeEach(() => {
   withUrl('');
   observerCallback = undefined;
   onlineManager.setOnline(true);
+  vi.mocked(fetchGym).mockResolvedValue(null);
 });
 
 afterEach(() => {
@@ -280,5 +290,61 @@ describe('ExerciseCatalog', () => {
         .getByRole('button', { name: 'Mine', exact: true })
         .elements(),
     ).toHaveLength(0);
+  });
+
+  it('hides the gym chip until a gym is saved', async () => {
+    respond(() => page([item(1)]));
+    const screen = await render(<ExerciseCatalog />);
+
+    await expect.element(screen.getByRole('link', { name: /Exercise 1/ })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Available in my gym' }).elements()).toHaveLength(0);
+  });
+
+  it('shows the gym chip after Mine and puts it into the URL and the API request', async () => {
+    vi.mocked(fetchGym).mockResolvedValue(getGymMock());
+    withUrl('gym=1&mine=1&equipment=dumbbell');
+    respond(() => page([item(1)]));
+    const screen = await render(<ExerciseCatalog />);
+    const chip = screen.getByRole('button', { name: 'Available in my gym' });
+
+    await expect.element(chip).toHaveAttribute('aria-pressed', 'true');
+    const buttons = screen
+      .getByRole('button')
+      .elements()
+      .map((node) => node.textContent);
+    expect(buttons.indexOf('Available in my gym')).toBe(buttons.indexOf('Mine') + 1);
+    const request = requestedUrls()[0];
+    expect(request?.searchParams.get('gym')).toBe('1');
+    expect(request?.searchParams.get('mine')).toBe('1');
+    expect(request?.searchParams.getAll('equipment')).toEqual(['dumbbell']);
+
+    await chip.click();
+    expect(replace).toHaveBeenLastCalledWith(
+      null,
+      '',
+      '/library/exercises?equipment=dumbbell&mine=1',
+    );
+  });
+
+  it('turns the gym chip on from a fresh visit', async () => {
+    vi.mocked(fetchGym).mockResolvedValue(getGymMock());
+    respond(() => page([item(1)]));
+    const screen = await render(<ExerciseCatalog />);
+    const chip = screen.getByRole('button', { name: 'Available in my gym' });
+
+    await expect.element(chip).toHaveAttribute('aria-pressed', 'false');
+    await chip.click();
+    expect(replace).toHaveBeenLastCalledWith(null, '', '/library/exercises?gym=1');
+  });
+
+  it('turns the gym chip off with Clear filters when nothing is left', async () => {
+    vi.mocked(fetchGym).mockResolvedValue(getGymMock());
+    withUrl('gym=1');
+    respond(() => page([]));
+    const screen = await render(<ExerciseCatalog />);
+
+    await expect.element(screen.getByRole('heading', { name: 'No exercises found' })).toBeVisible();
+    await screen.getByRole('button', { name: 'Clear filters' }).click();
+    expect(replace).toHaveBeenLastCalledWith(null, '', '/library/exercises');
   });
 });

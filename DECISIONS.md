@@ -476,6 +476,36 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** Steps and photo frames reorder by dragging a six-dot handle (press and hold ~200ms; arrow keys on a focused handle); no up/down buttons. Common mistakes are one text field, one mistake per line (stored as the same list, up to 5). A new frame is inserted between the start and the end slot. Selects use an inset chevron; confirm dialogs stack or share the width so long labels fit.
 **Why:** Lead's feedback; no new dependency, the drag hook is our own.
 
+## 2026-11-12 — Granular gym equipment
+
+**Context:** Spec 08; exercises had only 9 coarse `EQUIPMENT` values, with no benches, racks or individual machines.
+**Decision:** A separate `GYM_EQUIPMENT` list of 38 items in 5 groups (free weights, benches and racks, machines, cables, other). There is no cardio group, and bodyweight is always available. The coarse `equipment` stays for the catalog filter and badges. The agent tags all seed exercises and the lead reviews the tags.
+**Why:** Lead's choice: precise enough for substitution and AI generation, not just home vs commercial gym.
+
+## 2026-11-12 — Exercise gym requirements
+
+**Context:** Spec 08; some exercises take either of two items (Goblet Squat: dumbbells or kettlebells).
+**Decision:** `exercise.gymEquipment jsonb string[][]`: every group must be met, any item inside a group counts. `[]` means always available. One shared function, `isAvailableInGym`.
+**Why:** A plain AND list would hide exercises from gyms that have only the alternative.
+
+## 2026-11-12 — Gym page saving
+
+**Context:** Spec 08 `/profile/gym`.
+**Decision:** The first visit has every item on and a "Save my gym" button. After that every toggle autosaves: a debounced PUT of the whole list, reverted with a toast on failure. An empty selection is allowed. Each group has one lucide icon on its header; chips are text only.
+**Why:** Lead's choice of autosave and preselection. The one-time button lets a full-gym user save without toggling.
+
+## 2026-11-12 — Gym filter and nudge
+
+**Context:** Spec 08 catalog filter and the "Set up your gym" card.
+**Decision:** The "Available in my gym" chip comes after "Mine" (`?gym=1`, AND). It is off by default and hidden until the gym is saved. The nudge card on Today and Profile cannot be dismissed and disappears after the first save.
+**Why:** Lead's choice; a filter that is on by default would hide exercises without explanation.
+
+## 2026-11-12 — Gym equipment for own exercises
+
+**Context:** Spec 08; the gym filter needs requirements for own exercises too.
+**Decision:** The spec 07 form gets an optional "Gym equipment needed" chip picker, where ticked items are all required. Empty, including older own exercises, means always available. Duplicate keeps the system alternatives.
+**Why:** Lead's choice; deriving requirements from the coarse `machine` value is impossible.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

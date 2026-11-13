@@ -16,6 +16,7 @@ import {
   type MuscleGroup,
   type TrackingType,
 } from '@/constants/exercise';
+import { GYM_EQUIPMENT_KEYS, type GymEquipment } from '@/constants/gym';
 import type { Locale } from '@/i18n/config';
 import { normalizeSearch } from '@/lib/search';
 import { getDb } from '@/server/db/client';
@@ -61,6 +62,12 @@ function orNull<T extends string | number>(values: readonly T[], value: unknown)
   return isOneOf(values, value) ? value : null;
 }
 
+function requirements(groups: readonly string[][]): GymEquipment[][] {
+  return groups
+    .map((group) => only<GymEquipment>(GYM_EQUIPMENT_KEYS, group))
+    .filter((group) => group.length > 0);
+}
+
 export async function listExercises(
   userId: string,
   locale: Locale,
@@ -77,6 +84,7 @@ export async function listExercises(
     equipment: query.equipment,
     pattern: query.pattern ?? null,
     mine: query.mine === '1',
+    gym: query.gym === '1',
     offset,
     limit: query.limit,
   });
@@ -93,6 +101,7 @@ export async function listExercises(
     frames: frames[index] ?? [],
     section: orNull<MuscleGroup>(MUSCLE_GROUPS, row.section),
     isOwn: row.owner_id === userId,
+    gymEquipment: requirements(row.gym_equipment),
   }));
   return {
     items,
@@ -128,6 +137,7 @@ export async function findExercise(
     frames: (await resolveFrames([row]))[0] ?? [],
     isOwn: row.owner_id === userId,
     sourceExerciseId: row.source_exercise_id,
+    gymEquipment: requirements(row.gym_equipment),
   };
 }
 

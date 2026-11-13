@@ -1,4 +1,5 @@
 import type { Exercise, ExerciseListItem } from '@/shared/schemas/exercise';
+import type { Gym } from '@/shared/schemas/gym';
 import type { Profile } from '@/shared/schemas/profile';
 import type { DeepPartial } from '@/types/utils';
 
@@ -66,6 +67,7 @@ export function getExerciseListItemMock(
       ],
       section: 'chest',
       isOwn: false,
+      gymEquipment: [['barbell'], ['flat_bench'], ['squat_rack']],
     },
     override,
   );
@@ -102,7 +104,15 @@ export function getExerciseMock(override?: DeepPartial<Exercise>): Exercise {
       ],
       isOwn: false,
       sourceExerciseId: null,
+      gymEquipment: [['barbell'], ['flat_bench'], ['squat_rack']],
     },
+    override,
+  );
+}
+
+export function getGymMock(override?: DeepPartial<Gym>): Gym {
+  return mergeMock<Gym>(
+    { equipment: ['dumbbells', 'flat_bench'], updatedAt: '2026-11-12T10:00:00Z' },
     override,
   );
 }

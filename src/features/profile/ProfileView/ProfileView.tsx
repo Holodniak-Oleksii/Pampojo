@@ -8,17 +8,21 @@ import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { UNIT_SYSTEM } from '@/constants/profile';
 import { LogOutButton } from '@/features/auth/LogOutButton';
+import { GymNudgeCard } from '@/features/gym/GymNudgeCard';
+import { GymProfileRow } from '@/features/gym/GymProfileRow';
 import { LanguageSwitcher } from '@/features/i18n/LanguageSwitcher';
 import { useFormat } from '@/i18n/client';
 import { feetInchesFromCm, formatFeetInches, lbFromKg } from '@/lib/units';
+import type { Gym } from '@/shared/schemas/gym';
 import type { Profile } from '@/shared/schemas/profile';
 import { EditProfileSheet } from '../EditProfileSheet';
 
 export interface ProfileViewProps {
   initialProfile: Profile;
+  initialGym: Gym | null;
 }
 
-export function ProfileView({ initialProfile }: ProfileViewProps) {
+export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
   const { t } = useTranslation();
   const format = useFormat();
   const { data } = useProfileQuery({ initialData: initialProfile });
@@ -49,6 +53,7 @@ export function ProfileView({ initialProfile }: ProfileViewProps) {
         <EmojiAvatar emoji={profile.avatarEmoji} color={profile.avatarColor} size="lg" />
         <p className="min-w-0 text-2xl font-extrabold break-words">{profile.displayName}</p>
       </div>
+      <GymNudgeCard initialGym={initialGym} />
       {/* One column on mobile; from lg the rows and the language row share a two-column grid. */}
       <div className="grid gap-3 lg:grid-cols-2">
         <dl className="flex flex-col gap-3 lg:contents">
@@ -62,6 +67,7 @@ export function ProfileView({ initialProfile }: ProfileViewProps) {
             </div>
           ))}
         </dl>
+        <GymProfileRow initialGym={initialGym} />
         <div className="flex items-center justify-between gap-4 rounded-[20px] bg-card px-5 py-3 shadow-soft">
           <span className="text-muted-foreground">{t('Language')}</span>
           <LanguageSwitcher />

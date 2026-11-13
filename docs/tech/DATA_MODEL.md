@@ -48,6 +48,7 @@ Current weight comes from the latest `body_measurement` of type `weight`. The la
 | difficulty | smallint | 1–3 |
 | popularity | smallint null | 1–100, system rows only; orders the catalog (spec 06) |
 | media | jsonb | `{ frames: [{ id?, thumb, full }] }`, Storage keys of each frame in two sizes. System: 2 frames in the public bucket `exercise-media`. Own (spec 07): up to 4 frames with an `id`, in the private bucket `exercise-user-media` |
+| gymEquipment | jsonb | `string[][]` of `GYM_EQUIPMENT` keys (spec 08): every group must be met, any item inside a group meets it; `[]` = always available. Rule: `isAvailableInGym` in `src/shared/gym.ts` |
 | sourceExerciseId | uuid null | Set when copied through import |
 | createdAt, updatedAt, deletedAt | | |
 
@@ -72,7 +73,13 @@ System exercises have both locales. When the request locale is missing, the othe
 
 ## gym_profile
 
-`userId` PK, `equipment text[]`, `updatedAt`. One gym per user in the MVP.
+| Column | Type | Notes |
+| --- | --- | --- |
+| userId | uuid PK → user | |
+| equipment | text[] | `GYM_EQUIPMENT` keys (`src/constants/gym.ts`), unique, in display order |
+| createdAt, updatedAt | timestamptz | |
+
+One gym per user in the MVP. A user without a row has not set up a gym (spec 08).
 
 ## workout
 

@@ -11,9 +11,18 @@ import {
   POPULARITY,
   TRACKING_TYPE,
 } from '../../../constants/exercise.ts';
+import { GYM_EQUIPMENT_KEYS } from '../../../constants/gym.ts';
 
 const nonEmpty = z.string().trim().min(1);
 const muscles = z.array(z.enum(MUSCLE_GROUPS));
+
+/** Every group must be met; any item inside a group meets it. `[]` means always available. */
+const gymRequirements = z.array(
+  z
+    .array(z.enum(GYM_EQUIPMENT_KEYS))
+    .min(1)
+    .refine((group) => new Set(group).size === group.length, { error: 'Repeated item in a group' }),
+);
 
 const translationSchema = z
   .object({
@@ -33,6 +42,7 @@ export const seedExerciseSchema = z
     secondaryMuscles: muscles,
     movementPattern: z.enum(Object.values(MOVEMENT_PATTERN)),
     equipment: z.array(z.enum(EQUIPMENT_LIST)).min(1),
+    gymEquipment: gymRequirements,
     mechanic: z.enum(Object.values(MECHANIC)),
     laterality: z.enum(Object.values(LATERALITY)),
     trackingType: z.enum(Object.values(TRACKING_TYPE)),

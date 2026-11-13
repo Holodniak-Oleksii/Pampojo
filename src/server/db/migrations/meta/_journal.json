@@ -22,6 +22,13 @@
       "when": 1794343462460,
       "tag": "0002_brief_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794581168274,
+      "tag": "0003_typical_nuke",
+      "breakpoints": true
     }
   ]
 }

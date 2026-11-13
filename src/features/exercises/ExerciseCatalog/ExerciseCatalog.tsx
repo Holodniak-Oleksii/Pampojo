@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NETWORK_ERROR } from '@/api/http';
 import { useExercisesInfiniteQuery } from '@/api/exercises';
+import { useGymQuery } from '@/api/gym';
 import { EmptyState } from '@/components/EmptyState';
 import { OfflineNotice } from '@/components/OfflineNotice';
 import { Button } from '@/components/ui/button';
@@ -53,8 +54,11 @@ function groupBySection(items: Item[], bySection: boolean): Group[] {
 export function ExerciseCatalog() {
   const { t } = useTranslation();
   const labels = useExerciseLabels();
-  const { filters, setQuery, toggleMuscle, toggleMine, setEquipment, clear } = useCatalogParams();
+  const { filters, setQuery, toggleMuscle, toggleMine, toggleGym, setEquipment, clear } =
+    useCatalogParams();
   const query = useExercisesInfiniteQuery(filters);
+  // The chip stays hidden until the gym is saved; the API ignores gym=1 without one.
+  const { data: gym } = useGymQuery();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError } = query;
 
   // The input is local so typing stays instant; the URL follows after a short pause.
@@ -89,7 +93,7 @@ export function ExerciseCatalog() {
 
   const items = data?.pages.flatMap((page) => page.items) ?? [];
   const narrowed = filters.q !== '' || filters.muscles.length > 0 || filters.equipment.length > 0;
-  const hasFilters = narrowed || filters.mine;
+  const hasFilters = narrowed || filters.mine || filters.gym;
   const createButton = (
     <OnlineLinkButton href="/library/exercises/new" size="sm">
       <Plus aria-hidden="true" />
@@ -118,7 +122,7 @@ export function ExerciseCatalog() {
       return <ExerciseCatalogSkeleton />;
     }
 
-    if (items.length === 0 && filters.mine && !narrowed) {
+    if (items.length === 0 && filters.mine && !narrowed && !filters.gym) {
       return (
         <EmptyState
           icon={Dumbbell}
@@ -206,14 +210,26 @@ export function ExerciseCatalog() {
           selected={filters.muscles}
           onToggle={toggleMuscle}
           before={
-            <button
-              type="button"
-              aria-pressed={filters.mine}
-              onClick={toggleMine}
-              className={chipClass(filters.mine)}
-            >
-              {t('Mine')}
-            </button>
+            <>
+              <button
+                type="button"
+                aria-pressed={filters.mine}
+                onClick={toggleMine}
+                className={chipClass(filters.mine)}
+              >
+                {t('Mine')}
+              </button>
+              {gym ? (
+                <button
+                  type="button"
+                  aria-pressed={filters.gym}
+                  onClick={toggleGym}
+                  className={chipClass(filters.gym)}
+                >
+                  {t('Available in my gym')}
+                </button>
+              ) : null}
+            </>
           }
         />
         <div className="flex flex-wrap items-start gap-3 lg:hidden">

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import postgres from 'postgres';
 import { afterAll, describe, expect, it, vi } from 'vitest';
+import { GYM_EQUIPMENT } from '@/constants/gym';
 import { getEnv } from '@/server/env';
 import { seedCatalog } from '../catalog';
 import { seedCatalogSchema } from '../seed-schema';
@@ -61,6 +62,31 @@ describe('seedCatalog', () => {
           search_name: 'жим штанги лежачи',
           search_aliases: 'жим лежачи\nжим на горизонтальніи лаві',
         });
+
+        throw new Rollback();
+      }),
+    ).rejects.toBeInstanceOf(Rollback);
+  });
+
+  it('stores gym equipment and updates it on a re-seed', async () => {
+    const gymOf = async (tx: postgres.TransactionSql, slug: string) => {
+      const [row] = await tx<{ gym_equipment: string[][] }[]>`
+        select gym_equipment from exercise where slug = ${slug} and owner_id is null`;
+      return row?.gym_equipment;
+    };
+    await expect(
+      sql.begin(async (tx) => {
+        await seedCatalog(tx, entries);
+        expect(await gymOf(tx, 'goblet-squat')).toEqual([['dumbbells', 'kettlebells']]);
+        expect(await gymOf(tx, 'push-up')).toEqual([]);
+
+        const changed = entries.map((entry) =>
+          entry.slug === 'push-up'
+            ? { ...entry, gymEquipment: [[GYM_EQUIPMENT.FLAT_BENCH]] }
+            : entry,
+        );
+        await seedCatalog(tx, changed);
+        expect(await gymOf(tx, 'push-up')).toEqual([['flat_bench']]);
 
         throw new Rollback();
       }),

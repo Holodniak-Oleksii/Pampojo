@@ -30,6 +30,8 @@ export interface ListExerciseRowsInput {
   pattern: string | null;
   /** Own exercises only (the "Mine" chip). */
   mine: boolean;
+  /** Only exercises the user's saved gym allows; ignored without a saved gym. */
+  gym: boolean;
   offset: number;
   limit: number;
 }
@@ -42,6 +44,7 @@ export interface ExerciseListRow extends Record<string, unknown> {
   media: ExerciseMedia;
   owner_id: string | null;
   section: string | null;
+  gym_equipment: string[][];
 }
 
 // `tf` is the other locale: own exercises (spec 07) may have one translation in either language.
@@ -74,6 +77,12 @@ export async function listExerciseRows(
       : sql`exists (select 1 from exercise_translation s where s.exercise_id = e.id
           and (s.search_name like ${contains} escape '\\' or s.search_aliases like ${contains} escape '\\'))`;
 
+  // The SQL twin of isAvailableInGym (src/shared/gym.ts): paging happens here, so the filter must too.
+  // `group ?| text[]` is true when any item of the group is in the gym.
+  const gym = sql`(${input.gym}::boolean = false or gp.user_id is null
+    or not exists (select 1 from jsonb_array_elements(e.gym_equipment) as g(grp)
+      where not (g.grp ?| gp.equipment)))`;
+
   const order =
     input.q === null
       ? sql`array_position(${textArray(MUSCLE_GROUPS)}, ${section}), e.popularity desc nulls last, ${name}, e.id`
@@ -81,14 +90,16 @@ export async function listExerciseRows(
 
   const rows = await db.execute<ExerciseListRow>(sql`
     select e.id, ${name} as name, e.primary_muscles, e.equipment, e.media, e.owner_id,
-      ${input.q === null ? section : sql`null`} as section
+      e.gym_equipment, ${input.q === null ? section : sql`null`} as section
     from exercise e
     ${translationJoins(input.locale)}
+    left join gym_profile gp on gp.user_id = ${input.userId}
     where ${visibleTo(input.userId)}
       and (cardinality(${muscles}) = 0 or e.primary_muscles && ${muscles})
       and (cardinality(${textArray(input.equipment)}) = 0 or e.equipment && ${textArray(input.equipment)})
       and (${input.pattern}::text is null or e.movement_pattern = ${input.pattern})
       and (${input.mine}::boolean = false or e.owner_id = ${input.userId})
+      and ${gym}
       and ${search}
     order by ${order}
     limit ${input.limit + 1} offset ${input.offset}`);
@@ -108,6 +119,7 @@ export interface ExerciseRow extends Record<string, unknown> {
   difficulty: number | null;
   media: ExerciseMedia;
   source_exercise_id: string | null;
+  gym_equipment: string[][];
   name: string;
   aliases: string[];
   description: string;
@@ -122,7 +134,7 @@ export async function findExerciseRow(
   const rows = await db.execute<ExerciseRow>(sql`
     select e.id, e.owner_id, e.primary_muscles, e.secondary_muscles, e.equipment,
       e.movement_pattern, e.mechanic, e.laterality, e.tracking_type, e.difficulty, e.media,
-      e.source_exercise_id,
+      e.source_exercise_id, e.gym_equipment,
       coalesce(tr.name, tf.name) as name,
       coalesce(tr.aliases, tf.aliases) as aliases,
       coalesce(tr.description, tf.description) as description,
@@ -205,6 +217,7 @@ type ExerciseColumns = Partial<
     | 'movementPattern'
     | 'mechanic'
     | 'laterality'
+    | 'gymEquipment'
     | 'media'
     | 'deletedAt'
   >

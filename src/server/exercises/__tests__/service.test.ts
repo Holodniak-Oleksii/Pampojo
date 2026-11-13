@@ -5,7 +5,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { normalizeSearch } from '@/lib/search';
 import * as schema from '@/server/db/schema';
 import { exercise, exerciseTranslation } from '@/server/db/schema';
+import { isAvailableInGym } from '@/shared/gym';
 import { listExercisesQuerySchema } from '@/shared/schemas/exercise';
+import type { GymRequirements } from '@/shared/schemas/gym';
 import { getEnv } from '@/server/env';
 import { withRollback } from '@/test/db';
 import type { Tx } from '../queries';
@@ -27,6 +29,7 @@ interface Fixture {
   equipment?: string[];
   popularity?: number;
   ownerId?: string;
+  gym?: string[][];
 }
 
 async function insert(tx: Tx, fixture: Fixture): Promise<string> {
@@ -41,6 +44,7 @@ async function insert(tx: Tx, fixture: Fixture): Promise<string> {
       trackingType: 'weight_reps',
       popularity: fixture.ownerId ? null : (fixture.popularity ?? 50),
       media: { frames: [{ thumb: 't.webp', full: 'f.webp' }] },
+      gymEquipment: (fixture.gym ?? []) as GymRequirements,
     })
     .returning({ id: exercise.id });
   if (!row) throw new Error('No exercise');
@@ -307,6 +311,106 @@ describe('findExercise', () => {
       expect(await findExercise(USER, 'en', randomUUID(), tx)).toBeNull();
       expect(await findExercise(USER, 'en', own, tx)).toBeNull();
       expect(await findExercise(owner, 'en', own, tx)).toMatchObject({ isOwn: true });
+    });
+  });
+});
+
+describe('listExercises gym filter', () => {
+  async function withGym(tx: Tx, equipment: string[]): Promise<string> {
+    const userId = await insertUser(tx);
+    await tx.insert(schema.gymProfile).values({ userId, equipment });
+    return userId;
+  }
+
+  it('lists only what a dumbbells and flat bench gym allows', async () => {
+    await withRollback(async (tx) => {
+      const token = `zg${randomUUID().slice(0, 8)}`;
+      const fixtures = {
+        dumbbellBench: [['dumbbells'], ['flat_bench', 'adjustable_bench']],
+        goblet: [['dumbbells', 'kettlebells']],
+        pushUp: [],
+        bench: [['barbell'], ['flat_bench'], ['squat_rack']],
+        pulldown: [['pulldown_row_station', 'cable_station']],
+      };
+      const ids: Record<string, string> = {};
+      for (const [key, gym] of Object.entries(fixtures)) {
+        ids[key] = await insert(tx, { name: `${token} ${key}`, primary: ['chest'], gym });
+      }
+      const userId = await withGym(tx, ['dumbbells', 'flat_bench']);
+
+      const result = await listExercises(userId, 'en', query({ q: token, gym: '1' }), tx);
+
+      expect(result.items.map((item) => item.id).sort()).toEqual(
+        [ids.dumbbellBench, ids.goblet, ids.pushUp].sort(),
+      );
+      const goblet = result.items.find((item) => item.id === ids.goblet);
+      expect(goblet?.gymEquipment).toEqual([['dumbbells', 'kettlebells']]);
+    });
+  });
+
+  it('matches isAvailableInGym for every rule case', async () => {
+    await withRollback(async (tx) => {
+      const cases: { req: string[][]; gym: string[] }[] = [
+        { req: [], gym: [] },
+        { req: [['barbell']], gym: ['barbell'] },
+        { req: [['barbell']], gym: ['dumbbells'] },
+        { req: [['dumbbells', 'kettlebells']], gym: ['dumbbells'] },
+        { req: [['dumbbells', 'kettlebells']], gym: ['kettlebells'] },
+        { req: [['barbell'], ['flat_bench'], ['squat_rack']], gym: ['barbell', 'flat_bench'] },
+        { req: [['barbell'], ['flat_bench']], gym: ['barbell', 'flat_bench'] },
+        { req: [['dumbbells', 'kettlebells']], gym: [] },
+      ];
+      for (const { req, gym } of cases) {
+        const token = `zr${randomUUID().slice(0, 8)}`;
+        const id = await insert(tx, { name: `${token} case`, primary: ['chest'], gym: req });
+        const userId = await withGym(tx, gym);
+        const result = await listExercises(userId, 'en', query({ q: token, gym: '1' }), tx);
+        expect(result.items.some((item) => item.id === id)).toBe(isAvailableInGym(req, gym));
+      }
+    });
+  });
+
+  it('ignores gym=1 for a user without a saved gym', async () => {
+    await withRollback(async (tx) => {
+      const token = `zn${randomUUID().slice(0, 8)}`;
+      const id = await insert(tx, { name: `${token} bar`, primary: ['chest'], gym: [['barbell']] });
+      const userId = await insertUser(tx);
+      const result = await listExercises(userId, 'en', query({ q: token, gym: '1' }), tx);
+      expect(result.items.map((item) => item.id)).toEqual([id]);
+    });
+  });
+
+  it('combines with Mine and Equipment by AND, and own exercises without tags always show', async () => {
+    await withRollback(async (tx) => {
+      const token = `za${randomUUID().slice(0, 8)}`;
+      const userId = await withGym(tx, ['dumbbells']);
+      const ownBarbell = await insert(tx, {
+        name: `${token} own barbell`,
+        primary: ['chest'],
+        ownerId: userId,
+        gym: [['barbell']],
+      });
+      const ownFree = await insert(tx, {
+        name: `${token} own free`,
+        primary: ['chest'],
+        ownerId: userId,
+        equipment: ['bodyweight'],
+      });
+      const system = await insert(tx, { name: `${token} system`, primary: ['chest'] });
+
+      const mine = await listExercises(userId, 'en', query({ q: token, gym: '1', mine: '1' }), tx);
+      expect(mine.items.map((item) => item.id)).toEqual([ownFree]);
+
+      const withEquipment = await listExercises(
+        userId,
+        'en',
+        query({ q: token, gym: '1', equipment: 'band' }),
+        tx,
+      );
+      expect(withEquipment.items.map((item) => item.id)).toEqual([system]);
+
+      const all = await listExercises(userId, 'en', query({ q: token }), tx);
+      expect(all.items.map((item) => item.id)).toContain(ownBarbell);
     });
   });
 });

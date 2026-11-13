@@ -4,6 +4,8 @@ import { ArrowLeft, Copy, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useGymEquipmentLabels } from '@/features/gym/hooks/useGymEquipmentLabels';
+import { formatRequirements } from '@/features/gym/utils';
 import type { Exercise } from '@/shared/schemas/exercise';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { DeleteExerciseDialog } from '../DeleteExerciseDialog';
@@ -28,6 +30,7 @@ function Row({ term, children }: { term: string; children: ReactNode }) {
 export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
   const { t } = useTranslation();
   const labels = useExerciseLabels();
+  const gymLabels = useGymEquipmentLabels();
   const backHref = useCatalogBackHref();
   const online = useIsOnline();
   const join = <T extends string>(values: T[], map: Record<T, string>) =>
@@ -97,6 +100,12 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
           <section className="rounded-[20px] bg-card px-5 py-3 shadow-soft">
             <dl className="divide-y divide-border">
               <Row term={t('Equipment')}>{join(exercise.equipment, labels.equipment)}</Row>
+              <Row term={t('Gym equipment')}>
+                {formatRequirements(exercise.gymEquipment, gymLabels.item, {
+                  or: t('or'),
+                  nothing: t('Nothing special'),
+                })}
+              </Row>
               {exercise.movementPattern ? (
                 <Row term={t('Movement')}>{labels.pattern[exercise.movementPattern]}</Row>
               ) : null}

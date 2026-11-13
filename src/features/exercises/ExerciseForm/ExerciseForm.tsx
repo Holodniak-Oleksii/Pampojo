@@ -26,6 +26,7 @@ import {
   type MuscleGroup,
   type TrackingType,
 } from '@/constants/exercise';
+import type { GymEquipment } from '@/constants/gym';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { scrollToFirstError } from '@/lib/scroll-to-first-error';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,7 @@ import { EquipmentFilter } from '../EquipmentFilter';
 import { useExerciseLabels } from '../hooks/useExerciseLabels';
 import { MuscleChips } from '../MuscleChips';
 import { emptySlot, MIN_SLOTS, PhotoSlots, type PhotoSlot } from './PhotoSlots';
+import { GymRequirementsField } from './GymRequirementsField';
 import { FrameUploadFailed, saveExercise } from './save';
 import { useDiscardGuard } from './useDiscardGuard';
 import { useDragReorder } from '../hooks/useDragReorder';
@@ -63,6 +65,7 @@ interface FormValues {
   instructions: { value: string }[];
   /** One mistake per line. */
   commonMistakes: string;
+  gymEquipment: GymEquipment[][];
 }
 
 function initialValues(base: Exercise | undefined): FormValues {
@@ -78,6 +81,7 @@ function initialValues(base: Exercise | undefined): FormValues {
     description: base?.description ?? '',
     instructions: (base?.instructions ?? []).map((value) => ({ value })),
     commonMistakes: (base?.commonMistakes ?? []).join('\n'),
+    gymEquipment: (base?.gymEquipment ?? []).map((group) => [...group]),
   };
 }
 
@@ -119,9 +123,9 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
   const form = useForm<FormValues>({ defaultValues: initialValues(exercise ?? source) });
   const steps = useFieldArray({ control: form.control, name: 'instructions' });
   const stepDrag = useDragReorder((from, to) => steps.move(from, to), steps.fields.length);
-  const [primary, secondary, name, equipment] = useWatch({
+  const [primary, secondary, name, equipment, gymEquipment] = useWatch({
     control: form.control,
-    name: ['primaryMuscles', 'secondaryMuscles', 'name', 'equipment'],
+    name: ['primaryMuscles', 'secondaryMuscles', 'name', 'equipment', 'gymEquipment'],
   });
   const errors = form.formState.errors;
   const dirty = !saved && (form.formState.isDirty || slotsDirty);
@@ -466,6 +470,11 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
               </FieldError>
             ) : null}
           </div>
+
+          <GymRequirementsField
+            value={gymEquipment}
+            onChange={(value) => form.setValue('gymEquipment', value, { shouldDirty: true })}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
             {selectField('trackingType', t('Tracking'), labels.tracking, false)}

@@ -18,6 +18,7 @@ function toSearch(filters: CatalogFilters): string {
   for (const muscle of filters.muscles) params.append('muscle', muscle);
   for (const item of filters.equipment) params.append('equipment', item);
   if (filters.mine) params.set('mine', '1');
+  if (filters.gym) params.set('gym', '1');
   const search = params.toString();
   return search ? `?${search}` : '';
 }
@@ -37,6 +38,7 @@ export function useCatalogParams() {
       muscles: MUSCLE_GROUPS.filter((muscle) => muscles.has(muscle)),
       equipment: EQUIPMENT_LIST.filter((item) => equipment.has(item)),
       mine: current.get('mine') === '1',
+      gym: current.get('gym') === '1',
     };
   }, [search]);
 
@@ -72,8 +74,9 @@ export function useCatalogParams() {
       [filters, replace],
     ),
     toggleMine: useCallback(() => replace({ ...filters, mine: !filters.mine }), [filters, replace]),
+    toggleGym: useCallback(() => replace({ ...filters, gym: !filters.gym }), [filters, replace]),
     clear: useCallback(
-      () => replace({ q: '', muscles: [], equipment: [], mine: false }),
+      () => replace({ q: '', muscles: [], equipment: [], mine: false, gym: false }),
       [replace],
     ),
   };

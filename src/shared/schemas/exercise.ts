@@ -18,6 +18,7 @@ import {
   STEPS_MAX_COUNT,
   TRACKING_TYPE,
 } from '@/constants/exercise';
+import { gymEquipmentSchema, gymRequirementsSchema } from './gym';
 import { enumOf, repeatable } from './utils';
 
 export const muscleGroupSchema = enumOf(MUSCLE_GROUP);
@@ -44,6 +45,7 @@ export const listExercisesQuerySchema = z
     cursor: z.string().max(200).optional(),
     limit: z.coerce.number().int().min(1).max(LIST_LIMIT.max).default(LIST_LIMIT.default),
     mine: z.enum(['1']).optional(),
+    gym: z.enum(['1']).optional(),
   })
   .strict();
 
@@ -73,6 +75,7 @@ export const exerciseListItemSchema = z.object({
   frames: z.array(exerciseFrameSchema),
   section: muscleGroupSchema.nullable(),
   isOwn: z.boolean(),
+  gymEquipment: z.array(z.array(gymEquipmentSchema)),
 });
 
 export type ExerciseListItem = z.infer<typeof exerciseListItemSchema>;
@@ -102,6 +105,7 @@ export const exerciseSchema = z.object({
   frames: z.array(exerciseFrameSchema),
   isOwn: z.boolean(),
   sourceExerciseId: z.uuid().nullable(),
+  gymEquipment: z.array(z.array(gymEquipmentSchema)),
 });
 
 export type Exercise = z.infer<typeof exerciseSchema>;
@@ -155,6 +159,7 @@ const exerciseFieldShape = {
     .max(DESCRIPTION_MAX, { error: EXERCISE_FIELD_ERROR.TEXT_TOO_LONG }),
   instructions: textList(STEPS_MAX_COUNT),
   commonMistakes: textList(MISTAKES_MAX_COUNT),
+  gymEquipment: gymRequirementsSchema,
 };
 
 /** The form and create body: optional fields default to empty. */
@@ -167,6 +172,7 @@ export const exerciseFieldsSchema = z.object({
   description: exerciseFieldShape.description.default(''),
   instructions: exerciseFieldShape.instructions.default([]),
   commonMistakes: exerciseFieldShape.commonMistakes.default([]),
+  gymEquipment: exerciseFieldShape.gymEquipment.default([]),
 });
 
 /** Secondary muscles never repeat a primary one; the extra ones are dropped. */

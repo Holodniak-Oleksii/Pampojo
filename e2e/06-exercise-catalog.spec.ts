@@ -118,7 +118,9 @@ test.describe('exercise catalog in English', () => {
     await expect(page.getByRole('heading', { name: 'How to do it' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Common mistakes' })).toBeVisible();
     for (const term of ['Primary', 'Equipment', 'Movement', 'Type', 'Sides', 'Tracking', 'Level']) {
-      await expect(page.getByRole('term').filter({ hasText: term })).toBeVisible();
+      await expect(
+        page.getByRole('term').filter({ hasText: new RegExp(`^${term}$`) }),
+      ).toBeVisible();
     }
     await expect(page.getByRole('link', { name: 'Exercises', exact: true })).toHaveAttribute(
       'href',
@@ -224,7 +226,7 @@ test.describe('exercise catalog layout', () => {
       await items(page).first().click();
       await page.waitForURL(/\/library\/exercises\/[0-9a-f-]{36}$/);
       await expect(page.getByRole('heading', { name: 'Як виконувати' })).toBeVisible();
-      await expect(page.getByRole('term').filter({ hasText: 'Обладнання' })).toBeVisible();
+      await expect(page.getByRole('term').filter({ hasText: /^Обладнання$/ })).toBeVisible();
     });
   });
 });
