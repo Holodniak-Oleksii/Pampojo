@@ -43,14 +43,18 @@ export function Faq() {
         {t('FAQ')}
       </h2>
       {/* One root keeps a single item open across both desktop columns. */}
-      <Accordion type="single" collapsible className="grid gap-4 lg:grid-cols-2 lg:items-start">
+      <Accordion
+        type="single"
+        collapsible
+        className="grid border-t-2 border-foreground lg:grid-cols-2 lg:items-start lg:gap-x-8"
+      >
         {items.map((item, index) => (
           <AccordionItem
             key={item.question}
             value={`item-${index}`}
-            className="rounded-[24px] bg-card px-5 shadow-soft not-last:border-b-0"
+            className="border-b border-border-strong"
           >
-            <AccordionTrigger className="items-center py-4 text-base font-semibold hover:no-underline">
+            <AccordionTrigger className="min-h-16 items-center py-4 text-[17px] font-bold hover:no-underline">
               {item.question}
             </AccordionTrigger>
             <AccordionContent className="pb-4 text-base text-muted-foreground">

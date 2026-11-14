@@ -1,9 +1,9 @@
 'use client';
 
-import { Dumbbell } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { useGymQuery } from '@/api/gym';
+import { MyGymIcon } from '@/components/BrandIcons';
 import { Button } from '@/components/ui/button';
 import type { Gym } from '@/shared/schemas/gym';
 import { GYM_PATH } from '../constants';
@@ -21,14 +21,12 @@ export function GymNudgeCard({ initialGym }: GymNudgeCardProps) {
   return (
     <section
       aria-labelledby="gym-nudge-title"
-      className="flex flex-col gap-4 rounded-[20px] bg-card p-5 shadow-soft sm:flex-row sm:items-center"
+      className="flex flex-col gap-4 rounded-lg bg-card p-5 sm:flex-row sm:items-center"
     >
-      <div className="flex min-w-0 flex-1 items-start gap-4">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-accent-soft">
-          <Dumbbell aria-hidden="true" className="size-6" />
-        </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 id="gym-nudge-title" className="text-lg font-extrabold">
+          <h2 id="gym-nudge-title" className="flex items-center gap-2.5 text-lg font-extrabold">
+            <MyGymIcon className="size-6" />
             {t('Set up your gym')}
           </h2>
           <p className="text-muted-foreground">

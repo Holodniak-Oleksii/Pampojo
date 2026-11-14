@@ -13,7 +13,7 @@ export interface ExerciseFramesProps {
   frames: Exercise['frames'];
 }
 
-const FRAME_CLASS = 'aspect-[4/3] w-full rounded-[20px]';
+const FRAME_CLASS = 'aspect-[4/3] w-full rounded-lg';
 
 /** Frames cycle in order like a slow animation; with reduced motion a tap shows the next one. */
 export function ExerciseFrames({ name, frames }: ExerciseFramesProps) {
@@ -56,7 +56,7 @@ export function ExerciseFrames({ name, frames }: ExerciseFramesProps) {
           name={name}
           alt={frameIndex === current ? label(frameIndex) : ''}
           className={cn(
-            'absolute inset-0 rounded-[20px] transition-opacity duration-300 motion-reduce:transition-none',
+            'absolute inset-0 rounded-lg transition-opacity duration-300 motion-reduce:transition-none',
             frameIndex === current ? 'opacity-100' : 'opacity-0',
           )}
         />
@@ -71,7 +71,7 @@ export function ExerciseFrames({ name, frames }: ExerciseFramesProps) {
         aria-label={t('Switch position')}
         aria-pressed={frames.length === 2 ? current === 1 : undefined}
         onClick={() => setIndex((value) => (value + 1) % frames.length)}
-        className="block w-full rounded-[20px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="block w-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {stack}
       </button>

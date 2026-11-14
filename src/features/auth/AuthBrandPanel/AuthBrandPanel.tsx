@@ -1,11 +1,11 @@
 import Image from 'next/image';
-import { HeroPhone } from '@/features/landing/HeroPhone';
+import { HeroWorkoutCard } from '@/features/landing/HeroWorkoutCard';
 import { getI18n } from '@/i18n/server';
 
 export async function AuthBrandPanel() {
   const { t } = await getI18n();
   return (
-    <aside className="hidden min-h-0 flex-col gap-8 overflow-hidden rounded-[32px] bg-gradient-to-br from-accent-soft to-background p-10 pb-0 lg:flex">
+    <aside className="hidden min-h-0 flex-col gap-8 overflow-hidden rounded-lg bg-border/60 p-10 pb-0 lg:flex">
       <Image
         src="/brand/pampojo-wordmark.svg"
         alt=""
@@ -18,7 +18,7 @@ export async function AuthBrandPanel() {
       </h2>
       {/* On short screens the mockup runs past the panel's bottom edge and is clipped there. */}
       <div className="min-h-0 flex-1">
-        <HeroPhone />
+        <HeroWorkoutCard className="mr-auto max-w-[440px] [&>div]:ml-0" />
       </div>
     </aside>
   );

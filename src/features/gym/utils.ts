@@ -1,15 +1,12 @@
 import { GYM_EQUIPMENT_KEYS, type GymEquipment } from '@/constants/gym';
 
-/** "Barbell · Flat bench" with alternatives as "Dumbbells or Kettlebells"; `nothing` for `[]`. */
-export function formatRequirements(
-  requirements: readonly (readonly GymEquipment[])[],
+/** One requirement group as text; alternatives read "Dumbbells or Kettlebells". */
+export function formatRequirementGroup(
+  group: readonly GymEquipment[],
   labels: Record<GymEquipment, string>,
-  words: { or: string; nothing: string },
+  or: string,
 ): string {
-  if (requirements.length === 0) return words.nothing;
-  return requirements
-    .map((group) => group.map((item) => labels[item]).join(` ${words.or} `))
-    .join(' · ');
+  return group.map((item) => labels[item]).join(` ${or} `);
 }
 
 /** Keeps a selection unique and in display order, so equal selections compare equal. */

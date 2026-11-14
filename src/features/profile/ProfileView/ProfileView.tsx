@@ -48,7 +48,7 @@ export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t('Profile')} />
+      <PageHeader sectionTitle title={t('Profile')} />
       <div className="flex items-center gap-4">
         <EmojiAvatar emoji={profile.avatarEmoji} color={profile.avatarColor} size="lg" />
         <p className="min-w-0 text-2xl font-extrabold break-words">{profile.displayName}</p>
@@ -60,7 +60,7 @@ export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
           {rows.map((row) => (
             <div
               key={row.label}
-              className="flex items-center justify-between gap-4 rounded-[20px] bg-card px-5 py-4 shadow-soft"
+              className="flex items-center justify-between gap-4 rounded-lg bg-card px-5 py-4"
             >
               <dt className="text-muted-foreground">{row.label}</dt>
               <dd className="text-lg font-semibold tabular-nums">{row.value}</dd>
@@ -68,7 +68,7 @@ export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
           ))}
         </dl>
         <GymProfileRow initialGym={initialGym} />
-        <div className="flex items-center justify-between gap-4 rounded-[20px] bg-card px-5 py-3 shadow-soft">
+        <div className="flex items-center justify-between gap-4 rounded-lg bg-card px-5 py-3">
           <span className="text-muted-foreground">{t('Language')}</span>
           <LanguageSwitcher />
         </div>

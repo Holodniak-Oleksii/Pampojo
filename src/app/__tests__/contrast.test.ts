@@ -22,8 +22,14 @@ function contrast(a: string, b: string): number {
   return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
 }
 
-describe('WCAG AA contrast for text on accent fills', () => {
-  it.each(['--accent', '--accent-soft'])('foreground on %s is at least 4.5:1', (background) => {
-    expect(contrast(token('--foreground'), token(background))).toBeGreaterThanOrEqual(4.5);
+describe('WCAG AA contrast for text', () => {
+  it.each([
+    ['--foreground', '--background'],
+    ['--foreground', '--card'],
+    ['--muted-foreground', '--background'],
+    ['--muted-foreground', '--card'],
+    ['--foreground', '--accent'],
+  ])('%s on %s is at least 4.5:1', (text, background) => {
+    expect(contrast(token(text), token(background))).toBeGreaterThanOrEqual(4.5);
   });
 });

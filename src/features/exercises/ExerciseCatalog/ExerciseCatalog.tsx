@@ -6,13 +6,15 @@ import { useTranslation } from 'react-i18next';
 import { NETWORK_ERROR } from '@/api/http';
 import { useExercisesInfiniteQuery } from '@/api/exercises';
 import { useGymQuery } from '@/api/gym';
+import { Diamond } from '@/components/Diamond';
 import { EmptyState } from '@/components/EmptyState';
 import { OfflineNotice } from '@/components/OfflineNotice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { EXERCISE_SEARCH_MAX } from '@/constants/exercise';
+import { EXERCISE_SEARCH_MAX, MUSCLE_FAMILY_OF } from '@/constants/exercise';
 import { SEARCH_DEBOUNCE_MS } from '../constants';
 import { EquipmentFilter } from '../EquipmentFilter';
+import { FilterSheet } from '../FilterSheet';
 import { ExerciseCatalogSkeleton } from '../ExerciseCatalogSkeleton';
 import { ExerciseListItem } from '../ExerciseListItem';
 import { chipClass, MuscleChips } from '../MuscleChips';
@@ -54,8 +56,16 @@ function groupBySection(items: Item[], bySection: boolean): Group[] {
 export function ExerciseCatalog() {
   const { t } = useTranslation();
   const labels = useExerciseLabels();
-  const { filters, setQuery, toggleMuscle, toggleMine, toggleGym, setEquipment, clear } =
-    useCatalogParams();
+  const {
+    filters,
+    setQuery,
+    toggleMuscle,
+    toggleMine,
+    toggleGym,
+    setEquipment,
+    clear,
+    resetFilters,
+  } = useCatalogParams();
   const query = useExercisesInfiniteQuery(filters);
   // The chip stays hidden until the gym is saved; the API ignores gym=1 without one.
   const { data: gym } = useGymQuery();
@@ -94,6 +104,33 @@ export function ExerciseCatalog() {
   const items = data?.pages.flatMap((page) => page.items) ?? [];
   const narrowed = filters.q !== '' || filters.muscles.length > 0 || filters.equipment.length > 0;
   const hasFilters = narrowed || filters.mine || filters.gym;
+  const activeFilters =
+    filters.muscles.length +
+    filters.equipment.length +
+    (filters.mine ? 1 : 0) +
+    (filters.gym ? 1 : 0);
+  const scopeChips = (
+    <>
+      <button
+        type="button"
+        aria-pressed={filters.mine}
+        onClick={toggleMine}
+        className={chipClass(filters.mine)}
+      >
+        {t('Mine')}
+      </button>
+      {gym ? (
+        <button
+          type="button"
+          aria-pressed={filters.gym}
+          onClick={toggleGym}
+          className={chipClass(filters.gym)}
+        >
+          {t('Available in my gym')}
+        </button>
+      ) : null}
+    </>
+  );
   const createButton = (
     <OnlineLinkButton href="/library/exercises/new" size="sm">
       <Plus aria-hidden="true" />
@@ -111,7 +148,7 @@ export function ExerciseCatalog() {
       if (offline) return offlineNotice;
       if (query.isError) {
         return (
-          <div className="flex flex-col items-start gap-3 rounded-[20px] bg-card p-5 shadow-soft">
+          <div className="flex flex-col items-start gap-3 rounded-lg bg-card p-5">
             <p>{t("Couldn't load exercises.")}</p>
             <Button variant="secondary" size="sm" onClick={() => void query.refetch()}>
               {t('Retry')}
@@ -160,10 +197,13 @@ export function ExerciseCatalog() {
         {groupBySection(items, filters.q === '').map((group) => (
           <div key={group.key} className="flex flex-col gap-3">
             {group.section ? (
-              <h2 className="text-lg font-extrabold">{labels.muscle[group.section]}</h2>
+              <h2 className="flex items-center gap-2.5 text-lg font-extrabold">
+                <Diamond tone="muscle" family={MUSCLE_FAMILY_OF[group.section]} size="md" />
+                {labels.muscle[group.section]}
+              </h2>
             ) : null}
             {/* One card with dividers on mobile; a grid of separate cards from lg up. */}
-            <ul className="divide-y divide-border overflow-hidden rounded-[20px] bg-card shadow-soft lg:grid lg:grid-cols-2 lg:gap-4 lg:divide-y-0 lg:overflow-visible lg:rounded-none lg:bg-transparent lg:shadow-none xl:grid-cols-3 2xl:grid-cols-4">
+            <ul className="divide-y divide-border overflow-hidden rounded-lg bg-card lg:grid lg:grid-cols-2 lg:gap-4 lg:divide-y-0 lg:overflow-visible lg:rounded-none lg:bg-transparent xl:grid-cols-3 2xl:grid-cols-4">
               {group.items.map((item) => (
                 <li key={item.id}>
                   <ExerciseListItem item={item} />
@@ -197,47 +237,36 @@ export function ExerciseCatalog() {
         className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100dvh-6rem)] lg:gap-5 lg:overflow-y-auto lg:p-1"
       >
         <div className="hidden lg:block">{createButton}</div>
-        <Input
-          type="search"
-          value={draft}
-          className="[&::-webkit-search-cancel-button]:appearance-none"
-          maxLength={EXERCISE_SEARCH_MAX}
-          placeholder={t('Search exercises')}
-          aria-label={t('Search exercises')}
-          onChange={(event) => setDraft(event.target.value)}
-        />
+        <div className="flex gap-2">
+          <Input
+            type="search"
+            value={draft}
+            className="min-w-0 flex-1 [&::-webkit-search-cancel-button]:appearance-none"
+            maxLength={EXERCISE_SEARCH_MAX}
+            placeholder={t('Search exercises')}
+            aria-label={t('Search exercises')}
+            onChange={(event) => setDraft(event.target.value)}
+          />
+          <div className="lg:hidden">
+            <FilterSheet
+              muscles={filters.muscles}
+              equipment={filters.equipment}
+              activeCount={activeFilters}
+              scopeChips={scopeChips}
+              onToggleMuscle={toggleMuscle}
+              onEquipmentChange={setEquipment}
+              onClear={resetFilters}
+            />
+          </div>
+        </div>
         <MuscleChips
+          className="max-lg:hidden"
           selected={filters.muscles}
           onToggle={toggleMuscle}
-          before={
-            <>
-              <button
-                type="button"
-                aria-pressed={filters.mine}
-                onClick={toggleMine}
-                className={chipClass(filters.mine)}
-              >
-                {t('Mine')}
-              </button>
-              {gym ? (
-                <button
-                  type="button"
-                  aria-pressed={filters.gym}
-                  onClick={toggleGym}
-                  className={chipClass(filters.gym)}
-                >
-                  {t('Available in my gym')}
-                </button>
-              ) : null}
-            </>
-          }
+          before={scopeChips}
         />
-        <div className="flex flex-wrap items-start gap-3 lg:hidden">
-          <EquipmentFilter variant="menu" selected={filters.equipment} onChange={setEquipment} />
-          {createButton}
-        </div>
         <div className="hidden lg:block">
-          <EquipmentFilter variant="list" selected={filters.equipment} onChange={setEquipment} />
+          <EquipmentFilter selected={filters.equipment} onChange={setEquipment} />
         </div>
       </div>
       <section aria-label={t('Exercises')} className="flex min-w-0 flex-col gap-4">

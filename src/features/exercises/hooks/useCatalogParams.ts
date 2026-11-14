@@ -79,5 +79,10 @@ export function useCatalogParams() {
       () => replace({ q: '', muscles: [], equipment: [], mine: false, gym: false }),
       [replace],
     ),
+    /** Clears the filters but keeps the search text. */
+    resetFilters: useCallback(
+      () => replace({ q: filters.q, muscles: [], equipment: [], mine: false, gym: false }),
+      [filters.q, replace],
+    ),
   };
 }

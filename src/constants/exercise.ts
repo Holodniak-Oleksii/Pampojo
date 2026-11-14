@@ -26,6 +26,38 @@ export type MuscleGroup = ValueOf<typeof MUSCLE_GROUP>;
 /** Display and catalog section order, top of the body to the bottom. */
 export const MUSCLE_GROUPS: readonly MuscleGroup[] = Object.values(MUSCLE_GROUP);
 
+/** Six colour-coded families the 17 groups fold into (docs/tech/VISUAL_LANGUAGE.md). */
+export const MUSCLE_FAMILY = {
+  CHEST: 'chest',
+  SHOULDERS: 'shoulders',
+  BACK: 'back',
+  ARMS: 'arms',
+  LEGS: 'legs',
+  CORE: 'core',
+} as const;
+
+export type MuscleFamily = ValueOf<typeof MUSCLE_FAMILY>;
+
+export const MUSCLE_FAMILY_OF: Record<MuscleGroup, MuscleFamily> = {
+  chest: 'chest',
+  shoulders: 'shoulders',
+  traps: 'shoulders',
+  neck: 'shoulders',
+  lats: 'back',
+  middle_back: 'back',
+  lower_back: 'back',
+  biceps: 'arms',
+  triceps: 'arms',
+  forearms: 'arms',
+  quadriceps: 'legs',
+  hamstrings: 'legs',
+  glutes: 'legs',
+  calves: 'legs',
+  adductors: 'legs',
+  abductors: 'legs',
+  abdominals: 'core',
+};
+
 export const EQUIPMENT = {
   BARBELL: 'barbell',
   EZ_BAR: 'ez_bar',

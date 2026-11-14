@@ -311,7 +311,7 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
               key={item.id}
               ref={stepDrag.itemRef(index)}
               className={cn(
-                'flex flex-col gap-1 rounded-full transition-shadow motion-reduce:transition-none',
+                'flex flex-col gap-1 rounded-md transition-shadow motion-reduce:transition-none',
                 stepDrag.active === index && 'shadow-soft ring-2 ring-accent',
               )}
             >
@@ -320,7 +320,7 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
                   type="button"
                   aria-label={`${t('Drag to reorder')}, ${fieldLabel}`}
                   {...stepDrag.handleProps(index)}
-                  className="flex size-11 shrink-0 cursor-grab items-center justify-center rounded-full text-muted-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+                  className="flex size-11 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-card focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
                 >
                   <GripVertical aria-hidden="true" className="size-5" />
                 </button>
@@ -369,7 +369,7 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
         rows={4}
         aria-invalid={mistakesError ? true : undefined}
         aria-describedby="exercise-mistakes-hint"
-        className="min-h-28 w-full rounded-[20px] border border-input bg-card px-5 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="min-h-28 w-full rounded-lg border border-input bg-card px-5 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         {...form.register('commonMistakes')}
       />
       <p id="exercise-mistakes-hint" className="text-sm text-muted-foreground">
@@ -395,7 +395,7 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
       <button
         type="button"
         onClick={() => leave(cancelTo)}
-        className="-ml-2 flex min-h-11 items-center gap-2 self-start rounded-full px-2 font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-ml-2 flex min-h-11 items-center gap-2 self-start rounded-md px-2 font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowLeft aria-hidden="true" className="size-5" />
         {t('Back')}
@@ -455,7 +455,6 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
 
           <div aria-describedby={equipmentError ? 'exercise-equipment-error' : undefined}>
             <EquipmentFilter
-              variant="list"
               selected={equipment}
               onChange={(equipment) =>
                 form.setValue('equipment', equipment, {
@@ -490,7 +489,7 @@ export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
               rows={3}
               maxLength={DESCRIPTION_MAX + 20}
               aria-invalid={descriptionError ? true : undefined}
-              className="min-h-24 w-full rounded-[20px] border border-input bg-card px-5 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="min-h-24 w-full rounded-lg border border-input bg-card px-5 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               {...form.register('description')}
             />
             {descriptionError ? <FieldError>{descriptionError}</FieldError> : null}

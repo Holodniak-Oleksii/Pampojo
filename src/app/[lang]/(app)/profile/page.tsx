@@ -9,7 +9,7 @@ import { findProfile } from '@/server/profile/service';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: { absolute: t('Profile · Pampojo') } };
+  return { title: { absolute: t('Profile | Pampojo') } };
 }
 
 async function ProfileContent() {

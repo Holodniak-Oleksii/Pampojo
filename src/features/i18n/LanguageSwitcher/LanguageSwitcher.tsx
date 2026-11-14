@@ -47,7 +47,7 @@ export function LanguageSwitcher() {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="min-w-[max(var(--radix-dropdown-menu-trigger-width),11rem)] rounded-[20px] p-1.5"
+        className="min-w-[max(var(--radix-dropdown-menu-trigger-width),11rem)] rounded-lg p-1.5"
       >
         <DropdownMenuRadioGroup value={locale} onValueChange={select}>
           {(Object.keys(LANGUAGE_NAMES) as Locale[]).map((code) => (
@@ -55,7 +55,7 @@ export function LanguageSwitcher() {
               key={code}
               value={code}
               lang={code}
-              className="rounded-[14px] py-2.5 pr-10 pl-3 text-base"
+              className="rounded-md py-2.5 pr-10 pl-3 text-base"
             >
               {LANGUAGE_NAMES[code]}
             </DropdownMenuRadioItem>

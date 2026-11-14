@@ -72,8 +72,8 @@ function OnboardingSkeleton() {
     <div className="flex flex-col gap-6" aria-hidden="true">
       <Skeleton className="h-4 w-24" />
       <Skeleton className="h-10 w-3/4" />
-      <Skeleton className="mx-auto size-24 rounded-full" />
-      <Skeleton className="h-12 w-full rounded-full" />
+      <Skeleton className="mx-auto size-24 rounded-md" />
+      <Skeleton className="h-12 w-full rounded-md" />
     </div>
   );
 }
@@ -220,7 +220,7 @@ function OnboardingSteps({
         {serverError ? (
           <p
             role="alert"
-            className="rounded-2xl bg-card px-4 py-3 text-sm font-semibold text-destructive shadow-soft"
+            className="rounded-md bg-card px-4 py-3 text-sm font-semibold text-destructive"
           >
             {t('Something went wrong. Try again.')}
           </p>

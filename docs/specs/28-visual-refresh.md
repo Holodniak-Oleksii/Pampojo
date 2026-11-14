@@ -49,11 +49,11 @@ Move every existing screen to the visual language agreed on 2026-11-13 (`docs/te
 The current screen has no workouts yet: spec 09 adds them, and spec 12 adds the week and the rest day.
 
 - The greeting becomes one quiet line, "Доброго ранку, Олексію. Четвер, 13 листопада", without the avatar.
-- The empty state becomes the "ghost" layout (board "Ж. Тренувань ще немає"):
+- The empty state (changed in review on 2026-11-14, see `DECISIONS.md`):
   - the headline "Тренувань ще немає" and its line;
-  - three placeholder rows with dashed thumbnails and grey bars;
-  - the hint line;
-  - one "Створити перше тренування" button.
+  - three numbered steps with diamond markers: «Обери вправи з каталогу», «Задай підходи, повтори й вагу», «Постав у календар і тренуйся»;
+  - a "Створити перше тренування" button, full width only on phones;
+  - a quiet "Переглянути вправи" link.
 - The gym nudge card (spec 08) loses the peach circle. It shows the custom "My gym" icon inline before the title, and the button keeps its 4px style.
 
 ### Library and catalog (specs 06, 07, 08)
@@ -163,6 +163,8 @@ No changes. Muscle families are a client constant in `src/constants/exercise.ts`
 | Today empty | No workouts yet / Create your first workout to start training. / Create your first workout (exist) | Тренувань ще немає / Створи перше тренування, щоб почати. / Створити перше тренування (exist) |
 | Status pill offline count | {{count}} pending (exists; shown in the badge without "·") | exists |
 | Muscle family names | Chest, Shoulders, Back, Arms, Legs, Core | Груди, Плечі, Спина, Руки, Ноги, Прес |
+| Document titles | Page \| Pampojo (all 15 titles, for example "Today \| Pampojo") | Сьогодні \| Pampojo |
+| Exercise row muscles | Chest, Triceps (comma instead of "·") | Груди, Трицепс |
 | Details gym row | One requirement per line; alternatives "Dumbbells or Kettlebells" | One per line; "Гантелі або гирі" |
 
 The removed strings are "Start training smarter today", "Track. Progress. Repeat." and "Free • Works on iPhone, Android and laptop".
@@ -180,7 +182,7 @@ The removed strings are "Start training smarter today", "Track. Progress. Repeat
 - [ ] AC5: The status pill:
   - with `status="online"` is light with "Online";
   - with `status="offline"` and `pendingCount={3}` is dark with "Offline" and a badge "3", has no "·", and keeps the screen-reader text "3 changes waiting to sync".
-- [ ] AC6: Today shows the one-line greeting and no avatar. With no workouts it shows the ghost rows, the hint and one "Create your first workout" link to `/library/workouts`. The gym nudge card has no tinted circle.
+- [ ] AC6: Today shows the one-line greeting and no avatar. With no workouts it shows three numbered steps ("Pick exercises from the catalog", "Set sets, reps and weight", "Put it on your calendar and train"), a "Create your first workout" link to `/library/workouts` and a "Browse exercises" link to `/library/exercises`. The gym nudge card has no tinted circle.
 - [ ] AC7: Every one of the 17 muscle groups maps to exactly one of the 6 families (unit test). Muscle chips and catalog section headings show the family diamond. Exercise rows do not.
 - [ ] AC8: On the details page the "Gym equipment" row renders one line per requirement group, and an alternatives group as "Dumbbells or Kettlebells" (component test). `[]` renders "Nothing special". The spec 08 tests are updated to the new format.
 - [ ] AC9: The five custom icons exist with `currentColor` strokes. The my gym icon appears in the nudge card and the Profile gym row. No `EmptyState`, nudge or feature item renders an icon inside a tinted circle.

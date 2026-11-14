@@ -9,7 +9,7 @@ import { getOnboardingPrefill } from '@/server/profile/service';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: { absolute: t('Welcome · Pampojo') } };
+  return { title: { absolute: t('Welcome | Pampojo') } };
 }
 
 async function OnboardingGate() {

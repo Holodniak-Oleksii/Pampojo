@@ -11,7 +11,7 @@ type Props = PageProps<'/[lang]/library/exercises/new'>;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: { absolute: t('New exercise · Pampojo') } };
+  return { title: { absolute: t('New exercise | Pampojo') } };
 }
 
 async function NewExercise({ searchParams }: Pick<Props, 'searchParams'>) {

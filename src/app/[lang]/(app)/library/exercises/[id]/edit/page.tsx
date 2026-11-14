@@ -12,7 +12,7 @@ type Props = PageProps<'/[lang]/library/exercises/[id]/edit'>;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: { absolute: t('Edit exercise · Pampojo') } };
+  return { title: { absolute: t('Edit exercise | Pampojo') } };
 }
 
 async function EditExercise({ params }: Pick<Props, 'params'>) {

@@ -51,12 +51,7 @@ test.describe('auth in English', () => {
   test('sign up lands on /today and / redirects there', async ({ page }) => {
     await signUp(page);
 
-    await expect(
-      page.getByRole('heading', {
-        level: 1,
-        name: /^Good (morning|afternoon|evening), John Smith$/,
-      }),
-    ).toBeVisible();
+    await expect(page.getByText(/^Good (morning|afternoon|evening), John Smith\. /)).toBeVisible();
     await page.goto('/');
     await expect(page).toHaveURL(/\/today$/);
   });
@@ -212,7 +207,7 @@ for (const [locale, copy] of [
       await page.waitForURL('**/onboarding');
       await completeOnboardingViaApi(page);
       await page.goto('/today');
-      await expect(page.getByRole('heading', { level: 1, name: copy.today })).toBeVisible();
+      await expect(page.getByText(copy.today)).toBeVisible();
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       expect(overflow).toBeLessThanOrEqual(0);
     });

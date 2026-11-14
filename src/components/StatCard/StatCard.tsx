@@ -14,7 +14,7 @@ export interface StatCardProps {
 export function StatCard({ label, value, unit, trend, children, className }: StatCardProps) {
   const TrendIcon = trend?.direction === 'up' ? ArrowUp : ArrowDown;
   return (
-    <div className={cn('flex flex-col gap-2 rounded-[24px] bg-card p-5 shadow-soft', className)}>
+    <div className={cn('flex flex-col gap-2 rounded-lg bg-card p-5', className)}>
       <p className="text-sm font-semibold text-muted-foreground">{label}</p>
       <div className="flex items-baseline gap-3">
         <p className="text-3xl font-extrabold tabular-nums">

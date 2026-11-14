@@ -37,7 +37,7 @@ export function EmojiAvatar({ emoji, color, size = 'md', label, className }: Emo
       role="img"
       aria-label={label ?? names[emoji]}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-full leading-none select-none',
+        'inline-flex shrink-0 items-center justify-center rounded-md leading-none select-none',
         COLOR_CLASS[color],
         SIZE_CLASS[size],
         className,

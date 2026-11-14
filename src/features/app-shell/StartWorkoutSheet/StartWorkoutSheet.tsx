@@ -30,7 +30,7 @@ export function StartWorkoutSheet({ open, onOpenChange, returnFocusRef }: StartW
           event.preventDefault();
           returnFocusRef.current?.focus();
         }}
-        className="max-h-dvh overflow-y-auto rounded-t-[32px] bg-background pb-[max(1rem,env(safe-area-inset-bottom))] motion-reduce:animate-none data-[side=right]:w-full data-[side=right]:rounded-none data-[side=right]:sm:max-w-[480px]"
+        className="max-h-dvh overflow-y-auto rounded-t-xl bg-background pb-[max(1rem,env(safe-area-inset-bottom))] motion-reduce:animate-none data-[side=right]:w-full data-[side=right]:rounded-none data-[side=right]:sm:max-w-[480px]"
       >
         <SheetHeader className="px-4 pt-6 lg:px-6">
           <SheetTitle className="text-2xl font-extrabold">{t('Choose workout')}</SheetTitle>

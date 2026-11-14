@@ -125,7 +125,7 @@ function EditProfileForm({ profile, onDone }: { profile: Profile; onDone: () => 
         {serverError ? (
           <p
             role="alert"
-            className="rounded-2xl bg-card px-4 py-3 text-sm font-semibold text-destructive shadow-soft"
+            className="rounded-md bg-card px-4 py-3 text-sm font-semibold text-destructive"
           >
             {t('Something went wrong. Try again.')}
           </p>

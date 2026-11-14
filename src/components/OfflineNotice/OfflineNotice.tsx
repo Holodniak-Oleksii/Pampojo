@@ -5,7 +5,7 @@ export function OfflineNotice({ children, className }: { children: string; class
   return (
     <p
       className={cn(
-        'flex items-center gap-2 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-semibold',
+        'flex items-center gap-2 rounded-md bg-card px-4 py-3 ring-1 ring-border ring-inset text-sm font-semibold',
         className,
       )}
     >

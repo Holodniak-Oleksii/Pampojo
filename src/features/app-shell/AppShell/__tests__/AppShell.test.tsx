@@ -57,6 +57,29 @@ describe('AppShell', () => {
       .toBeInTheDocument();
   });
 
+  it('styles the current section: accent icon in the bar, a diamond marker in the sidebar', async () => {
+    const screen = await renderShell('/library/exercises');
+
+    await expect
+      .element(
+        screen.getByRole('navigation', MAIN_NAV).last().getByRole('link', { name: 'Library' }),
+      )
+      .toHaveClass('text-accent');
+    await expect
+      .element(
+        screen.getByRole('navigation', MAIN_NAV).last().getByRole('link', { name: 'Calendar' }),
+      )
+      .not.toHaveClass('text-accent');
+
+    const markers = screen
+      .getByRole('complementary')
+      .getByRole('navigation', MAIN_NAV)
+      .getByRole('link')
+      .elements()
+      .map((link) => link.querySelector('[data-variant]') !== null);
+    expect(markers).toEqual([false, false, true, false, false]);
+  });
+
   it('sidebar: Today first, then the sections', async () => {
     const screen = await renderShell('/calendar');
 

@@ -6,6 +6,7 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useGymQuery, useSaveGymMutation } from '@/api/gym';
+import { MyGymIcon } from '@/components/BrandIcons';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,6 +59,7 @@ function Layout({
       </Link>
       <PageHeader
         title={t('My gym')}
+        icon={<MyGymIcon className="size-7" />}
         actions={
           <span role="status" aria-live="polite" className="text-sm text-muted-foreground">
             {status === 'saving' ? t('Saving…') : status === 'saved' ? t('Saved') : null}
@@ -96,8 +98,7 @@ function FirstVisit() {
     <Layout
       online={online}
       footer={
-        // Sticky above the bottom nav on mobile; a plain button under the list on desktop.
-        <div className="sticky bottom-[calc(6.5rem+env(safe-area-inset-bottom))] -mx-4 bg-background/95 px-4 py-3 lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:py-0">
+        <div>
           <Button
             size="lg"
             className="w-full lg:w-auto"
@@ -143,7 +144,7 @@ export function GymEditor() {
     if (query.isError || query.fetchStatus === 'paused') {
       return (
         <Layout online={online}>
-          <div className="flex flex-col items-start gap-3 rounded-[20px] bg-card p-5 shadow-soft">
+          <div className="flex flex-col items-start gap-3 rounded-lg bg-card p-5">
             <p>{t("Couldn't load your gym.")}</p>
             <Button
               variant="secondary"

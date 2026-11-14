@@ -2,12 +2,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function TodaySkeleton() {
   return (
-    <div className="flex flex-col gap-6" aria-hidden="true">
-      <div className="flex items-center gap-4">
-        <Skeleton className="size-20 rounded-full" />
-        <Skeleton className="h-9 w-56 md:h-10" />
-      </div>
-      <Skeleton className="h-48 w-full rounded-[20px]" />
+    <div className="flex flex-col gap-4" aria-hidden="true">
+      <Skeleton className="h-5 w-72 max-w-full" />
+      <Skeleton className="h-80 w-full rounded-lg" />
     </div>
   );
 }

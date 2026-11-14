@@ -31,7 +31,6 @@ Manrope through `next/font`, subsets `latin` and `cyrillic`, weights 400, 600, 7
 - `StatusPill`: online (light) or offline (dark, with a pending count); it opens the sync sheet.
 - `WeekStrip`: 7 days with diamond markers.
 - `SetRow`, `RestTimer`, `ExerciseRow` (thumbnail, title, secondary line, value, chevron), `MuscleChips` (a family diamond before the label).
-- `GhostList`: the empty-state placeholder that mirrors the real list.
 - `EmojiAvatar`: an emoji on a 4px-radius square from the avatar palette.
 - Custom icons (workout, set done, record, rest, my gym): see `VISUAL_LANGUAGE.md`.
 - `SegmentedGauge` and `StatCard` from spec 01 are replaced by diamond rows and plain numbers. Spec 13 decides what remains.

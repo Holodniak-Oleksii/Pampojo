@@ -5,7 +5,7 @@ import googleG from '@/assets/google-g.svg';
 import { GoogleSignInButton } from '@/features/auth/GoogleSignInButton';
 import { getI18n } from '@/i18n/server';
 import { isGoogleEnabled } from '@/server/auth/google';
-import { HeroPhone } from '../HeroPhone';
+import { HeroWorkoutCard } from '../HeroWorkoutCard';
 
 export async function Hero() {
   const { t } = await getI18n();
@@ -40,10 +40,10 @@ export async function Hero() {
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          {t('Free • Works on iPhone, Android and laptop')}
+          {t('Free. Works on iPhone, Android and laptop.')}
         </p>
       </div>
-      <HeroPhone />
+      <HeroWorkoutCard />
     </section>
   );
 }

@@ -72,7 +72,11 @@ describe('ExerciseDetails', () => {
     await expect
       .element(screen.getByRole('term').filter({ hasText: 'Gym equipment' }))
       .toBeVisible();
-    await expect.element(screen.getByText('Barbell · Flat bench · Squat rack')).toBeVisible();
+    const term = screen.getByRole('term').filter({ hasText: 'Gym equipment' }).element();
+    const value = term.nextElementSibling as HTMLElement;
+    const items = [...value.querySelectorAll('li')].map((li) => li.textContent);
+    expect(items).toEqual(['Barbell', 'Flat bench', 'Squat rack']);
+    expect(value.textContent).not.toContain('·');
   });
 
   it('joins alternatives with "or" (AC10)', async () => {

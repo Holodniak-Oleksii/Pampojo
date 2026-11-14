@@ -70,7 +70,7 @@ test.describe('custom exercises', () => {
     await page.goto('/library/exercises');
     await page.getByRole('link', { name: 'Create exercise' }).first().click();
     await page.waitForURL('**/library/exercises/new');
-    await expect(page).toHaveTitle('New exercise · Pampojo');
+    await expect(page).toHaveTitle('New exercise | Pampojo');
     expect(await overflow(page)).toBeLessThanOrEqual(0);
 
     await fillRequired(page, 'Cable Hug');

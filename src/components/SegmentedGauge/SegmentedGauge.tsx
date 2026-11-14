@@ -54,7 +54,7 @@ export function SegmentedGauge({ value, label, className }: SegmentedGaugeProps)
             height={SEGMENT_LENGTH}
             rx={6}
             transform={`rotate(${segment.rotation} ${segment.x} ${segment.y})`}
-            className={index < filled ? 'fill-accent' : 'fill-accent-soft'}
+            className={index < filled ? 'fill-accent' : 'fill-border'}
           />
         ))}
       </svg>

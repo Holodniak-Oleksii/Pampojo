@@ -6,7 +6,7 @@ export default async function LibraryLayout({ children }: LayoutProps<'/[lang]/l
   const { t } = await getI18n();
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t('Library')} />
+      <PageHeader sectionTitle title={t('Library')} />
       <LibraryTabs />
       {children}
     </div>

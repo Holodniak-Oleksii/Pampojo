@@ -139,7 +139,7 @@ export function PhotoSlots({ name, slots, onChange, onRetry, disabled }: PhotoSl
               key={slot.key}
               ref={drag.itemRef(index)}
               className={cn(
-                'flex flex-col gap-2 rounded-[14px] transition-shadow motion-reduce:transition-none',
+                'flex flex-col gap-2 rounded-md transition-shadow motion-reduce:transition-none',
                 drag.active === index && 'shadow-soft ring-2 ring-accent',
               )}
             >
@@ -150,14 +150,14 @@ export function PhotoSlots({ name, slots, onChange, onRetry, disabled }: PhotoSl
                     src={slot.previewUrl}
                     name={name || slotLabel}
                     alt={`${name || t('Photos')}, ${slotLabel}`}
-                    className="aspect-[4/3] w-full rounded-[12px]"
+                    className="aspect-[4/3] w-full rounded-md"
                   />
                 ) : (
                   <button
                     type="button"
                     disabled={disabled}
                     onClick={openPicker}
-                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed border-foreground/20 bg-card text-sm text-muted-foreground outline-none hover:bg-accent-soft/40 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-foreground/20 bg-card text-sm text-muted-foreground outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                   >
                     <ImagePlus aria-hidden="true" className="size-6" />
                     {t('Add photo')}
@@ -170,7 +170,7 @@ export function PhotoSlots({ name, slots, onChange, onRetry, disabled }: PhotoSl
                       type="button"
                       aria-label={`${t('Drag to reorder')}, ${slotLabel}`}
                       {...drag.handleProps(index)}
-                      className="absolute top-3 left-3 flex size-10 cursor-grab items-center justify-center rounded-full bg-background/85 text-foreground shadow-soft outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+                      className="absolute top-3 left-3 flex size-10 cursor-grab items-center justify-center rounded-md bg-background/85 text-foreground shadow-soft outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
                     >
                       <GripVertical aria-hidden="true" className="size-5" />
                     </button>
@@ -179,7 +179,7 @@ export function PhotoSlots({ name, slots, onChange, onRetry, disabled }: PhotoSl
                         <button
                           type="button"
                           aria-label={`${t('Photo actions')}, ${slotLabel}`}
-                          className="absolute top-3 right-3 flex size-10 items-center justify-center rounded-full bg-background/85 text-foreground shadow-soft outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="absolute top-3 right-3 flex size-10 items-center justify-center rounded-md bg-background/85 text-foreground shadow-soft outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Ellipsis aria-hidden="true" className="size-5" />
                         </button>
@@ -198,7 +198,7 @@ export function PhotoSlots({ name, slots, onChange, onRetry, disabled }: PhotoSl
                   </>
                 ) : null}
                 {slot.status === 'uploading' ? (
-                  <span className="absolute inset-0 flex items-center justify-center rounded-[12px] bg-background/60">
+                  <span className="absolute inset-0 flex items-center justify-center rounded-md bg-background/60">
                     <Loader2
                       aria-hidden="true"
                       className="size-6 animate-spin motion-reduce:animate-none"

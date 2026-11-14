@@ -1,9 +1,8 @@
-import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface EmptyStateProps {
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' }>;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -14,16 +13,11 @@ export function EmptyState({ icon: Icon, title, description, action, className }
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-3 rounded-[20px] bg-card p-8 text-center shadow-soft',
+        'flex flex-col items-center gap-3 rounded-lg bg-card p-8 text-center',
         className,
       )}
     >
-      <span
-        aria-hidden="true"
-        className="flex size-14 items-center justify-center rounded-2xl bg-accent-soft text-foreground"
-      >
-        <Icon className="size-7" />
-      </span>
+      <Icon aria-hidden="true" className="size-7 text-muted-foreground" />
       <h2 className="text-xl font-extrabold">{title}</h2>
       {description ? <p className="text-muted-foreground">{description}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}

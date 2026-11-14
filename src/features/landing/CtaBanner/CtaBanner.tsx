@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PlayDiamond } from '@/components/PlayDiamond';
 import { Button } from '@/components/ui/button';
 import { getI18n } from '@/i18n/server';
 
@@ -8,13 +9,16 @@ export async function CtaBanner() {
     <section
       data-section="cta"
       aria-labelledby="cta-heading"
-      className="flex flex-col items-center justify-between gap-4 rounded-[32px] bg-primary px-6 py-6 text-primary-foreground md:flex-row md:rounded-full md:px-10"
+      className="flex flex-wrap items-center justify-between gap-6 rounded-lg bg-card p-6 ring-1 ring-border ring-inset md:p-10"
     >
-      <h2 id="cta-heading" className="text-center text-2xl font-extrabold md:text-left md:text-3xl">
-        {t('Start training smarter today')}
+      <h2 id="cta-heading" className="text-[clamp(26px,3vw,36px)] leading-tight font-extrabold">
+        {t('Log your next workout here')}
       </h2>
-      <Button asChild variant="accent" size="lg">
-        <Link href="/signup">{t('Get started')}</Link>
+      <Button asChild size="lg">
+        <Link href="/signup">
+          <PlayDiamond />
+          {t('Get started')}
+        </Link>
       </Button>
     </section>
   );

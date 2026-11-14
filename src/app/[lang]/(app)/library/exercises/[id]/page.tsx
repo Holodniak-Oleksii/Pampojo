@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: {
       absolute: exercise
-        ? t('{{name}} · Pampojo', { name: exercise.name })
-        : t('Exercises · Pampojo'),
+        ? t('{{name}} | Pampojo', { name: exercise.name })
+        : t('Exercises | Pampojo'),
     },
   };
 }

@@ -161,7 +161,7 @@ The structure is unchanged: Calendar, Library, Play, Progress, Profile.
   - A quiet greeting line with the date. There is no avatar on Today.
   - The workout card: name, "N вправ, близько M хв", rows, and one "Почати тренування" button.
   - Below it, the week: 7 days with diamonds (done accent, today a dark outline, planned a `--planned` outline) and "N з M".
-- **Empty states.** Show a ghost of the content to come (dashed thumbnails, grey bars in the real layout), one sentence, and one action. Never an icon in a bubble.
+- **Empty states.** A headline, one sentence, and the real next steps as a short list with numbered diamonds when the path has steps. Then one main action, sized to its label from `sm` up, and at most one quiet secondary link. No grey placeholder bars, which read as a loading skeleton, and never an icon in a bubble.
 - **Rest day.** "Сьогодні відпочинок", a hint that Play starts any workout, and a card for the next workout with thumbnails and "Переглянути тренування".
 - **Offline.**
   - The dark status pill plus a quiet strip: "Ти офлайн" and how many changes are saved on the phone.

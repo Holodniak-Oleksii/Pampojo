@@ -568,6 +568,59 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 - Day statuses: done late is an accent outline diamond, missed is a destructive outline diamond.
 **Why:** Lead's answers; one palette for the logo and the UI.
 
+## 2026-11-13 — Document title separator
+
+**Context:** Spec 28 removes "·" from UI strings; every browser tab title is "Page · Pampojo".
+**Decision:** Document titles use "Page | Pampojo" in every locale; the catalog test allows no "·" or "•" anywhere.
+**Why:** Lead's choice.
+
+## 2026-11-14 — One visible title per screen
+
+**Context:** Spec 28 review; the top bar section label and the page heading repeated the same word ("Прогрес" twice).
+**Decision:**
+- On phones the top bar shows the section label, and section-root pages (Calendar, Progress, Library, Profile) keep their `h1` for screen readers only.
+- On desktop the top bar label is hidden, since the sidebar shows the section, and the `h1` is visible.
+- Sub-pages (My gym, exercise details) keep their own visible `h1`.
+- This changes the spec 05 rule that the breakpoint switches only the navigation.
+**Why:** Lead's feedback: duplicated titles add nothing.
+
+## 2026-11-14 — Accent confirmed as #EC8447
+
+**Context:** Spec 28 review. The menu board ("Ж. Гострий") was drawn with the older `#F59A62`.
+**Decision:** `--accent` and the logo orange stay `#EC8447`, with the full "Warm stone" palette (`#ECE9E4`, `#F8F7F4`, `#24221F`, `#5C5751`). The board's colour is not the reference.
+**Why:** Lead's choice.
+
+## 2026-11-14 — Empty states show steps, not placeholders
+
+**Context:** Spec 28 review; the Today "ghost" rows read as a loading skeleton, and the full-width button on desktop looked oversized.
+**Decision:**
+- The Today empty state lists three numbered steps with diamond markers, then "Create your first workout" and a quiet "Browse exercises" link.
+- Buttons fill the width only below `sm`.
+- `GhostList` is removed. This replaces the D9 ghost rule.
+**Why:** Lead's feedback and choice.
+
+## 2026-11-14 — My gym save button is not sticky
+
+**Context:** Spec 28 review; the sticky "Save my gym" bar from spec 08 floated over the equipment list above the bottom nav.
+**Decision:** The button sits at the end of the page on every width.
+**Why:** Lead's call: a fixed button adds nothing here.
+
+## 2026-11-14 — Mobile catalog filters in a sheet
+
+**Context:** Spec 28 review; on phones the scrolling chip row, the equipment menu and the "Create exercise" button stacked above the list.
+**Decision:**
+- Below `lg`, a filter icon button next to the search, the same size and surface, shows the active count. It opens a bottom sheet with "Mine", "Available in my gym", the muscle chips and the equipment list. Taps apply at once; "Reset" clears the filters but keeps the search; "Show exercises" closes the sheet.
+- "Create exercise" becomes an accent "+" icon button opposite the Library tabs on the Exercises tab.
+- Desktop keeps the side column.
+- This changes the spec 06–08 mobile layout.
+**Why:** Lead's request.
+
+## 2026-11-14 — No dark variants in shared primitives
+
+**Context:** shadcn primitives (input, checkbox, tabs, field, dropdown) had `dark:` classes, so with a dark OS theme the search input turned grey in a light-only app.
+**Decision:** Remove the `dark:` classes. The session screen's dark theme (spec 10) will get its own tokens.
+**Why:** The app is light; the system dark theme must not leak into single controls.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

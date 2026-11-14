@@ -15,7 +15,7 @@ export async function MarketingHeader() {
   return (
     <header data-section="header" className="sticky top-0 z-40 bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 md:px-6">
-        <Link href="/" aria-label={t('Pampojo home')} className="flex items-center rounded-xl">
+        <Link href="/" aria-label={t('Pampojo home')} className="flex items-center rounded-md">
           <Image
             src="/brand/pampojo-wordmark.svg"
             alt=""

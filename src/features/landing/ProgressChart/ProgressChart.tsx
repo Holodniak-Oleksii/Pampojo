@@ -1,31 +1,41 @@
 const POINTS: [number, number][] = [
-  [10, 110],
-  [50, 98],
-  [90, 102],
-  [130, 80],
-  [170, 86],
-  [210, 60],
-  [250, 48],
-  [300, 40],
+  [0, 112],
+  [50, 104],
+  [100, 106],
+  [150, 88],
+  [200, 92],
+  [250, 66],
+  [300, 58],
+  [350, 44],
+  [400, 30],
 ];
 
 const line = POINTS.map(([x, y]) => `${x},${y}`).join(' ');
-const area = `M10,130 L${POINTS.map(([x, y]) => `${x},${y}`).join(' L')} L300,130 Z`;
 
-export function ProgressChart({ label }: { label: string }) {
+export interface ProgressChartProps {
+  label: string;
+  startLabel: string;
+  endLabel: string;
+}
+
+/** A static line chart for the landing; the last point is the accent diamond. */
+export function ProgressChart({ label, startLabel, endLabel }: ProgressChartProps) {
   return (
-    <svg viewBox="0 0 320 140" role="img" aria-label={label} className="w-full">
-      <path d={area} className="fill-accent-soft opacity-60" />
+    <svg viewBox="0 0 410 140" role="img" aria-label={label} className="h-[150px] w-full">
+      <path d="M0 120H400M0 70H400M0 20H400" className="stroke-border" strokeWidth={1} />
       <polyline
         points={line}
-        className="fill-none stroke-accent"
-        strokeWidth={3}
-        strokeLinecap="round"
+        className="fill-none stroke-foreground"
+        strokeWidth={2.5}
         strokeLinejoin="round"
       />
-      {POINTS.map(([x, y]) => (
-        <circle key={x} cx={x} cy={y} r={4} className="fill-accent" />
-      ))}
+      <path d="M400 22 408 30 400 38 392 30Z" className="fill-accent" />
+      <text x="0" y="136" className="fill-muted-foreground text-xs">
+        {startLabel}
+      </text>
+      <text x="400" y="14" textAnchor="end" className="fill-foreground text-xs font-bold">
+        {endLabel}
+      </text>
     </svg>
   );
 }
