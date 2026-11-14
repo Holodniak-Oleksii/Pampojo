@@ -76,6 +76,8 @@ export const exerciseListItemSchema = z.object({
   section: muscleGroupSchema.nullable(),
   isOwn: z.boolean(),
   gymEquipment: z.array(z.array(gymEquipmentSchema)),
+  trackingType: trackingTypeSchema,
+  laterality: lateralitySchema.nullable(),
 });
 
 export type ExerciseListItem = z.infer<typeof exerciseListItemSchema>;

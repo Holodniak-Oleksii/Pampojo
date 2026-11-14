@@ -15,6 +15,7 @@ import {
   type UpdateExerciseInput,
 } from '@/shared/schemas/exercise';
 import { http } from './http';
+import { workoutKeys } from './workouts';
 
 const EXERCISES_PATH = '/api/v1/exercises';
 
@@ -95,8 +96,13 @@ export function useInvalidateExercises() {
 
 export function useDeleteExerciseMutation() {
   const invalidate = useInvalidateExercises();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteExercise,
-    onSuccess: (_data, id) => invalidate(id),
+    onSuccess: (_data, id) => {
+      invalidate(id);
+      // The server also removed the exercise from the user's workouts.
+      void queryClient.invalidateQueries({ queryKey: workoutKeys.all });
+    },
   });
 }

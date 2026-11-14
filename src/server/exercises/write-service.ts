@@ -1,4 +1,5 @@
 import 'server-only';
+import { removeExerciseFromWorkouts } from '@/server/workouts/queries';
 import { randomUUID } from 'node:crypto';
 import {
   EXERCISE_MEDIA_BUCKET,
@@ -240,6 +241,7 @@ export async function deleteOwnExercise(
     const row = assertOwn(await lockExerciseRow(tx, id), userId);
     keys = frameKeys(row.media);
     await updateExerciseColumns(tx, id, { deletedAt: new Date() });
+    await removeExerciseFromWorkouts(tx, userId, id);
   });
   await removeQuietly(keys);
 }

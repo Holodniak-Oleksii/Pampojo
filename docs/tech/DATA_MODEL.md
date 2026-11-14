@@ -101,11 +101,11 @@ One gym per user in the MVP. A user without a row has not set up a gym (spec 08)
 | workoutId | uuid → workout | |
 | exerciseId | uuid → exercise | |
 | position | int | Order inside the workout |
-| targetSets | smallint | |
+| targetSets | smallint null | 1–20; every target is optional (spec 09) |
 | targetRepsMin / targetRepsMax | smallint null | Range; equal values mean a fixed target |
 | targetWeightKg | numeric null | |
 | targetDurationSec | int null | For `time` tracking |
-| restSec | int | Default rest after each set |
+| targetDistanceM | int null | For `distance` tracking, in metres |
 | notes | text null | |
 
 ## schedule_rule (the plan)

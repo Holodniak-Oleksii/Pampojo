@@ -12,9 +12,10 @@ import { TodayEmpty } from './TodayEmpty';
 export interface TodayViewProps {
   displayName: string;
   initialGym: Gym | null;
+  hasWorkouts: boolean;
 }
 
-export function TodayView({ displayName, initialGym }: TodayViewProps) {
+export function TodayView({ displayName, initialGym, hasWorkouts }: TodayViewProps) {
   const { t } = useTranslation();
   const part = usePartOfDay();
   const date = useTodayLabel();
@@ -34,7 +35,7 @@ export function TodayView({ displayName, initialGym }: TodayViewProps) {
         <Skeleton aria-hidden="true" className="h-5 w-72 max-w-full" />
       )}
       <GymNudgeCard initialGym={initialGym} />
-      <TodayEmpty />
+      <TodayEmpty hasWorkouts={hasWorkouts} />
     </div>
   );
 }

@@ -41,7 +41,7 @@ import { MuscleChips } from '../MuscleChips';
 import { emptySlot, MIN_SLOTS, PhotoSlots, type PhotoSlot } from './PhotoSlots';
 import { GymRequirementsField } from './GymRequirementsField';
 import { FrameUploadFailed, saveExercise } from './save';
-import { useDiscardGuard } from './useDiscardGuard';
+import { useDiscardGuard } from '@/hooks/useDiscardGuard';
 import { useDragReorder } from '../hooks/useDragReorder';
 
 export interface ExerciseFormProps {

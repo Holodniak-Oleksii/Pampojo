@@ -1,6 +1,7 @@
 import type { Exercise, ExerciseListItem } from '@/shared/schemas/exercise';
 import type { Gym } from '@/shared/schemas/gym';
 import type { Profile } from '@/shared/schemas/profile';
+import type { Workout, WorkoutExercise, WorkoutListItem } from '@/shared/schemas/workout';
 import type { DeepPartial } from '@/types/utils';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -68,6 +69,8 @@ export function getExerciseListItemMock(
       section: 'chest',
       isOwn: false,
       gymEquipment: [['barbell'], ['flat_bench'], ['squat_rack']],
+      trackingType: 'weight_reps',
+      laterality: 'bilateral',
     },
     override,
   );
@@ -113,6 +116,60 @@ export function getExerciseMock(override?: DeepPartial<Exercise>): Exercise {
 export function getGymMock(override?: DeepPartial<Gym>): Gym {
   return mergeMock<Gym>(
     { equipment: ['dumbbells', 'flat_bench'], updatedAt: '2026-11-12T10:00:00Z' },
+    override,
+  );
+}
+
+export function getWorkoutExerciseMock(override?: DeepPartial<WorkoutExercise>): WorkoutExercise {
+  return mergeMock<WorkoutExercise>(
+    {
+      id: '00000000-0000-4000-8000-0000000000e1',
+      exerciseId: '6f1c2b9e-3a4d-4c5b-8e7f-9a0b1c2d3e4f',
+      targetSets: 3,
+      targetRepsMin: 8,
+      targetRepsMax: 12,
+      targetWeightKg: 80,
+      targetDurationSec: null,
+      targetDistanceM: null,
+      notes: null,
+      exercise: {
+        id: '6f1c2b9e-3a4d-4c5b-8e7f-9a0b1c2d3e4f',
+        name: 'Bench Press',
+        trackingType: 'weight_reps',
+        laterality: 'bilateral',
+        primaryMuscles: ['chest'],
+        thumbnailUrl: 'https://example.com/bench-0-thumb.webp',
+        isOwn: false,
+      },
+    },
+    override,
+  );
+}
+
+export function getWorkoutMock(override?: DeepPartial<Workout>): Workout {
+  return mergeMock<Workout>(
+    {
+      id: '00000000-0000-4000-8000-00000000a001',
+      name: 'Push Day',
+      description: null,
+      updatedAt: '2026-11-14T10:00:00Z',
+      exercises: [getWorkoutExerciseMock()],
+    },
+    override,
+  );
+}
+
+export function getWorkoutListItemMock(override?: DeepPartial<WorkoutListItem>): WorkoutListItem {
+  return mergeMock<WorkoutListItem>(
+    {
+      id: '00000000-0000-4000-8000-00000000a001',
+      name: 'Push Day',
+      updatedAt: '2026-11-14T10:00:00Z',
+      exerciseCount: 5,
+      exerciseIds: ['6f1c2b9e-3a4d-4c5b-8e7f-9a0b1c2d3e4f'],
+      primaryMuscles: ['chest', 'shoulders', 'triceps'],
+      thumbnailUrls: ['https://example.com/bench-0-thumb.webp'],
+    },
     override,
   );
 }

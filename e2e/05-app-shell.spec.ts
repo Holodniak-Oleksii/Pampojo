@@ -230,7 +230,7 @@ test.describe('app shell in English', () => {
 
     await page.goto('/library');
     await page.waitForURL('**/library/workouts');
-    await expect(page.getByText('Workout builder is coming soon.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Create workout' }).first()).toBeVisible();
     const tabs = page.getByRole('navigation', { name: 'Library' });
     await expect(tabs.getByRole('link', { name: 'Workouts' })).toHaveAttribute(
       'aria-current',

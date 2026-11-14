@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -19,6 +20,8 @@ export interface ConfirmDialogProps {
   cancelLabel: string;
   onConfirm: () => void;
   pending?: boolean;
+  /** Extra content under the description, such as a list of affected items. */
+  children?: ReactNode;
 }
 
 /** A yes/no dialog whose buttons share the width and wrap long labels instead of overflowing. */
@@ -31,6 +34,7 @@ export function ConfirmDialog({
   cancelLabel,
   onConfirm,
   pending,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,6 +43,7 @@ export function ConfirmDialog({
           <DialogTitle className="text-lg font-extrabold">{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {children}
         <DialogFooter className="-mx-5 -mb-5 grid grid-cols-1 rounded-b-xl p-5 sm:grid-cols-2">
           <Button
             variant="secondary"

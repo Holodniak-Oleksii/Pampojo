@@ -30,12 +30,12 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | --- | --- | --- |
 | `/api/auth/*` | Better Auth endpoints (sign-up, sign-in, Google, sign-out, session) | 03 |
 | `GET/PUT/PATCH /api/v1/me/profile` | Profile; `PUT` finishes onboarding | 04 |
-| `GET /api/v1/exercises` | Catalog (system + own), filters, search; `gym=1` keeps exercises the saved gym allows (ignored without one) | 06, 08 |
+| `GET /api/v1/exercises` | Catalog (system + own), filters, search; `gym=1` keeps exercises the saved gym allows (ignored without one); items carry `trackingType` and `laterality` (09) | 06, 08, 09 |
 | `GET /api/v1/exercises/{id}` | Exercise details | 06 |
 | `PUT/PATCH/DELETE /api/v1/exercises/{id}` | Custom exercises (`PUT` creates with a client id) | 07 |
 | `PUT/DELETE /api/v1/exercises/{id}/frames/{frameId}` | Upload (multipart) or remove one photo frame of an own exercise | 07 |
 | `GET/PUT /api/v1/me/gym` | Gym equipment `{ equipment, updatedAt }`; `GET` is 404 `GYM_PROFILE_NOT_FOUND` before the first save; `PUT` upserts | 08 |
-| `GET /api/v1/workouts`, `GET/PUT/PATCH/DELETE /api/v1/workouts/{id}` | Workouts with exercises | 09 |
+| `GET /api/v1/workouts`, `GET/PUT/DELETE /api/v1/workouts/{id}` | Workouts with exercises, see below | 09 |
 | `PUT /api/v1/sessions/{id}`, `PATCH`, `GET` list/detail | Sessions | 10 |
 | `PUT/PATCH/DELETE /api/v1/sets/{id}` | Set logs | 10 |
 | `GET /api/v1/exercises/{id}/last-performance` | Previous values in session | 10 |
@@ -52,6 +52,18 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `POST /api/v1/ai/substitutes` | AI re-ranking | 22 |
 | `POST /api/v1/ai/exercises/tags` | Tag suggestions | 23 |
 | `POST /api/v1/ai/exercises/from-voice` | Voice → exercise draft | 24 |
+
+## Workouts (spec 09)
+
+- **List.** `GET /api/v1/workouts` returns `{ items }`: at most 200, newest `updatedAt` first. Each item has `id`, `name`, `updatedAt`, `exerciseCount`, `exerciseIds` (distinct), `primaryMuscles` (at most 3, most frequent first) and `thumbnailUrls` (at most 4).
+- **Detail.** `GET /api/v1/workouts/{id}` returns `{ id, name, description, updatedAt, exercises }`, in order.
+  - Each exercise has `id`, `exerciseId`, `targetSets`, `targetRepsMin`, `targetRepsMax`, `targetWeightKg`, `targetDurationSec`, `targetDistanceM`, `notes` (all nullable).
+  - It also embeds `exercise`: `{ id, name, trackingType, laterality, primaryMuscles, thumbnailUrl, isOwn }`.
+- **`PUT /api/v1/workouts/{id}`** creates or replaces the workout and its whole exercise list, idempotent by the client id.
+  - Body: `{ name (1–80), description?, exercises: [{ id, exerciseId, target…?, notes? }] (1–30) }`.
+  - Targets the exercise's tracking type does not allow, an unknown exercise, or another user's or deleted own exercise give 400 `VALIDATION_FAILED`, with the path.
+- **`DELETE`** soft deletes and returns 204, also on a repeat.
+- **Errors:** `WORKOUT_NOT_FOUND` (404, also for another user's id) and `WORKOUT_LIMIT_REACHED` (422 at 200 workouts).
 
 ## Export file format
 

@@ -26,6 +26,10 @@ export interface FilterSheetProps {
   onToggleMuscle: (muscle: MuscleGroup) => void;
   onEquipmentChange: (equipment: Equipment[]) => void;
   onClear: () => void;
+  /** Where the sheet slides in from; the workout editor's desktop column opens it on the right. */
+  side?: 'bottom' | 'right';
+  /** A text trigger ("All filters") instead of the icon button. */
+  triggerLabel?: string;
 }
 
 /** Mobile only: every catalog filter in one bottom sheet, applied as it is tapped. */
@@ -37,6 +41,8 @@ export function FilterSheet({
   onToggleMuscle,
   onEquipmentChange,
   onClear,
+  side = 'bottom',
+  triggerLabel,
 }: FilterSheetProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -45,29 +51,35 @@ export function FilterSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="secondary"
-          size="icon"
-          aria-label={label}
-          // The same surface and border as the search input it sits beside.
-          className="relative shrink-0 border-input ring-0"
-        >
-          <SlidersHorizontal aria-hidden="true" />
-          {activeCount > 0 ? (
-            <span
-              aria-hidden="true"
-              className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-sm bg-accent text-xs font-bold text-foreground"
-            >
-              {activeCount}
-            </span>
-          ) : null}
-        </Button>
+        {triggerLabel ? (
+          <Button variant="ghost" size="sm">
+            {activeCount > 0 ? `${triggerLabel} (${activeCount})` : triggerLabel}
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            size="icon"
+            aria-label={label}
+            // The same surface and border as the search input it sits beside.
+            className="relative shrink-0 border-input ring-0"
+          >
+            <SlidersHorizontal aria-hidden="true" />
+            {activeCount > 0 ? (
+              <span
+                aria-hidden="true"
+                className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-sm bg-accent text-xs font-bold text-foreground"
+              >
+                {activeCount}
+              </span>
+            ) : null}
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent
-        side="bottom"
+        side={side}
         closeLabel={t('Close')}
         aria-describedby={undefined}
-        className="max-h-[85dvh] gap-0 rounded-t-xl bg-background motion-reduce:animate-none"
+        className="max-h-[85dvh] gap-0 rounded-t-xl bg-background motion-reduce:animate-none data-[side=right]:max-h-dvh data-[side=right]:w-full data-[side=right]:rounded-none data-[side=right]:sm:max-w-[420px]"
       >
         <SheetHeader className="px-4 pt-6 pb-2">
           <SheetTitle className="text-2xl font-extrabold">{t('Filters')}</SheetTitle>
