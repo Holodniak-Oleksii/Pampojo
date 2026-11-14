@@ -6,4 +6,6 @@ export interface CatalogFilters {
   equipment: Equipment[];
   /** Own exercises only (the "Mine" chip). */
   mine: boolean;
+  /** Only exercises the saved gym allows (the "Available in my gym" chip). */
+  gym: boolean;
 }

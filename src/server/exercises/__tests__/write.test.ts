@@ -3,8 +3,12 @@ import { eq, sql } from 'drizzle-orm';
 import sharp from 'sharp';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { normalizeSearch } from '@/lib/search';
-import { exercise, exerciseTranslation, user } from '@/server/db/schema';
-import { createExerciseInputSchema, updateExerciseInputSchema } from '@/shared/schemas/exercise';
+import { exercise, exerciseTranslation, gymProfile, user } from '@/server/db/schema';
+import {
+  createExerciseInputSchema,
+  listExercisesQuerySchema,
+  updateExerciseInputSchema,
+} from '@/shared/schemas/exercise';
 import { withRollback } from '@/test/db';
 import type { Tx } from '../queries';
 import { findExercise, listExercises } from '../service';
@@ -412,6 +416,68 @@ describe('deleteOwnExercise', () => {
         `users/${userId}/${id}/${frameId}-thumb.webp`,
         `users/${userId}/${id}/${frameId}-full.webp`,
       ]);
+    });
+  });
+});
+
+describe('gym equipment of own exercises', () => {
+  it('stores ticked items, keeps them on an unrelated PATCH, and the gym filter respects them (AC11)', async () => {
+    await withRollback(async (tx) => {
+      const userId = await newUser(tx);
+      await tx.insert(gymProfile).values({ userId, equipment: ['dumbbells'] });
+      const id = randomUUID();
+      const created = await createOwnExercise(
+        userId,
+        'en',
+        id,
+        create({ gymEquipment: [['barbell']] }),
+        tx,
+      );
+      expect(created.gymEquipment).toEqual([['barbell']]);
+
+      const renamed = await updateOwnExercise(
+        userId,
+        'en',
+        id,
+        updateExerciseInputSchema.parse({ name: `Renamed ${randomUUID().slice(0, 6)}` }),
+        tx,
+      );
+      expect(renamed.gymEquipment).toEqual([['barbell']]);
+
+      const free = randomUUID();
+      await createOwnExercise(userId, 'en', free, create(), tx);
+
+      const mine = await listExercises(
+        userId,
+        'en',
+        listExercisesQuerySchema.parse({ mine: '1', gym: '1' }),
+        tx,
+      );
+      expect(mine.items.map((item) => item.id)).toEqual([free]);
+
+      const cleared = await updateOwnExercise(
+        userId,
+        'en',
+        id,
+        updateExerciseInputSchema.parse({ gymEquipment: [] }),
+        tx,
+      );
+      expect(cleared.gymEquipment).toEqual([]);
+    });
+  });
+
+  it('keeps the alternatives a duplicate sends', async () => {
+    await withRollback(async (tx) => {
+      const userId = await newUser(tx);
+      const source = await systemExercise(tx, 0);
+      const created = await createOwnExercise(
+        userId,
+        'en',
+        randomUUID(),
+        create({ sourceExerciseId: source, gymEquipment: [['dumbbells', 'kettlebells']] }),
+        tx,
+      );
+      expect(created.gymEquipment).toEqual([['dumbbells', 'kettlebells']]);
     });
   });
 });

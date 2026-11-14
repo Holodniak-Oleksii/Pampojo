@@ -66,6 +66,33 @@ describe('ExerciseDetails', () => {
     }
   });
 
+  it('shows the gym equipment row with every group (AC10)', async () => {
+    mockReducedMotion(false);
+    const screen = await render(<ExerciseDetails exercise={getExerciseMock()} />);
+    await expect
+      .element(screen.getByRole('term').filter({ hasText: 'Gym equipment' }))
+      .toBeVisible();
+    await expect.element(screen.getByText('Barbell · Flat bench · Squat rack')).toBeVisible();
+  });
+
+  it('joins alternatives with "or" (AC10)', async () => {
+    mockReducedMotion(false);
+    const screen = await render(
+      <ExerciseDetails
+        exercise={getExerciseMock({ gymEquipment: [['dumbbells', 'kettlebells']] })}
+      />,
+    );
+    await expect.element(screen.getByText('Dumbbells or Kettlebells')).toBeVisible();
+  });
+
+  it('says "Nothing special" when nothing is needed (AC10)', async () => {
+    mockReducedMotion(false);
+    const screen = await render(
+      <ExerciseDetails exercise={getExerciseMock({ gymEquipment: [] })} />,
+    );
+    await expect.element(screen.getByText('Nothing special')).toBeVisible();
+  });
+
   it('hides rows whose value is missing', async () => {
     mockReducedMotion(false);
     const screen = await render(

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { updateProfile } from '@/api/profile';
 import { Toaster } from '@/components/ui/sonner';
-import { getProfileMock } from '@/test/mocks';
+import { getGymMock, getProfileMock } from '@/test/mocks';
 import { render } from '@/test/render';
 import { ProfileView } from '../ProfileView';
 
@@ -25,6 +25,16 @@ vi.mock('@/api/profile', async () => {
   };
 });
 
+vi.mock('@/api/gym', async () => {
+  const { useQuery } = await import('@tanstack/react-query');
+  const fetchGym = vi.fn(() => new Promise(() => {}));
+  return {
+    fetchGym,
+    useGymQuery: ({ initialData }: { initialData?: unknown } = {}) =>
+      useQuery({ queryKey: ['gym', 'me'], queryFn: fetchGym, initialData }),
+  };
+});
+
 vi.mock('@/api/auth', () => ({ authClient: { signOut: vi.fn() } }));
 
 beforeEach(() => {
@@ -36,8 +46,29 @@ afterEach(() => {
 });
 
 describe('ProfileView', () => {
+  it('shows the gym nudge and "Not set up" before the first save', async () => {
+    const screen = await render(
+      <ProfileView initialGym={null} initialProfile={getProfileMock()} />,
+    );
+    await expect.element(screen.getByRole('heading', { name: 'Set up your gym' })).toBeVisible();
+    await expect.element(screen.getByText('Not set up')).toBeVisible();
+  });
+
+  it('shows the gym count and no nudge after the first save', async () => {
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
+    await expect.element(screen.getByText('2 of 38')).toBeVisible();
+    await expect.element(screen.getByText('Set up your gym')).not.toBeInTheDocument();
+    await expect
+      .element(screen.getByRole('link', { name: /Gym equipment/ }))
+      .toHaveAttribute('href', '/profile/gym');
+  });
+
   it('shows avatar, name, age, height and latest weight', async () => {
-    const screen = await render(<ProfileView initialProfile={getProfileMock({ age: 36 })} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock({ age: 36 })} />,
+    );
 
     await expect.element(screen.getByRole('heading', { name: 'Profile' })).toBeVisible();
     await expect.element(screen.getByText('John Smith')).toBeVisible();
@@ -49,7 +80,9 @@ describe('ProfileView', () => {
   });
 
   it('shows a Language row with the switcher', async () => {
-    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
 
     await expect.element(screen.getByText('Language', { exact: true })).toBeVisible();
     await expect.element(screen.getByRole('button', { name: 'Language: English' })).toBeVisible();
@@ -57,7 +90,10 @@ describe('ProfileView', () => {
 
   it('shows imperial values for an imperial profile', async () => {
     const screen = await render(
-      <ProfileView initialProfile={getProfileMock({ unitSystem: 'imperial', age: 1 })} />,
+      <ProfileView
+        initialGym={getGymMock()}
+        initialProfile={getProfileMock({ unitSystem: 'imperial', age: 1 })}
+      />,
     );
 
     await expect.element(screen.getByText('5′11″')).toBeVisible();
@@ -66,9 +102,12 @@ describe('ProfileView', () => {
   });
 
   it('pluralizes the age in Ukrainian', async () => {
-    const screen = await render(<ProfileView initialProfile={getProfileMock({ age: 22 })} />, {
-      locale: 'uk',
-    });
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock({ age: 22 })} />,
+      {
+        locale: 'uk',
+      },
+    );
 
     await expect.element(screen.getByText('22 роки')).toBeVisible();
   });
@@ -79,7 +118,7 @@ describe('EditProfileSheet', () => {
     vi.mocked(updateProfile).mockResolvedValue(getProfileMock({ displayName: 'Jane Doe' }));
     const screen = await render(
       <>
-        <ProfileView initialProfile={getProfileMock()} />
+        <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />
         <Toaster />
       </>,
     );
@@ -111,7 +150,9 @@ describe('EditProfileSheet', () => {
 
   it('sends only the unit system when the units are toggled', async () => {
     vi.mocked(updateProfile).mockResolvedValue(getProfileMock({ unitSystem: 'imperial' }));
-    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
 
     await screen.getByRole('button', { name: 'Edit profile' }).click();
     await screen.getByRole('dialog', { name: 'Edit profile' }).getByText('Imperial').click();
@@ -132,7 +173,9 @@ describe('EditProfileSheet', () => {
 
   it('sends a typed weight in kg', async () => {
     vi.mocked(updateProfile).mockResolvedValue(getProfileMock({ latestWeightKg: 81.5 }));
-    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
 
     await screen.getByRole('button', { name: 'Edit profile' }).click();
     await screen
@@ -150,7 +193,9 @@ describe('EditProfileSheet', () => {
   });
 
   it('shows field errors from validation and blocks Save offline', async () => {
-    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
     await screen.getByRole('button', { name: 'Edit profile' }).click();
 
     await screen.getByRole('dialog', { name: 'Edit profile' }).getByLabelText('Weight').fill('500');
@@ -185,7 +230,9 @@ describe('EditProfileSheet', () => {
 
   it('does not focus the name on a phone, so the keyboard stays closed', async () => {
     await page.viewport(390, 844);
-    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
 
     await screen.getByRole('button', { name: 'Edit profile' }).click();
 
@@ -197,7 +244,9 @@ describe('EditProfileSheet', () => {
 
   it('focuses the name on desktop', async () => {
     await page.viewport(1440, 900);
-    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
 
     await screen.getByRole('button', { name: 'Edit profile' }).click();
 
@@ -208,7 +257,9 @@ describe('EditProfileSheet', () => {
 
   it('scrolls a field error into view above the buttons on a phone', async () => {
     await page.viewport(390, 844);
-    const screen = await render(<ProfileView initialProfile={getProfileMock()} />);
+    const screen = await render(
+      <ProfileView initialGym={getGymMock()} initialProfile={getProfileMock()} />,
+    );
     await screen.getByRole('button', { name: 'Edit profile' }).click();
 
     await screen

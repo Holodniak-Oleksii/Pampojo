@@ -40,6 +40,7 @@ export async function saveExercise(request: SaveRequest): Promise<Exercise> {
           description: input.description,
           instructions: input.instructions,
           commonMistakes: input.commonMistakes,
+          gymEquipment: input.gymEquipment,
         });
 
   let copied = request.copiedIds;

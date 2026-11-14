@@ -21,6 +21,7 @@ export async function seedCatalog(sql: Sql, entries: SeedExercise[]): Promise<Se
     secondary_muscles: entry.secondaryMuscles,
     movement_pattern: entry.movementPattern,
     equipment: entry.equipment,
+    gym_equipment: entry.gymEquipment,
     mechanic: entry.mechanic,
     laterality: entry.laterality,
     tracking_type: entry.trackingType,
@@ -31,8 +32,8 @@ export async function seedCatalog(sql: Sql, entries: SeedExercise[]): Promise<Se
 
   const inserted = await sql<{ id: string; slug: string }[]>`
     insert into exercise (
-      slug, primary_muscles, secondary_muscles, movement_pattern, equipment, mechanic,
-      laterality, tracking_type, difficulty, popularity, media
+      slug, primary_muscles, secondary_muscles, movement_pattern, equipment, gym_equipment,
+      mechanic, laterality, tracking_type, difficulty, popularity, media
     )
     select
       r.slug,
@@ -40,10 +41,11 @@ export async function seedCatalog(sql: Sql, entries: SeedExercise[]): Promise<Se
       array(select jsonb_array_elements_text(r.secondary_muscles)),
       r.movement_pattern,
       array(select jsonb_array_elements_text(r.equipment)),
+      r.gym_equipment,
       r.mechanic, r.laterality, r.tracking_type, r.difficulty, r.popularity, r.media
     from jsonb_to_recordset(${sql.json(exerciseRows)}) as r(
       slug text, primary_muscles jsonb, secondary_muscles jsonb, movement_pattern text,
-      equipment jsonb, mechanic text, laterality text, tracking_type text, difficulty smallint,
+      equipment jsonb, gym_equipment jsonb, mechanic text, laterality text, tracking_type text, difficulty smallint,
       popularity smallint, media jsonb
     )
     on conflict (slug) where owner_id is null do update set
@@ -51,6 +53,7 @@ export async function seedCatalog(sql: Sql, entries: SeedExercise[]): Promise<Se
       secondary_muscles = excluded.secondary_muscles,
       movement_pattern = excluded.movement_pattern,
       equipment = excluded.equipment,
+      gym_equipment = excluded.gym_equipment,
       mechanic = excluded.mechanic,
       laterality = excluded.laterality,
       tracking_type = excluded.tracking_type,

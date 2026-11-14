@@ -105,6 +105,17 @@ describe('exercise write routes', () => {
     expect(await second.json()).toEqual(await first.json());
   });
 
+  it('accepts gym equipment and rejects an empty group or unknown key with 400', async () => {
+    await signIn();
+    const ok = await send('PUT', randomUUID(), { ...body(), gymEquipment: [['barbell']] });
+    expect(ok.status).toBe(200);
+    expect((await ok.json()).gymEquipment).toEqual([['barbell']]);
+    for (const gymEquipment of [[[]], [['treadmill']]]) {
+      const response = await send('PUT', randomUUID(), { ...body(), gymEquipment });
+      expect(response.status).toBe(400);
+    }
+  });
+
   it('hides a foreign exercise behind 404 on every endpoint (AC2)', async () => {
     await signIn();
     const id = randomUUID();

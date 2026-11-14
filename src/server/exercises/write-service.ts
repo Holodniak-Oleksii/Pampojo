@@ -91,6 +91,7 @@ async function writeFields(
     movementPattern: fields.movementPattern,
     mechanic: fields.mechanic,
     laterality: fields.laterality,
+    gymEquipment: fields.gymEquipment,
   };
   const presentColumns = Object.fromEntries(
     Object.entries(columns).filter(([, value]) => value !== undefined),
@@ -165,6 +166,7 @@ export async function createOwnExercise(
         movementPattern: input.movementPattern,
         mechanic: input.mechanic,
         laterality: input.laterality,
+        gymEquipment: input.gymEquipment,
         media,
         sourceExerciseId: input.sourceExerciseId,
       });

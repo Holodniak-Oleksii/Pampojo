@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { isAvailableInGym } from '@/shared/gym';
 import { seedCatalogSchema } from '../seed-schema';
 
 const read = (file: string) => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
@@ -25,6 +26,28 @@ describe('exercises.json', () => {
     expect(names.get('Bench Press')).toBe('Жим штанги лежачи');
     expect(names.has('Back Squat')).toBe(true);
     expect(names.has('Deadlift')).toBe(true);
+  });
+});
+
+describe('exercises.json gym equipment', () => {
+  const entries = seedCatalogSchema.parse(JSON.parse(read('exercises.json')));
+  const gymOf = (slug: string) => entries.find((entry) => entry.slug === slug)?.gymEquipment;
+
+  it('pins the values the spec fixes', () => {
+    expect(gymOf('goblet-squat')).toEqual([['dumbbells', 'kettlebells']]);
+    expect(gymOf('push-up')).toEqual([]);
+    expect(gymOf('barbell-bench-press')).toEqual([['barbell'], ['flat_bench'], ['squat_rack']]);
+    expect(gymOf('triceps-pushdown')).toEqual([['cable_station', 'cable_crossover']]);
+  });
+
+  it('shows and hides the expected staples for a dumbbells and flat bench gym', () => {
+    const gym = ['dumbbells', 'flat_bench'];
+    const available = (slug: string) => isAvailableInGym(gymOf(slug) ?? [['missing']], gym);
+    expect(available('dumbbell-bench-press')).toBe(true);
+    expect(available('goblet-squat')).toBe(true);
+    expect(available('push-up')).toBe(true);
+    expect(available('barbell-bench-press')).toBe(false);
+    expect(available('lat-pulldown')).toBe(false);
   });
 });
 

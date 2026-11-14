@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { createExercise } from '@/api/exercises';
+import { createExercise, updateExercise } from '@/api/exercises';
 import { ApiError } from '@/api/http';
 import { getExerciseMock } from '@/test/mocks';
 import { render } from '@/test/render';
@@ -23,6 +23,9 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks();
 });
+
+const gymField = (screen: Awaited<ReturnType<typeof render>>) =>
+  screen.getByRole('group', { name: 'Gym equipment needed' });
 
 async function fillRequired(screen: Awaited<ReturnType<typeof render>>, name = 'Cable Hug') {
   await screen.getByLabelText('Name').fill(name);
@@ -208,5 +211,71 @@ describe('ExerciseForm', () => {
         .getByRole('button', { name: /^Drag to reorder/ })
         .elements(),
     ).toHaveLength(1);
+  });
+
+  it('sends each ticked gym item as its own required group (AC11)', async () => {
+    vi.mocked(createExercise).mockImplementation(async (id) =>
+      getExerciseMock({ id, isOwn: true }),
+    );
+    const screen = await render(<ExerciseForm mode="create" />);
+
+    await expect
+      .element(gymField(screen).getByText('Leave empty if it needs nothing special.'))
+      .toBeVisible();
+    expect(gymField(screen).getByRole('button', { name: 'Select all' }).elements()).toHaveLength(0);
+    await fillRequired(screen);
+    await gymField(screen).getByRole('button', { name: 'Barbell', exact: true }).click();
+    await gymField(screen).getByRole('button', { name: 'Flat bench' }).click();
+    await screen.getByRole('button', { name: 'Save' }).click();
+
+    await vi.waitFor(() => expect(createExercise).toHaveBeenCalled());
+    expect(vi.mocked(createExercise).mock.calls[0]?.[1].gymEquipment).toEqual([
+      ['barbell'],
+      ['flat_bench'],
+    ]);
+  });
+
+  it("keeps a duplicate's alternatives as one removable chip (AC11)", async () => {
+    vi.mocked(createExercise).mockImplementation(async (id) =>
+      getExerciseMock({ id, isOwn: true }),
+    );
+    const source = getExerciseMock({
+      gymEquipment: [['dumbbells', 'kettlebells'], ['flat_bench']],
+    });
+    const screen = await render(<ExerciseForm mode="create" source={source} />);
+
+    await expect.element(gymField(screen).getByText('Dumbbells or Kettlebells')).toBeVisible();
+    await expect
+      .element(gymField(screen).getByRole('button', { name: 'Flat bench' }))
+      .toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .element(gymField(screen).getByRole('button', { name: 'Dumbbells', exact: true }))
+      .toHaveAttribute('aria-pressed', 'false');
+
+    await screen.getByRole('button', { name: 'Save' }).click();
+    await vi.waitFor(() => expect(createExercise).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(createExercise).mock.calls[0]?.[1].gymEquipment).toEqual([
+      ['dumbbells', 'kettlebells'],
+      ['flat_bench'],
+    ]);
+  });
+
+  it('removes an alternatives chip and keeps gym equipment on edit (AC11)', async () => {
+    vi.mocked(updateExercise).mockImplementation(async (id) =>
+      getExerciseMock({ id, isOwn: true }),
+    );
+    const exercise = getExerciseMock({
+      isOwn: true,
+      frames: [],
+      gymEquipment: [['dumbbells', 'kettlebells']],
+    });
+    const screen = await render(<ExerciseForm mode="edit" exercise={exercise} />);
+
+    await screen.getByRole('button', { name: 'Remove Dumbbells or Kettlebells' }).click();
+    await expect.element(screen.getByText('Dumbbells or Kettlebells')).not.toBeInTheDocument();
+    await screen.getByRole('button', { name: 'Save' }).click();
+
+    await vi.waitFor(() => expect(updateExercise).toHaveBeenCalled());
+    expect(vi.mocked(updateExercise).mock.calls[0]?.[1]).toMatchObject({ gymEquipment: [] });
   });
 });

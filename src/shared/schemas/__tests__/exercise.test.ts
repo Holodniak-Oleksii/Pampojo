@@ -117,3 +117,41 @@ describe('listExercisesQuerySchema mine', () => {
     expect(listExercisesQuerySchema.safeParse({ mine: 'true' }).success).toBe(false);
   });
 });
+
+describe('gym fields', () => {
+  const base = {
+    name: 'Cable Hug',
+    primaryMuscles: ['chest'],
+    equipment: ['cable'],
+    trackingType: 'weight_reps',
+  };
+
+  it('accepts gym=1 only', () => {
+    expect(listExercisesQuerySchema.parse({ gym: '1' }).gym).toBe('1');
+    expect(listExercisesQuerySchema.safeParse({ gym: '0' }).success).toBe(false);
+  });
+
+  it('defaults gymEquipment to [] on create and keeps alternatives', () => {
+    expect(createExerciseInputSchema.parse(base).gymEquipment).toEqual([]);
+    expect(
+      createExerciseInputSchema.parse({
+        ...base,
+        gymEquipment: [['dumbbells', 'kettlebells', 'dumbbells'], ['flat_bench']],
+      }).gymEquipment,
+    ).toEqual([['dumbbells', 'kettlebells'], ['flat_bench']]);
+  });
+
+  it('rejects an empty group and unknown keys', () => {
+    expect(createExerciseInputSchema.safeParse({ ...base, gymEquipment: [[]] }).success).toBe(
+      false,
+    );
+    expect(
+      createExerciseInputSchema.safeParse({ ...base, gymEquipment: [['treadmill']] }).success,
+    ).toBe(false);
+  });
+
+  it('leaves gymEquipment out of a PATCH that does not send it', () => {
+    expect(updateExerciseInputSchema.parse({ name: 'New' })).not.toHaveProperty('gymEquipment');
+    expect(updateExerciseInputSchema.parse({ gymEquipment: [] })).toEqual({ gymEquipment: [] });
+  });
+});

@@ -34,6 +34,7 @@ export function fetchExercises(
   for (const muscle of filters.muscles) params.append('muscle', muscle);
   for (const item of filters.equipment) params.append('equipment', item);
   if (filters.mine) params.set('mine', '1');
+  if (filters.gym) params.set('gym', '1');
   params.set('limit', String(EXERCISE_PAGE_SIZE));
   if (cursor) params.set('cursor', cursor);
   return http(`${EXERCISES_PATH}?${params}`, { schema: exerciseListResponseSchema });
