@@ -13,7 +13,7 @@ vi.mock('@/api/gym', async () => {
   };
 });
 
-const PROPS = { displayName: 'John Smith', initialGym: getGymMock() } as const;
+const PROPS = { displayName: 'John Smith', initialGym: getGymMock(), hasWorkouts: false } as const;
 
 afterEach(() => {
   vi.useRealTimers();
@@ -61,6 +61,23 @@ describe('TodayView', () => {
       .toHaveAttribute('href', '/library/exercises');
     await expect
       .element(screen.getByRole('link', { name: 'Create your first workout' }))
+      .toHaveAttribute('href', '/library/workouts');
+  });
+
+  it('marks the first two steps done once a workout exists (spec 09 AC14)', async () => {
+    const screen = await render(<TodayView {...PROPS} hasWorkouts />);
+    await expect
+      .element(screen.getByRole('heading', { level: 1, name: 'Workout ready' }))
+      .toBeVisible();
+    await expect.element(screen.getByText('Now put it on your calendar.')).toBeVisible();
+    const steps = screen.getByRole('list').getByRole('listitem').elements();
+    expect(steps.map((step) => step.textContent)).toEqual([
+      'Done: Pick exercises from the catalog',
+      'Done: Set sets, reps and weight',
+      '3Put it on your calendar and train',
+    ]);
+    await expect
+      .element(screen.getByRole('link', { name: 'Your workouts' }))
       .toHaveAttribute('href', '/library/workouts');
   });
 

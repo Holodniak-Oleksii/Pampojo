@@ -7,6 +7,7 @@ import { getI18n } from '@/i18n/server';
 import { getRequestSession } from '@/server/auth/request-session';
 import { findGym } from '@/server/gym/service';
 import { findProfile } from '@/server/profile/service';
+import { hasWorkouts } from '@/server/workouts/service';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -18,12 +19,13 @@ async function TodayContent() {
   // reach it without a profile; redirect too instead of throwing, which would log a server error.
   const session = await getRequestSession();
   if (!session) return null;
-  const [profile, gym] = await Promise.all([
+  const [profile, gym, workouts] = await Promise.all([
     findProfile(session.user.id),
     findGym(session.user.id),
+    hasWorkouts(session.user.id),
   ]);
   if (!profile) redirect('/onboarding');
-  return <TodayView displayName={profile.displayName} initialGym={gym} />;
+  return <TodayView displayName={profile.displayName} initialGym={gym} hasWorkouts={workouts} />;
 }
 
 export default function TodayPage() {

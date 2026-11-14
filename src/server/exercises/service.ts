@@ -54,12 +54,18 @@ function isOneOf<T extends string | number>(values: readonly T[], value: unknown
 }
 
 // Check constraints guarantee these values; the guards only narrow the column types.
-function only<T extends string>(values: readonly T[], items: readonly string[]): T[] {
+export function only<T extends string>(values: readonly T[], items: readonly string[]): T[] {
   return items.filter((item): item is T => isOneOf(values, item));
 }
 
-function orNull<T extends string | number>(values: readonly T[], value: unknown): T | null {
+export function orNull<T extends string | number>(values: readonly T[], value: unknown): T | null {
   return isOneOf(values, value) ? value : null;
+}
+
+export function knownTrackingType(value: string): TrackingType {
+  const trackingType = orNull<TrackingType>(Object.values(TRACKING_TYPE), value);
+  if (!trackingType) throw new Error('Exercise row has an unexpected tracking type');
+  return trackingType;
 }
 
 function requirements(groups: readonly string[][]): GymEquipment[][] {
@@ -102,6 +108,8 @@ export async function listExercises(
     section: orNull<MuscleGroup>(MUSCLE_GROUPS, row.section),
     isOwn: row.owner_id === userId,
     gymEquipment: requirements(row.gym_equipment),
+    trackingType: knownTrackingType(row.tracking_type),
+    laterality: orNull<Laterality>(Object.values(LATERALITY), row.laterality),
   }));
   return {
     items,
@@ -117,8 +125,7 @@ export async function findExercise(
 ): Promise<Exercise | null> {
   const row = await findExerciseRow(db, { userId, locale, id });
   if (!row) return null;
-  const trackingType = orNull<TrackingType>(Object.values(TRACKING_TYPE), row.tracking_type);
-  if (!trackingType) throw new Error('Exercise row has an unexpected tracking type');
+  const trackingType = knownTrackingType(row.tracking_type);
   return {
     id: row.id,
     name: row.name,

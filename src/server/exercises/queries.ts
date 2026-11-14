@@ -45,10 +45,12 @@ export interface ExerciseListRow extends Record<string, unknown> {
   owner_id: string | null;
   section: string | null;
   gym_equipment: string[][];
+  tracking_type: string;
+  laterality: string | null;
 }
 
 // `tf` is the other locale: own exercises (spec 07) may have one translation in either language.
-const translationJoins = (locale: Locale) => sql`
+export const translationJoins = (locale: Locale) => sql`
   left join exercise_translation tr on tr.exercise_id = e.id and tr.locale = ${locale}
   left join exercise_translation tf on tf.exercise_id = e.id and tf.locale <> ${locale}`;
 
@@ -90,7 +92,7 @@ export async function listExerciseRows(
 
   const rows = await db.execute<ExerciseListRow>(sql`
     select e.id, ${name} as name, e.primary_muscles, e.equipment, e.media, e.owner_id,
-      e.gym_equipment, ${input.q === null ? section : sql`null`} as section
+      e.gym_equipment, e.tracking_type, e.laterality, ${input.q === null ? section : sql`null`} as section
     from exercise e
     ${translationJoins(input.locale)}
     left join gym_profile gp on gp.user_id = ${input.userId}

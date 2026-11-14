@@ -4,3 +4,4 @@ export * from './exercise';
 export * from './gym';
 export * from './measurement';
 export * from './profile';
+export * from './workout';

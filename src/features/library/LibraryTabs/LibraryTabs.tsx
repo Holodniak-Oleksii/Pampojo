@@ -39,7 +39,7 @@ export function LibraryTabs() {
           })}
         </ul>
       </nav>
-      {/* On desktop the catalog column has the labelled button instead. */}
+      {/* On desktop the exercise catalog column has its own labelled button. */}
       {current === 'exercises' ? (
         <OnlineLinkButton
           href="/library/exercises/new"
@@ -50,6 +50,23 @@ export function LibraryTabs() {
         >
           <Plus aria-hidden="true" className="size-6" />
         </OnlineLinkButton>
+      ) : null}
+      {current === 'workouts' ? (
+        <>
+          <OnlineLinkButton
+            href="/library/workouts/new"
+            variant="accent"
+            size="icon"
+            ariaLabel={t('Create workout')}
+            className="lg:hidden"
+          >
+            <Plus aria-hidden="true" className="size-6" />
+          </OnlineLinkButton>
+          <OnlineLinkButton href="/library/workouts/new" size="sm" className="max-lg:hidden">
+            <Plus aria-hidden="true" />
+            {t('Create workout')}
+          </OnlineLinkButton>
+        </>
       ) : null}
     </div>
   );

@@ -37,7 +37,7 @@ Mobile-first. Desktop reuses the same routes with a wider layout.
 
 **Calendar.** Month grid with status dots, legend, adherence summary, "Schedule workout" with repeat options, selected day details. Toggle to a list view of past sessions.
 
-**Library.** Tabs Workouts / Exercises. Search, muscle chips. Workout cards with exercise count, duration estimate, share icon; imported ones show "From <name>".
+**Library.** Tabs Workouts / Exercises. Search, muscle chips. Workout cards with exercise count, primary muscles, share icon; imported ones show "From <name>".
 
 **Profile.** Emoji avatar, name, age. BMI card with scale and weight trend. Measurements list with latest value and change. Settings: gym equipment, units, language. Sync block. Log out.
 

@@ -621,10 +621,71 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** Remove the `dark:` classes. The session screen's dark theme (spec 10) will get its own tokens.
 **Why:** The app is light; the system dark theme must not leak into single controls.
 
+## 2026-11-14 — Workout targets are optional
+
+**Context:** Spec 09 open questions on default targets and weight.
+**Decision:**
+- Every target is optional, and an exercise may have only a note.
+- On add, the defaults follow the tracking type: `weight_reps` 3 × 8–12 with 90 s rest, `reps` 3 × 10–15 with 60 s, `time` 3 × 30 s with 60 s, `distance` 1 set with 60 s.
+- Weight is an optional absolute number, never prefilled. "Same as last time" is not a mode; the session shows history (spec 10).
+- `targetSets` and `restSec` become nullable, and `targetDistanceM` is added.
+**Why:** Lead's choice: exercises are counted in reps, time or distance, and not every one needs a target.
+
+## 2026-11-14 — Workout builder rules
+
+**Context:** Spec 09 drill.
+**Decision:**
+- Create is a client draft (new UUID) until Save, and Save is one `PUT` of the whole workout. The last save wins, with no conflict check. `PATCH` is dropped from the API.
+- Limits: name 1–80 (not unique), description 500, note 300, 1–30 exercises (repeats allowed), 200 workouts.
+- Drag and drop uses `@dnd-kit/core` and `@dnd-kit/sortable`.
+- On mobile, targets edit in an expanding row, and the picker is a full-screen multi-select sheet.
+- Duplicate makes "<name> (копія)" and opens it. Delete is soft, with a confirmation.
+- The list shows the name, the exercise count and up to 3 primary muscles, newest first, with no search.
+- A workout emptied by an own exercise deletion stays with "0 вправ".
+- Today with workouts but no plan marks the first two steps done and links to "Твої тренування".
+**Why:** Lead's answers in the spec 09 drill.
+
+## 2026-11-14 — No estimated workout duration
+
+**Context:** Spec 09 asked for Σ (sets × (work + rest)).
+**Decision:** No duration estimate in specs 09–12. The session timer (10) measures real time, and progress (13) may report it.
+**Why:** Lead's call: an estimate adds nothing next to the measured time.
+
+## 2026-11-14 — Workout editor design
+
+**Context:** `/design 09` on the canvas `Bjxi1PbaFZvPq1eeUGfjEp`.
+**Decision:**
+- Tapping an exercise row opens a sheet with its targets (bottom on mobile, side on desktop), not an expanding row.
+- Rows have no chevron and no move buttons; reordering is by drag only, with `@dnd-kit` keyboard dragging for accessibility.
+- The name field is a standard input.
+- The mobile Workouts tab gets the accent "+" opposite the tabs, like the Exercises tab.
+- Picker picks are numbered dark diamonds.
+- The drop position is an accent line with a diamond.
+- The new copy is as on the canvas.
+This supersedes the expanding row in "Workout builder rules".
+**Why:** Lead's feedback on the mockups.
+
+## 2026-11-14 — No rest target in workouts
+
+**Context:** `/design 09`; the lead saw no use for a per-exercise rest field.
+**Decision:** `workout_exercise.restSec` is removed, and the editor has no rest field. Spec 10 decides how the rest timer gets its length. This supersedes the rest defaults and the nullable `restSec` in "Workout targets are optional".
+**Why:** Lead's call.
+
+## 2026-11-14 — Workout builder plan choices
+
+**Context:** `/scratch 09`.
+**Decision:**
+- `GET /api/v1/exercises` list items gain `trackingType` and `laterality`, an additive change, so the editor can prefill targets.
+- The own exercise delete dialog finds the workouts that use it from `GET /api/v1/workouts` items, which carry `exerciseIds`. There is no usage endpoint.
+- After a successful save, the editor goes to `/library/workouts` with the toast "Тренування збережено".
+- The workout limit error is `WORKOUT_LIMIT_REACHED` 422, matching `EXERCISE_LIMIT_REACHED`.
+**Why:** Lead's answers. The error code follows the existing convention.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.
 
 
 - Data layer before spec 15: write sessions straight to the server, or build the local Dexie layer from spec 10? (spec 10)
+- Rest timer length now that workouts have no rest target: a global setting, a fixed 90 s, or a manual start? (spec 10)
 - Speech-to-text and image generation providers. (specs 20, 24)
