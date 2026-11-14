@@ -59,4 +59,4 @@ Do not ask anything already answered in `DECISIONS.md` or the docs. Apply that a
 
 ## 6. Finish
 
-Tell the lead, in Ukrainian and briefly: what changed in the spec, which decisions were logged, and that the next step is `/scratch <spec>`. Do not commit.
+Tell the lead, in Ukrainian and briefly: what changed in the spec, which decisions were logged, and that the next step is `/design <spec>` (or `/scratch <spec>` if the spec has no UI). Do not commit.

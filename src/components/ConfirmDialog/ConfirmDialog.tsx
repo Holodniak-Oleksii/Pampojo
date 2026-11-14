@@ -34,12 +34,12 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-5 rounded-[20px] p-5 sm:max-w-md">
+      <DialogContent className="gap-5 rounded-xl p-5 sm:max-w-md">
         <DialogHeader className="pr-8">
           <DialogTitle className="text-lg font-extrabold">{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter className="-mx-5 -mb-5 grid grid-cols-1 rounded-b-[20px] p-5 sm:grid-cols-2">
+        <DialogFooter className="-mx-5 -mb-5 grid grid-cols-1 rounded-b-xl p-5 sm:grid-cols-2">
           <Button
             variant="secondary"
             className="h-auto min-h-12 w-full py-2 whitespace-normal"

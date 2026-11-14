@@ -506,9 +506,125 @@ Format: `## YYYY-MM-DD — short title`, then **Context**, **Decision**, **Why**
 **Decision:** The spec 07 form gets an optional "Gym equipment needed" chip picker, where ticked items are all required. Empty, including older own exercises, means always available. Duplicate keeps the system alternatives.
 **Why:** Lead's choice; deriving requirements from the coarse `machine` value is impossible.
 
+## 2026-11-13 — Visual language refresh
+
+**Context:** The spec 01 look (cream, peach, soft pill cards, icon bubbles) read as generated. Directions were compared on a Design canvas.
+**Decision:**
+- Character comes from content and hierarchy, with the diamond as the brand sign.
+- "Warm stone" palette, sharp corners (cards 6px, controls 4px), lists instead of stacked cards.
+- A hexagonal bottom nav with a cut-out Play diamond.
+- Manrope stays. No display numerals.
+- Full rules and tokens are in `docs/tech/VISUAL_LANGUAGE.md`; it supersedes the spec 01 palette and shape rules.
+**Why:** The lead rejected "Training floor" (bright accent, big condensed numbers) and picked the warm, sharp variant, the "Warm stone" palette and Manrope from side-by-side mockups.
+
+## 2026-11-13 — Muscle family colours
+
+**Context:** Visual refresh D3; statuses and muscles were all shades of peach.
+**Decision:** 17 muscle groups fold into 6 families, each with a muted colour. The colour always sits next to its label: in filter chips, section headings and charts, never in exercise rows. Day and set statuses differ by diamond shape (fill or outline).
+**Why:** The lead chose muted muscle colours over shape-only.
+
+## 2026-11-13 — Custom icons and motion
+
+**Context:** Visual refresh D8 and D11.
+**Decision:**
+- Lucide plus five custom diamond icons: workout, set done, record, rest, my gym. No icons on tinted circles.
+- Motion only answers an action: press 120ms, sheet 240ms, and one signature "click" when a set is done. Everything is off under reduced motion.
+**Why:** The lead approved the icon set and the motion demo.
+
+## 2026-11-13 — Offline presentation and dark session
+
+**Context:** Visual refresh D10 and D15.
+**Decision:**
+- Offline shows a dark status pill with a pending count. It opens a sync sheet, and a quiet strip explains that training works.
+- The active session screen (spec 10) follows the system dark theme; the rest of the app stays light.
+**Why:** Offline is the product's core promise and must be visible without alarming. Gyms are often dark.
+
+## 2026-11-13 — Copy rules
+
+**Context:** Visual refresh D14.
+**Decision:**
+- Ukrainian uses «підходи» for sets.
+- No bullet or middle-dot separators in meta lines.
+- The landing CTA is «Записуй наступне тренування тут»; the footer and OG tagline is «Журнал тренувань, який працює без мережі».
+- The details "Gym equipment" row lists one requirement per line; this changes spec 08.
+- Draft strings from the mockups are confirmed in the specs that own their screens.
+**Why:** The lead's choices; template slogans and separators read as generated.
+
+## 2026-11-13 — Design step in the workflow
+
+**Context:** The lead wants every feature's screens designed before planning.
+**Decision:** The new step 2 is `/design <spec>`, between `/drill` and `/scratch`.
+- It uses the `frontend-design` skill inside `VISUAL_LANGUAGE.md` and mocks up every screen and state on a Design canvas at 390 and 1440.
+- It writes a `## Design` section into the spec.
+- `/scratch` refuses a spec with UI and no Design section, and `/review` compares the UI against the design.
+**Why:** The lead's request; it catches a generated-looking UI before code exists.
+
+## 2026-11-13 — Visual refresh delivery and brand colour
+
+**Context:** Open questions from the visual language document.
+**Decision:**
+- Spec `28-visual-refresh` ships the refresh. It is numbered 28 because 09–27 are taken, and it sits after 08 in the roadmap.
+- The logo moves to the new accent `#EC8447` and charcoal `#24221F`.
+- Day statuses: done late is an accent outline diamond, missed is a destructive outline diamond.
+**Why:** Lead's answers; one palette for the logo and the UI.
+
+## 2026-11-13 — Document title separator
+
+**Context:** Spec 28 removes "·" from UI strings; every browser tab title is "Page · Pampojo".
+**Decision:** Document titles use "Page | Pampojo" in every locale; the catalog test allows no "·" or "•" anywhere.
+**Why:** Lead's choice.
+
+## 2026-11-14 — One visible title per screen
+
+**Context:** Spec 28 review; the top bar section label and the page heading repeated the same word ("Прогрес" twice).
+**Decision:**
+- On phones the top bar shows the section label, and section-root pages (Calendar, Progress, Library, Profile) keep their `h1` for screen readers only.
+- On desktop the top bar label is hidden, since the sidebar shows the section, and the `h1` is visible.
+- Sub-pages (My gym, exercise details) keep their own visible `h1`.
+- This changes the spec 05 rule that the breakpoint switches only the navigation.
+**Why:** Lead's feedback: duplicated titles add nothing.
+
+## 2026-11-14 — Accent confirmed as #EC8447
+
+**Context:** Spec 28 review. The menu board ("Ж. Гострий") was drawn with the older `#F59A62`.
+**Decision:** `--accent` and the logo orange stay `#EC8447`, with the full "Warm stone" palette (`#ECE9E4`, `#F8F7F4`, `#24221F`, `#5C5751`). The board's colour is not the reference.
+**Why:** Lead's choice.
+
+## 2026-11-14 — Empty states show steps, not placeholders
+
+**Context:** Spec 28 review; the Today "ghost" rows read as a loading skeleton, and the full-width button on desktop looked oversized.
+**Decision:**
+- The Today empty state lists three numbered steps with diamond markers, then "Create your first workout" and a quiet "Browse exercises" link.
+- Buttons fill the width only below `sm`.
+- `GhostList` is removed. This replaces the D9 ghost rule.
+**Why:** Lead's feedback and choice.
+
+## 2026-11-14 — My gym save button is not sticky
+
+**Context:** Spec 28 review; the sticky "Save my gym" bar from spec 08 floated over the equipment list above the bottom nav.
+**Decision:** The button sits at the end of the page on every width.
+**Why:** Lead's call: a fixed button adds nothing here.
+
+## 2026-11-14 — Mobile catalog filters in a sheet
+
+**Context:** Spec 28 review; on phones the scrolling chip row, the equipment menu and the "Create exercise" button stacked above the list.
+**Decision:**
+- Below `lg`, a filter icon button next to the search, the same size and surface, shows the active count. It opens a bottom sheet with "Mine", "Available in my gym", the muscle chips and the equipment list. Taps apply at once; "Reset" clears the filters but keeps the search; "Show exercises" closes the sheet.
+- "Create exercise" becomes an accent "+" icon button opposite the Library tabs on the Exercises tab.
+- Desktop keeps the side column.
+- This changes the spec 06–08 mobile layout.
+**Why:** Lead's request.
+
+## 2026-11-14 — No dark variants in shared primitives
+
+**Context:** shadcn primitives (input, checkbox, tabs, field, dropdown) had `dark:` classes, so with a dark OS theme the search input turned grey in a light-only app.
+**Decision:** Remove the `dark:` classes. The session screen's dark theme (spec 10) will get its own tokens.
+**Why:** The app is light; the system dark theme must not leak into single controls.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.
+
 
 - Data layer before spec 15: write sessions straight to the server, or build the local Dexie layer from spec 10? (spec 10)
 - Speech-to-text and image generation providers. (specs 20, 24)

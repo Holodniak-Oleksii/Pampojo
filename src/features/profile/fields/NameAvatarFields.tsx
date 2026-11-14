@@ -24,7 +24,7 @@ const COLOR_CLASS = {
 } as const;
 
 const OPTION_CLASS =
-  'relative flex cursor-pointer items-center justify-center rounded-full ring-offset-background transition-shadow has-checked:ring-3 has-checked:ring-foreground has-focus-visible:ring-3 has-focus-visible:ring-ring';
+  'relative flex cursor-pointer items-center justify-center rounded-md ring-offset-background transition-shadow has-checked:ring-3 has-checked:ring-foreground has-focus-visible:ring-3 has-focus-visible:ring-ring';
 
 export function NameAvatarFields({ form, idPrefix }: FieldsProps) {
   const { t } = useTranslation();

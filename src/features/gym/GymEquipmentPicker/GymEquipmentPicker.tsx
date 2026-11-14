@@ -50,7 +50,7 @@ export function GymEquipmentPicker({
             key={group}
             aria-labelledby={headingId}
             className={cn(
-              'flex min-w-0 flex-col gap-3 rounded-[20px] bg-card p-4 shadow-soft',
+              'flex min-w-0 flex-col gap-3 rounded-lg bg-card p-4',
               columns === 'auto' && 'lg:mb-4 lg:break-inside-avoid',
             )}
           >
@@ -64,7 +64,7 @@ export function GymEquipmentPicker({
                   type="button"
                   disabled={disabled}
                   onClick={() => onSetGroup(group, !allOn)}
-                  className="min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold text-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                  className="min-h-11 shrink-0 rounded-md px-3 text-sm font-semibold text-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                 >
                   {allOn ? t('Clear all') : t('Select all')}
                 </button>

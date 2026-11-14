@@ -30,4 +30,12 @@ describe('EmptyState', () => {
     await expect.element(screen.getByRole('heading', { name: 'Coming soon.' })).toBeVisible();
     await expect.element(screen.getByRole('link')).not.toBeInTheDocument();
   });
+
+  it('draws the icon plainly, without a tinted tile', async () => {
+    const screen = await render(<EmptyState icon={Dumbbell} title="Coming soon." />);
+
+    await expect.element(screen.getByRole('heading', { name: 'Coming soon.' })).toBeVisible();
+    const icon = screen.getByRole('heading').element().previousElementSibling;
+    expect(icon?.tagName.toLowerCase()).toBe('svg');
+  });
 });

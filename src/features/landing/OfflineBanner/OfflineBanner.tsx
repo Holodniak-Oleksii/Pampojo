@@ -1,4 +1,4 @@
-import { StatusPill } from '@/components/StatusPill';
+import { Diamond } from '@/components/Diamond';
 import { getI18n } from '@/i18n/server';
 
 export async function OfflineBanner() {
@@ -7,23 +7,20 @@ export async function OfflineBanner() {
     <section
       data-section="offline"
       aria-labelledby="offline-heading"
-      className="grid h-full content-center items-center gap-6 rounded-[24px] bg-gradient-to-br from-accent-soft to-card p-6 shadow-soft sm:grid-cols-[auto_1fr] md:p-8 lg:grid-cols-1 lg:text-center xl:grid-cols-[auto_1fr] xl:text-left"
+      className="bg-foreground text-card"
     >
-      <div
-        aria-hidden="true"
-        className="mx-auto w-[180px] rounded-[32px] bg-primary p-2 shadow-soft"
-      >
-        <div className="flex flex-col items-center gap-3 rounded-[26px] bg-card p-4">
-          <StatusPill status="offline" />
-          <p className="text-center font-semibold">{t('3 sets saved, will sync later')}</p>
-        </div>
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-6 px-4 py-14 md:px-6">
+        <h2
+          id="offline-heading"
+          className="max-w-[18ch] text-[clamp(30px,4vw,44px)] leading-tight font-extrabold"
+        >
+          {t("Train in the basement. Sync when you're back online.")}
+        </h2>
+        <p className="flex items-center gap-3 rounded-md bg-band-surface px-4 py-3.5 text-[15px] font-semibold">
+          <Diamond tone="accent" variant="outline" size="md" />
+          {t('3 sets saved, will sync later')}
+        </p>
       </div>
-      <h2
-        id="offline-heading"
-        className="text-2xl font-extrabold md:text-3xl lg:text-2xl xl:text-3xl"
-      >
-        {t("Train in the basement. Sync when you're back online.")}
-      </h2>
     </section>
   );
 }

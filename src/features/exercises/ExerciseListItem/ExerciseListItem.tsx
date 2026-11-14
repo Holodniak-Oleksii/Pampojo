@@ -46,7 +46,7 @@ export function ExerciseListItem({ item }: ExerciseListItemProps) {
     setFrameIndex(0);
   }
 
-  const muscles = item.primaryMuscles.map((muscle) => labels.muscle[muscle]).join(' · ');
+  const muscles = item.primaryMuscles.map((muscle) => labels.muscle[muscle]).join(', ');
   const frame = item.frames[frameIndex];
   const thumb = frame?.thumbUrl ?? item.thumbnailUrl;
   const full = frame?.fullUrl ?? item.imageUrl;
@@ -59,7 +59,7 @@ export function ExerciseListItem({ item }: ExerciseListItemProps) {
       onMouseLeave={stop}
       onFocus={start}
       onBlur={stop}
-      className="flex min-h-14 items-center gap-3 px-3 py-2.5 outline-none hover:bg-accent-soft/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset lg:h-full lg:flex-col lg:items-stretch lg:gap-0 lg:overflow-hidden lg:rounded-[20px] lg:bg-card lg:p-0 lg:shadow-soft"
+      className="flex min-h-14 items-center gap-3 px-3 py-2.5 outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset lg:h-full lg:flex-col lg:items-stretch lg:gap-0 lg:overflow-hidden lg:rounded-lg lg:bg-card lg:p-0 lg:ring-1 lg:ring-border lg:ring-inset"
     >
       <ExerciseImage
         src={thumb ?? full}
@@ -68,13 +68,13 @@ export function ExerciseListItem({ item }: ExerciseListItemProps) {
         name={item.name}
         alt=""
         compact
-        className="size-14 shrink-0 rounded-[12px] lg:aspect-[4/3] lg:size-auto lg:w-full lg:rounded-none"
+        className="size-14 shrink-0 rounded-sm lg:aspect-[4/3] lg:size-auto lg:w-full lg:rounded-none"
       />
       <span className="flex min-w-0 flex-col gap-0.5 lg:gap-1 lg:p-4">
         <span className="flex items-start gap-2">
           <span className="line-clamp-2 font-semibold">{item.name}</span>
           {item.isOwn ? (
-            <span className="shrink-0 rounded-full bg-primary px-2 text-xs leading-5 font-semibold text-primary-foreground">
+            <span className="shrink-0 rounded-md bg-background px-2 text-xs leading-5 font-semibold text-foreground ring-1 ring-border ring-inset">
               {t('Mine', { context: 'badge' })}
             </span>
           ) : null}
@@ -82,7 +82,7 @@ export function ExerciseListItem({ item }: ExerciseListItemProps) {
         <span className="truncate text-sm text-muted-foreground">{muscles}</span>
         <span className="flex flex-wrap gap-1">
           {item.equipment.map((equipment) => (
-            <span key={equipment} className="rounded-full bg-accent-soft px-2 text-sm">
+            <span key={equipment} className="rounded-md bg-background px-2 text-sm">
               {labels.equipment[equipment]}
             </span>
           ))}

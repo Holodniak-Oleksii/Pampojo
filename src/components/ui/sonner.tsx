@@ -26,9 +26,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-bg': 'var(--popover)',
           '--normal-text': 'var(--popover-foreground)',
           '--normal-border': 'var(--border)',
-          '--border-radius': 'var(--radius)',
+          '--border-radius': 'var(--radius-md)',
         } as React.CSSProperties
       }
+      // Toasts sit above the bottom nav and its raised Play diamond on phones.
+      mobileOffset={{ bottom: 'calc(8rem + env(safe-area-inset-bottom))' }}
       toastOptions={{
         classNames: {
           toast: 'cn-toast',

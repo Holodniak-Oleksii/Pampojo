@@ -89,10 +89,7 @@ function Section({
   return (
     <section
       aria-labelledby={id}
-      className={cn(
-        'flex min-w-0 flex-col gap-4 rounded-[24px] bg-card p-5 shadow-soft',
-        wide && 'lg:col-span-2',
-      )}
+      className={cn('flex min-w-0 flex-col gap-4 rounded-lg bg-card p-5', wide && 'lg:col-span-2')}
     >
       <h2 id={id} className="text-xl font-extrabold">
         {title}
@@ -116,7 +113,7 @@ function ColorSwatch({ token }: { token: string }) {
     <div className="flex items-center gap-3">
       <span
         aria-hidden="true"
-        className="size-10 shrink-0 rounded-2xl shadow-soft"
+        className="size-10 shrink-0 rounded-md"
         style={{ background: `var(${token})` }}
       />
       <span className="min-w-0 text-sm">
@@ -227,7 +224,7 @@ export function DevUiPage() {
               <span
                 key={color}
                 aria-hidden="true"
-                className={cn('size-10 rounded-full', AVATAR_TOKEN_CLASS[color])}
+                className={cn('size-10 rounded-md', AVATAR_TOKEN_CLASS[color])}
               />
             ))}
           </div>

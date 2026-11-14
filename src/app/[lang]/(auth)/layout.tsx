@@ -8,7 +8,7 @@ export default async function AuthLayout({ children }: LayoutProps<'/[lang]'>) {
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-4 md:px-6">
       <header className="flex h-16 items-center lg:hidden">
-        <Link href="/" aria-label={t('Pampojo home')} className="rounded-xl">
+        <Link href="/" aria-label={t('Pampojo home')} className="rounded-md">
           <Image
             src="/brand/pampojo-wordmark.svg"
             alt=""

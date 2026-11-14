@@ -1,10 +1,11 @@
 'use client';
 
-import { Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Diamond } from '@/components/Diamond';
+import { PlayDiamond } from '@/components/PlayDiamond';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, type Section } from '../constants';
@@ -23,11 +24,11 @@ export function SidebarNav({ section, onStart }: SidebarNavProps) {
   const labels = useSectionLabels();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 bg-background px-4 py-6 lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 border-r border-border bg-background px-4 py-6 lg:flex">
       <Link
         href="/today"
         aria-label={t('Pampojo, Today')}
-        className={cn('self-start rounded-xl px-2', RING)}
+        className={cn('self-start rounded-md px-2', RING)}
       >
         <Image
           src="/brand/pampojo-wordmark.svg"
@@ -39,7 +40,7 @@ export function SidebarNav({ section, onStart }: SidebarNavProps) {
         />
       </Link>
       <Button size="lg" className="w-full" onClick={onStart}>
-        <Play aria-hidden="true" className="fill-current" />
+        <PlayDiamond />
         {t('Start workout')}
       </Button>
       <nav aria-label={t('Main navigation')}>
@@ -53,13 +54,14 @@ export function SidebarNav({ section, onStart }: SidebarNavProps) {
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'flex min-h-12 items-center gap-3 rounded-full px-4 text-base transition-colors motion-reduce:transition-none',
-                    active ? 'bg-accent-soft font-semibold' : 'hover:bg-card',
+                    'flex min-h-11 items-center gap-3 rounded-md px-3 text-base transition-colors motion-reduce:transition-none',
+                    active ? 'bg-card font-bold' : 'text-foreground/80 hover:bg-card',
                     RING,
                   )}
                 >
                   <Icon aria-hidden="true" className="size-5" />
                   {labels[item.section]}
+                  {active ? <Diamond tone="accent" className="ml-auto" /> : null}
                 </Link>
               </li>
             );

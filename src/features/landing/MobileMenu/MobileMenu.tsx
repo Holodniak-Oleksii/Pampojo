@@ -42,7 +42,7 @@ export function MobileMenu() {
             <SheetClose key={anchor.href} asChild>
               <a
                 href={anchor.href}
-                className="-mx-3 rounded-2xl px-3 py-3 text-lg font-semibold hover:bg-accent-soft"
+                className="-mx-3 rounded-md px-3 py-3 text-lg font-semibold hover:bg-card"
               >
                 {anchor.label}
               </a>

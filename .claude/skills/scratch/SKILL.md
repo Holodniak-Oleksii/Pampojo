@@ -1,6 +1,6 @@
 ---
 name: scratch
-description: Turn a drilled product spec into a technical plan in scratch/<same-name>.md. Step 2 of the spec workflow.
+description: Turn a drilled product spec into a technical plan in scratch/<same-name>.md. Step 3 of the spec workflow.
 argument-hint: <spec name or number, e.g. 00-project-setup or 03>
 disable-model-invocation: true
 ---
@@ -15,13 +15,14 @@ Talk to the lead in Ukrainian. Write the plan in English.
 
 - Resolve `$ARGUMENTS` to one file in `docs/specs/`.
 - If the spec still has open questions or untestable acceptance criteria, stop and tell the lead to run `/drill` first.
+- If the spec has a user-facing surface but no `## Design` section, stop and tell the lead to run `/design` first.
 - If `scratch/<spec>.md` already exists, read it and ask whether to revise it or start over.
 
 ## 2. Read the context
 
 1. The spec and the specs it depends on (and their scratch plans, if any).
 2. `DECISIONS.md`.
-3. The `docs/tech/*` sections and ADRs the spec touches.
+3. The `docs/tech/*` sections and ADRs the spec touches, including `VISUAL_LANGUAGE.md` and `DESIGN_SYSTEM.md` for UI.
 4. All of `docs/development/` that applies: frontend, backend, `request-safety.md`.
 5. The current code in `src/`, `package.json` and config. Plan against what really exists.
 
@@ -46,7 +47,7 @@ Copy `scratch/_TEMPLATE.md` to `scratch/<spec>.md` and fill every section:
 3. **Data** — tables, columns, indexes, migrations, Zod schemas. Write "No changes" if none.
 4. **API** — routes, methods, request and response shapes, errors, idempotency (see `request-safety.md`).
 5. **Server** — modules, files, user scoping of every query.
-6. **Client** — routes, components, state, data fetching, offline behaviour, mobile (390px) and desktop (1440px) layout.
+6. **Client** — routes, components, state, data fetching, offline behaviour, mobile (390px) and desktop (1440px) layout. Follow the spec's Design section; name the canvas board for each screen and state, and spell out the layout, tokens and components so `/implement` does not need the canvas.
 7. **Copy** — every user-facing string, exactly as it should appear.
 8. **Steps** — ordered, small steps, each ending in a state that typechecks. Name the files each step creates or changes.
 9. **Tests** — a table mapping every AC to at least one test (unit, component or Playwright) with the test file path.

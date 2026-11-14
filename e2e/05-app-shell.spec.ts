@@ -86,20 +86,25 @@ test.describe('app shell in English', () => {
     }
   });
 
-  test('the breakpoint switches only the navigation', async ({ page }, testInfo) => {
+  test('the breakpoint switches the navigation and which title is shown', async ({
+    page,
+  }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop', 'resizes a desktop window');
     await signUp(page);
     await page.goto('/calendar');
 
-    const measure = async () => ({
-      header: (await page.getByRole('banner').boundingBox())?.height,
-      title: (await page.getByRole('heading', { level: 1 }).boundingBox())?.height,
-    });
+    const measure = async () => (await page.getByRole('banner').boundingBox())?.height;
+    // One visible title per screen: the top bar label on phones, the page heading on desktop.
+    const topBarLabel = page.getByRole('banner').getByText('Calendar', { exact: true });
+    const heading = page.getByRole('heading', { level: 1, name: 'Calendar' });
+    const headingHeight = async () => (await heading.boundingBox())?.height ?? 0;
 
     await page.setViewportSize({ width: 1023, height: 900 });
     await expect(page.getByRole('complementary')).toBeHidden();
     await expect(mainNav(page).getByRole('button', { name: 'Start workout' })).toBeVisible();
     const narrow = await measure();
+    await expect(topBarLabel).toBeVisible();
+    expect(await headingHeight()).toBeLessThanOrEqual(1);
     expect(await overflow(page)).toBeLessThanOrEqual(0);
 
     await page.setViewportSize({ width: 1024, height: 900 });
@@ -107,6 +112,8 @@ test.describe('app shell in English', () => {
     await expect(mainNav(page)).toHaveCount(1);
     await expect(page.getByRole('complementary').getByRole('navigation')).toBeVisible();
     expect(await measure()).toEqual(narrow);
+    await expect(topBarLabel).toBeHidden();
+    expect(await headingHeight()).toBeGreaterThan(20);
     expect(await overflow(page)).toBeLessThanOrEqual(0);
   });
 
@@ -195,13 +202,9 @@ test.describe('app shell in English', () => {
     await signUp(page);
     await page.goto('/today');
 
-    await expect(
-      page.getByRole('heading', {
-        level: 1,
-        name: /^Good (morning|afternoon|evening), John Smith$/,
-      }),
-    ).toBeVisible();
-    await expect(page.getByRole('main').getByRole('img', { name: 'Fox' })).toBeVisible();
+    await expect(page.getByText(/^Good (morning|afternoon|evening), John Smith\. /)).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'No workouts yet' })).toBeVisible();
+    await expect(page.getByRole('main').getByRole('img', { name: 'Fox' })).toHaveCount(0);
     await expect(page.getByText(/Signed in as/)).toHaveCount(0);
     await page.getByRole('link', { name: 'Create your first workout' }).click();
     await page.waitForURL('**/library/workouts');
@@ -282,7 +285,7 @@ test.describe('app shell in English', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Профіль' })).toBeVisible();
   });
 
-  test('content clears the bottom bar and the viewport allows safe areas', async ({
+  test('content clears the bottom bar and its Play diamond, and the viewport allows safe areas', async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile', 'bottom bar');
@@ -296,7 +299,12 @@ test.describe('app shell in English', () => {
       const bar = [...document.querySelectorAll('nav')].find(
         (nav) => getComputedStyle(nav).position === 'fixed',
       );
-      return (bar?.getBoundingClientRect().top ?? 0) - (last?.getBoundingClientRect().bottom ?? 0);
+      const play = bar?.querySelector('button');
+      const top = Math.min(
+        bar?.getBoundingClientRect().top ?? 0,
+        play?.getBoundingClientRect().top ?? Infinity,
+      );
+      return top - (last?.getBoundingClientRect().bottom ?? 0);
     });
     expect(gap).toBeGreaterThanOrEqual(0);
     await expect(page.locator('meta[name="viewport"]')).toHaveAttribute(

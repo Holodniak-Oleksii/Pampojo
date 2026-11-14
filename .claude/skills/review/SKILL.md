@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review an implemented spec — code against the plan and guides, UI walked with Playwright against every acceptance criterion — and append the report to the scratch file. Step 4 of the spec workflow.
+description: Review an implemented spec — code against the plan and guides, UI walked with Playwright against every acceptance criterion — and append the report to the scratch file. Step 5 of the spec workflow.
 argument-hint: <spec name or number, e.g. 00-project-setup or 03>
 disable-model-invocation: true
 ---
@@ -18,7 +18,7 @@ Talk to the lead in Ukrainian. Write the report in English.
 
 ## 2. Read the context
 
-- The spec (now in scope again: review checks the product, not just the plan).
+- The spec (now in scope again: review checks the product, not just the plan), including its Design section and the canvas boards it links.
 - The scratch plan, including "Implementation notes".
 - `DECISIONS.md` and the `docs/development/` guides that apply.
 
@@ -44,7 +44,7 @@ Skip this step only if the spec has no user-facing surface; say so in the report
 - Use Playwright (a throwaway script in the scratchpad, or the project's Playwright setup) to walk every AC that has a UI, at 390×844 and 1440×900.
 - Cover the states the spec lists: empty, loading, error, offline, where applicable.
 - Save screenshots to `scratch/review/<spec>/` named `ACn-<viewport>-<state>.png`.
-- Look at the screenshots yourself before judging an AC.
+- Look at the screenshots yourself before judging an AC, and compare them with the spec's design boards and `docs/tech/VISUAL_LANGUAGE.md`. A visible mismatch is a finding.
 - Stop the dev server when done.
 
 ## 5. Write the report

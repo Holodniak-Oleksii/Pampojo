@@ -42,14 +42,14 @@ export function SegmentedControl<V extends string>({
       </legend>
       <div
         className={cn(
-          'grid auto-cols-fr grid-flow-col gap-1 rounded-full bg-card p-1 shadow-soft',
+          'grid auto-cols-fr grid-flow-col gap-1 rounded-md bg-card p-1 ring-1 ring-border ring-inset',
           invalid && 'ring-2 ring-destructive',
         )}
       >
         {options.map((option, index) => (
           <label
             key={option.value}
-            className="flex min-h-11 cursor-pointer items-center justify-center rounded-full px-4 text-base font-semibold transition-colors has-checked:bg-accent-soft has-focus-visible:ring-2 has-focus-visible:ring-ring"
+            className="flex min-h-11 cursor-pointer items-center justify-center rounded-sm px-4 text-base font-semibold transition-colors has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring"
           >
             <input
               ref={index === 0 ? inputRef : undefined}

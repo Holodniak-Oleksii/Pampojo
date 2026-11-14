@@ -38,7 +38,7 @@ test.describe('/dev/ui in English', () => {
     const avatars = page.getByRole('region', { name: 'Avatars' }).getByRole('img');
     await expect(avatars).toHaveCount(24 + 3);
     await expect(page.getByRole('region', { name: 'Status' }).getByRole('status')).toHaveCount(3);
-    await expect(page.getByText('· 3 pending')).toBeVisible();
+    await expect(page.getByTestId('pending-badge')).toHaveText('3');
   });
 
   test('opens every overlay', async ({ page }) => {

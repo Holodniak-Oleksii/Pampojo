@@ -2,7 +2,8 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MUSCLE_GROUPS, type MuscleGroup } from '@/constants/exercise';
+import { Diamond } from '@/components/Diamond';
+import { MUSCLE_FAMILY_OF, MUSCLE_GROUPS, type MuscleGroup } from '@/constants/exercise';
 import { cn } from '@/lib/utils';
 import { useExerciseLabels } from '../hooks/useExerciseLabels';
 
@@ -20,10 +21,10 @@ export interface MuscleChipsProps {
 
 export function chipClass(active: boolean): string {
   return cn(
-    'min-h-11 shrink-0 rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none',
+    'min-h-11 shrink-0 rounded-md px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-120 outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none',
     active
       ? 'bg-primary text-primary-foreground'
-      : 'bg-card text-foreground shadow-soft hover:bg-accent-soft',
+      : 'bg-card text-foreground ring-1 ring-border ring-inset hover:bg-background',
   );
 }
 
@@ -60,8 +61,9 @@ export function MuscleChips({
               type="button"
               aria-pressed={active}
               onClick={() => onToggle(muscle)}
-              className={chipClass(active)}
+              className={cn(chipClass(active), 'inline-flex items-center gap-2')}
             >
+              <Diamond tone="muscle" family={MUSCLE_FAMILY_OF[muscle]} />
               {labels.muscle[muscle]}
             </button>
           );

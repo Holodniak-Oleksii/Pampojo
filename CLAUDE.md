@@ -7,7 +7,7 @@ Talk to the lead (the repo owner) in Ukrainian. Write code, comments, commits an
 ## Repository layout
 
 - `docs/product/` — what we build and why: PRD, user flows, screens, roadmap.
-- `docs/tech/` — how the system works: architecture, data model, API, offline, AI, design system.
+- `docs/tech/` — how the system works: architecture, data model, API, offline, AI, design system, visual language.
 - `docs/development/` — how we write code. SSOT for conventions:
   - `frontend/` — code organization, TypeScript, state and data, testing.
   - `backend/` — structure, database, API handlers, testing.
@@ -25,14 +25,15 @@ Talk to the lead (the repo owner) in Ukrainian. Write code, comments, commits an
 
 ## Workflow
 
-Every feature goes through four skills, run by the lead one at a time:
+Every feature goes through five skills, run by the lead one at a time:
 
 1. `/drill <spec>` — question the spec with the lead, write the answers into the spec.
-2. `/scratch <spec>` — turn the spec into a technical plan in `scratch/<same-name>.md`.
-3. `/implement <scratch>` — build exactly the plan. Product specs are out of context here.
-4. `/review <spec>` — review the code and walk the UI with Playwright against the spec's acceptance criteria.
+2. `/design <spec>` — design the spec's screens and states as mockups with the lead (the `frontend-design` skill inside `docs/tech/VISUAL_LANGUAGE.md`), write the result into the spec's Design section.
+3. `/scratch <spec>` — turn the spec into a technical plan in `scratch/<same-name>.md`.
+4. `/implement <scratch>` — build exactly the plan. Product specs are out of context here.
+5. `/review <spec>` — review the code and walk the UI with Playwright against the spec's acceptance criteria and its design.
 
-Do not jump ahead. Do not implement a spec that has no scratch file.
+Do not jump ahead. Do not plan a spec with UI that has no Design section. Do not implement a spec that has no scratch file.
 
 ## When to ask the lead
 

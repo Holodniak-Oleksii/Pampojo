@@ -31,7 +31,7 @@ export function ExerciseImage({
   const broken = src === null || failedSrc === src;
 
   return (
-    <div className={cn('relative overflow-hidden bg-accent-soft', className)}>
+    <div className={cn('relative overflow-hidden bg-background', className)}>
       {broken ? (
         <span
           role="img"

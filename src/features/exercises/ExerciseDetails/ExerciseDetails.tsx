@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGymEquipmentLabels } from '@/features/gym/hooks/useGymEquipmentLabels';
-import { formatRequirements } from '@/features/gym/utils';
+import { formatRequirementGroup } from '@/features/gym/utils';
 import type { Exercise } from '@/shared/schemas/exercise';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { DeleteExerciseDialog } from '../DeleteExerciseDialog';
@@ -40,7 +40,7 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
     <article className="flex flex-col gap-6">
       <Link
         href={backHref}
-        className="-ml-2 flex min-h-11 items-center gap-2 self-start rounded-full px-2 font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-ml-2 flex min-h-11 items-center gap-2 self-start rounded-md px-2 font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowLeft aria-hidden="true" className="size-5" />
         {t('Exercises')}
@@ -88,7 +88,7 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
               </ul>
             </section>
           ) : null}
-          <section className="flex flex-col gap-1 rounded-[20px] bg-card px-5 py-3 shadow-soft">
+          <section className="flex flex-col gap-1 rounded-lg bg-card px-5 py-3">
             <h2 className="pt-1 text-lg font-extrabold">{t('Muscles')}</h2>
             <dl className="divide-y divide-border">
               <Row term={t('Primary')}>{join(exercise.primaryMuscles, labels.muscle)}</Row>
@@ -97,14 +97,21 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
               ) : null}
             </dl>
           </section>
-          <section className="rounded-[20px] bg-card px-5 py-3 shadow-soft">
+          <section className="rounded-lg bg-card px-5 py-3">
             <dl className="divide-y divide-border">
               <Row term={t('Equipment')}>{join(exercise.equipment, labels.equipment)}</Row>
               <Row term={t('Gym equipment')}>
-                {formatRequirements(exercise.gymEquipment, gymLabels.item, {
-                  or: t('or'),
-                  nothing: t('Nothing special'),
-                })}
+                {exercise.gymEquipment.length === 0 ? (
+                  t('Nothing special')
+                ) : (
+                  <ul className="flex flex-col items-end gap-0.5">
+                    {exercise.gymEquipment.map((group) => (
+                      <li key={group.join('|')}>
+                        {formatRequirementGroup(group, gymLabels.item, t('or'))}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </Row>
               {exercise.movementPattern ? (
                 <Row term={t('Movement')}>{labels.pattern[exercise.movementPattern]}</Row>

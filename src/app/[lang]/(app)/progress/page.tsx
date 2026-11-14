@@ -6,14 +6,14 @@ import { getI18n } from '@/i18n/server';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: { absolute: t('Progress · Pampojo') } };
+  return { title: { absolute: t('Progress | Pampojo') } };
 }
 
 export default async function ProgressPage() {
   const { t } = await getI18n();
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t('Progress')} />
+      <PageHeader sectionTitle title={t('Progress')} />
       <EmptyState
         icon={TrendingUp}
         title={t('No progress yet')}

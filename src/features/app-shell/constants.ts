@@ -1,11 +1,4 @@
-import {
-  CalendarDays,
-  CircleUser,
-  House,
-  LibraryBig,
-  TrendingUp,
-  type LucideIcon,
-} from 'lucide-react';
+import { Calendar, CircleUser, House, Library, TrendingUp, type LucideIcon } from 'lucide-react';
 
 export const SECTION = {
   TODAY: 'today',
@@ -25,8 +18,8 @@ export interface NavItem {
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { section: SECTION.TODAY, href: '/today', icon: House },
-  { section: SECTION.CALENDAR, href: '/calendar', icon: CalendarDays },
-  { section: SECTION.LIBRARY, href: '/library/workouts', icon: LibraryBig },
+  { section: SECTION.CALENDAR, href: '/calendar', icon: Calendar },
+  { section: SECTION.LIBRARY, href: '/library/workouts', icon: Library },
   { section: SECTION.PROGRESS, href: '/progress', icon: TrendingUp },
   { section: SECTION.PROFILE, href: '/profile', icon: CircleUser },
 ];

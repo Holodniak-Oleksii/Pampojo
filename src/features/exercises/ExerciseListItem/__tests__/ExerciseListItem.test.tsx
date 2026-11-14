@@ -89,4 +89,14 @@ describe('ExerciseListItem', () => {
     await vi.advanceTimersByTimeAsync(2000);
     await expect.element(image).toHaveAttribute('src', frame(2).thumbUrl);
   });
+
+  it('lists muscles with commas and no family colour', async () => {
+    mockReducedMotion(false);
+    const screen = await render(
+      <ExerciseListItem item={getExerciseListItemMock({ primaryMuscles: ['chest', 'triceps'] })} />,
+    );
+
+    await expect.element(screen.getByText('Chest, Triceps')).toBeVisible();
+    expect(screen.getByRole('link').element().querySelectorAll('[data-family]')).toHaveLength(0);
+  });
 });

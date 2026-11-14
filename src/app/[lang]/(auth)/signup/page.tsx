@@ -6,7 +6,7 @@ import { AuthGate } from '../auth-gate';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: { absolute: t('Sign up · Pampojo') } };
+  return { title: { absolute: t('Sign up | Pampojo') } };
 }
 
 export default function SignupPage({ searchParams }: PageProps<'/[lang]/signup'>) {

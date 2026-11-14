@@ -3,23 +3,29 @@ import { render } from '@/test/render';
 import { StatusPill } from '../StatusPill';
 
 describe('StatusPill', () => {
-  it('shows Online', async () => {
+  it('shows Online on a light pill', async () => {
     const screen = await render(<StatusPill status="online" />);
 
-    await expect.element(screen.getByRole('status')).toHaveTextContent('Online');
+    const pill = screen.getByRole('status');
+    await expect.element(pill).toHaveTextContent('Online');
+    await expect.element(pill).toHaveClass('bg-card');
   });
 
-  it('shows Offline', async () => {
+  it('shows Offline on a dark pill', async () => {
     const screen = await render(<StatusPill status="offline" />);
 
-    await expect.element(screen.getByRole('status')).toHaveTextContent('Offline');
+    const pill = screen.getByRole('status');
+    await expect.element(pill).toHaveTextContent('Offline');
+    await expect.element(pill).toHaveClass('bg-foreground');
+    await expect.element(screen.getByTestId('pending-badge')).not.toBeInTheDocument();
   });
 
-  it('shows the pending count and a full sentence for screen readers', async () => {
+  it('shows the pending count as a badge and a full sentence for screen readers', async () => {
     const screen = await render(<StatusPill status="offline" pendingCount={3} />);
 
-    await expect.element(screen.getByText('· 3 pending')).toBeVisible();
+    await expect.element(screen.getByTestId('pending-badge')).toHaveTextContent('3');
     await expect.element(screen.getByText('3 changes waiting to sync')).toBeInTheDocument();
+    expect(screen.getByRole('status').element().textContent).not.toContain('·');
   });
 
   it.each([
@@ -32,7 +38,6 @@ describe('StatusPill', () => {
     });
 
     await expect.element(screen.getByText('Офлайн', { exact: true })).toBeVisible();
-    await expect.element(screen.getByText(`· ${count} в черзі`)).toBeVisible();
     await expect.element(screen.getByText(sentence)).toBeInTheDocument();
   });
 });

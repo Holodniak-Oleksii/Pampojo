@@ -29,8 +29,8 @@ const COPY = {
       'Can I use it on iPhone?',
       'How do I share a workout?',
     ],
-    cta: 'Start training smarter today',
-    tagline: 'Track. Progress. Repeat.',
+    cta: 'Log your next workout here',
+    tagline: 'A workout log that works without a signal',
     title: 'Pampojo — workout tracker that works offline',
     description:
       'Build workouts, plan them in a calendar and log every set in the gym, even without a signal.',
@@ -55,8 +55,8 @@ const COPY = {
       'Чи можна на iPhone?',
       'Як поділитися тренуванням?',
     ],
-    cta: 'Тренуйся розумніше вже сьогодні',
-    tagline: 'Тренуйся. Прогресуй. Повторюй.',
+    cta: 'Записуй наступне тренування тут',
+    tagline: 'Журнал тренувань, який працює без мережі',
     title: 'Pampojo — трекер тренувань, що працює офлайн',
     description:
       "Створюй тренування, плануй їх у календарі й записуй кожен підхід у залі, навіть без зв'язку.",
@@ -106,6 +106,8 @@ for (const [locale, acceptLanguage] of [
       }
       await expect(page.getByRole('heading', { level: 2, name: copy.cta })).toBeVisible();
       await expect(page.getByText(copy.tagline)).toBeVisible();
+      // 9 of 11 workouts done: the plan card must read 82%, not a fraction of a percent.
+      await expect(page.locator('[data-section="showcase"]')).toContainText(/82\s?%/);
     });
 
     test('has localized metadata and an OG image', async ({ page, request }) => {

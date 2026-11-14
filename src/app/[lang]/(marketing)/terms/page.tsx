@@ -4,7 +4,7 @@ import { getI18n } from '@/i18n/server';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: `${t('Terms of use')} · Pampojo` };
+  return { title: `${t('Terms of use')} | Pampojo` };
 }
 
 export default async function TermsPage() {

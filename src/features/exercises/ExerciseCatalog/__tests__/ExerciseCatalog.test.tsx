@@ -129,7 +129,7 @@ describe('ExerciseCatalog', () => {
       .element(screen.getByRole('button', { name: 'Shoulders' }))
       .toHaveAttribute('aria-pressed', 'false');
     await expect.element(screen.getByRole('checkbox', { name: 'Barbell' })).toBeChecked();
-    await expect.element(screen.getByRole('button', { name: 'Equipment (1)' })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Filters (3)' })).toBeInTheDocument();
 
     const params = requestedUrls()[0]?.searchParams;
     expect(params?.getAll('muscle')).toEqual(['chest', 'triceps']);
@@ -346,5 +346,20 @@ describe('ExerciseCatalog', () => {
     await expect.element(screen.getByRole('heading', { name: 'No exercises found' })).toBeVisible();
     await screen.getByRole('button', { name: 'Clear filters' }).click();
     expect(replace).toHaveBeenLastCalledWith(null, '', '/library/exercises');
+  });
+
+  it('marks muscle chips and section headings with their family diamond', async () => {
+    respond(() => page([item(1, { section: 'chest' })]));
+    const screen = await render(<ExerciseCatalog />);
+
+    const heading = screen.getByRole('heading', { level: 2, name: 'Chest' });
+    await expect.element(heading).toBeVisible();
+    expect(heading.element().querySelector('[data-family="chest"]')).not.toBeNull();
+    const chip = screen
+      .getByRole('group', { name: 'Muscles' })
+      .getByRole('button', { name: 'Lats' });
+    expect(chip.element().querySelector('[data-family="back"]')).not.toBeNull();
+    const mine = screen.getByRole('button', { name: 'Mine', exact: true });
+    expect(mine.element().querySelector('[data-family]')).toBeNull();
   });
 });

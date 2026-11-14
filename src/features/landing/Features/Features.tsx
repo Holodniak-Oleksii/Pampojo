@@ -1,26 +1,27 @@
-import { CalendarDays, Dumbbell, Users, WifiOff } from 'lucide-react';
+import { CalendarDays, Share2 } from 'lucide-react';
+import { SetDoneIcon, WorkoutIcon } from '@/components/BrandIcons';
 import { getI18n } from '@/i18n/server';
 
 export async function Features() {
   const { t } = await getI18n();
   const features = [
     {
-      icon: Dumbbell,
+      icon: <WorkoutIcon className="size-7" />,
       title: t('Build your own workouts'),
       text: t('Pick exercises from the catalog and set sets, reps and weight.'),
     },
     {
-      icon: CalendarDays,
+      icon: <CalendarDays aria-hidden="true" className="size-7" />,
       title: t('Plan with a calendar'),
       text: t("Repeat workouts on your days and always see what's next."),
     },
     {
-      icon: WifiOff,
+      icon: <SetDoneIcon className="size-7" />,
       title: t('Works offline in the gym'),
       text: t('Log sets in a basement with no signal. Everything syncs later.'),
     },
     {
-      icon: Users,
+      icon: <Share2 aria-hidden="true" className="size-7" />,
       title: t('Share workouts with friends'),
       text: t('Send a link or a file. Your friend gets their own copy.'),
     },
@@ -31,24 +32,17 @@ export async function Features() {
       id="features"
       data-section="features"
       aria-labelledby="features-heading"
-      className="scroll-mt-24"
+      className="flex scroll-mt-24 flex-col gap-6"
     >
-      <h2 id="features-heading" className="sr-only">
+      <h2 id="features-heading" className="text-3xl font-extrabold">
         {t('Features')}
       </h2>
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {features.map(({ icon: Icon, title, text }) => (
-          <li
-            key={title}
-            className="flex min-w-0 items-start gap-4 rounded-[24px] bg-card p-5 shadow-soft sm:flex-col sm:gap-3"
-          >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent sm:size-14">
-              <Icon aria-hidden="true" className="size-7" />
-            </span>
-            <div className="flex min-w-0 flex-col gap-1 sm:gap-3">
-              <h3 className="font-extrabold break-words">{title}</h3>
-              <p className="text-sm text-muted-foreground">{text}</p>
-            </div>
+      <ul className="grid border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-4">
+        {features.map(({ icon, title, text }) => (
+          <li key={title} className="min-w-0 border-b border-border-strong py-6 pr-6">
+            {icon}
+            <h3 className="mt-3.5 mb-1.5 text-lg font-extrabold break-words">{title}</h3>
+            <p className="text-[15px] text-muted-foreground">{text}</p>
           </li>
         ))}
       </ul>

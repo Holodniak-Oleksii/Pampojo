@@ -10,7 +10,7 @@ import { findProfile } from '@/server/profile/service';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: { absolute: t('Today · Pampojo') } };
+  return { title: { absolute: t('Today | Pampojo') } };
 }
 
 async function TodayContent() {
@@ -23,14 +23,7 @@ async function TodayContent() {
     findGym(session.user.id),
   ]);
   if (!profile) redirect('/onboarding');
-  return (
-    <TodayView
-      displayName={profile.displayName}
-      avatarEmoji={profile.avatarEmoji}
-      avatarColor={profile.avatarColor}
-      initialGym={gym}
-    />
-  );
+  return <TodayView displayName={profile.displayName} initialGym={gym} />;
 }
 
 export default function TodayPage() {

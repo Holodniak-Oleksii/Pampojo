@@ -16,6 +16,7 @@ Each line is a spec in `docs/specs/`. Specs are delivered in order; a milestone 
 - `06-exercise-catalog` — seeded catalog, browse, filters, details.
 - `07-custom-exercises` — create and edit own exercises.
 - `08-gym-profile` — equipment available in the user's gym.
+- `28-visual-refresh` — move every existing screen to the visual language (`docs/tech/VISUAL_LANGUAGE.md`).
 - `09-workout-builder` — create, edit, reorder, delete workouts.
 
 ## M2 — Training

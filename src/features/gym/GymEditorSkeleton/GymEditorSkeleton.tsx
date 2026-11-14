@@ -8,11 +8,11 @@ export function GymEditorSkeleton() {
       <Skeleton className="h-5 w-full max-w-md" />
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2">
         {[6, 6, 6].map((count, group) => (
-          <div key={group} className="flex flex-col gap-3 rounded-[20px] bg-card p-4 shadow-soft">
+          <div key={group} className="flex flex-col gap-3 rounded-lg bg-card p-4">
             <Skeleton className="h-7 w-36" />
             <div className="flex flex-wrap gap-2">
               {Array.from({ length: count }, (_, chip) => (
-                <Skeleton key={chip} className="h-11 w-24 rounded-full" />
+                <Skeleton key={chip} className="h-11 w-24 rounded-md" />
               ))}
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
+import { catalogFilters, closeCatalogFilters } from './helpers/catalog';
 import { deleteE2eUsers, e2eRunPrefix } from './helpers/db';
 import { completeOnboardingViaApi } from './helpers/onboarding';
 
@@ -43,7 +44,7 @@ test.describe('exercise catalog in English', () => {
   }) => {
     await signUp(page);
     await page.goto('/library/exercises');
-    await expect(page).toHaveTitle('Exercises · Pampojo');
+    await expect(page).toHaveTitle('Exercises | Pampojo');
 
     await expect(results(page).getByRole('heading', { level: 2 }).first()).toHaveText('Chest');
     await expect(items(page).first()).toContainText('Bench Press');
@@ -60,30 +61,27 @@ test.describe('exercise catalog in English', () => {
 
   test('combines muscle chips with equipment, keeps them in the URL and clears them', async ({
     page,
-  }, testInfo) => {
+  }) => {
     await signUp(page);
     await page.goto('/library/exercises');
     const total = await items(page).count();
 
-    await filters(page).getByRole('button', { name: 'Triceps', exact: true }).click();
+    const panel = await catalogFilters(page);
+    await panel.getByRole('button', { name: 'Triceps', exact: true }).click();
     await expect(page).toHaveURL(/muscle=triceps/);
-    if (testInfo.project.name === 'mobile') {
-      await filters(page).getByRole('button', { name: 'Equipment' }).click();
-      await page.getByRole('menuitemcheckbox', { name: 'Cable' }).click();
-      await page.keyboard.press('Escape');
-    } else {
-      // The checked state follows the URL, which Next.js applies in a transition after the click.
-      await filters(page).getByRole('checkbox', { name: 'Cable' }).click();
-      await expect(filters(page).getByRole('checkbox', { name: 'Cable' })).toBeChecked();
-    }
+    // The checked state follows the URL, which Next.js applies in a transition after the click.
+    await panel.getByRole('checkbox', { name: 'Cable' }).click();
+    await expect(panel.getByRole('checkbox', { name: 'Cable' })).toBeChecked();
     await expect(page).toHaveURL(/muscle=triceps&equipment=cable/);
+    await closeCatalogFilters(page);
     await expect(items(page).first()).toContainText('Pushdown');
     for (const item of await items(page).all()) await expect(item).toContainText('Cable');
 
     await page.reload();
     await expect(
-      filters(page).getByRole('button', { name: 'Triceps', exact: true }),
+      (await catalogFilters(page)).getByRole('button', { name: 'Triceps', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
+    await closeCatalogFilters(page);
     await expect(items(page).first()).toContainText('Pushdown');
 
     await filters(page).getByRole('searchbox').fill('zzzz-no-such-exercise');
@@ -114,7 +112,7 @@ test.describe('exercise catalog in English', () => {
     await page.waitForURL(/\/library\/exercises\/[0-9a-f-]{36}$/);
 
     await expect(page.getByRole('heading', { level: 1, name: 'Bench Press' })).toBeVisible();
-    await expect(page).toHaveTitle('Bench Press · Pampojo');
+    await expect(page).toHaveTitle('Bench Press | Pampojo');
     await expect(page.getByRole('heading', { name: 'How to do it' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Common mistakes' })).toBeVisible();
     for (const term of ['Primary', 'Equipment', 'Movement', 'Type', 'Sides', 'Tracking', 'Level']) {
@@ -130,10 +128,10 @@ test.describe('exercise catalog in English', () => {
 
     await page.goBack();
     await expect(page).toHaveURL(/\/library\/exercises\?muscle=chest$/);
-    await expect(filters(page).getByRole('button', { name: 'Chest', exact: true })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(
+      (await catalogFilters(page)).getByRole('button', { name: 'Chest', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await closeCatalogFilters(page);
 
     await items(page).first().click();
     await page.waitForURL(/\/library\/exercises\/[0-9a-f-]{36}$/);
@@ -162,7 +160,8 @@ test.describe('exercise catalog in English', () => {
     await expect(items(page).first()).toContainText('Bench Press');
 
     await context.setOffline(true);
-    await filters(page).getByRole('button', { name: 'Neck', exact: true }).click();
+    await (await catalogFilters(page)).getByRole('button', { name: 'Neck', exact: true }).click();
+    await closeCatalogFilters(page);
 
     await expect(
       page.getByText("You're offline. Connect to the internet to load exercises."),
@@ -216,12 +215,13 @@ test.describe('exercise catalog layout', () => {
     test('shows catalog text and labels in Ukrainian', async ({ page }) => {
       await signUp(page);
       await page.goto('/library/exercises');
-      await expect(page).toHaveTitle('Вправи · Pampojo');
+      await expect(page).toHaveTitle('Вправи | Pampojo');
       await expect(results(page).getByRole('heading', { level: 2 }).first()).toHaveText('Груди');
       await expect(items(page).first()).toContainText('Жим штанги лежачи');
       await expect(
-        filters(page).getByRole('button', { name: 'Трицепс', exact: true }),
+        (await catalogFilters(page)).getByRole('button', { name: 'Трицепс', exact: true }),
       ).toBeVisible();
+      await closeCatalogFilters(page);
 
       await items(page).first().click();
       await page.waitForURL(/\/library\/exercises\/[0-9a-f-]{36}$/);

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
+import { catalogFilters, closeCatalogFilters } from './helpers/catalog';
 import { deleteE2eUsers, e2eRunPrefix } from './helpers/db';
 import { completeOnboardingViaApi } from './helpers/onboarding';
 
@@ -53,11 +54,13 @@ test.describe('gym profile', () => {
 
     await page.getByRole('link', { name: 'Set up', exact: true }).click();
     await page.waitForURL('**/profile/gym');
-    await expect(page).toHaveTitle('My gym · Pampojo');
+    await expect(page).toHaveTitle('My gym | Pampojo');
     await expect(page.getByRole('button', { pressed: true })).toHaveCount(38);
     const save = page.getByRole('button', { name: 'Save my gym' });
-    // Sticky above the bottom nav on mobile; under the list on desktop.
-    if (testInfo.project.name === 'mobile') await expect(save).toBeInViewport();
+    // The save button sits at the end of the list on every width (DECISIONS 2026-11-14).
+    if (testInfo.project.name === 'mobile') await expect(save).not.toBeInViewport();
+    await save.scrollIntoViewIfNeeded();
+    await expect(save).toBeInViewport();
     expect(await overflow(page)).toBeLessThanOrEqual(0);
 
     if (testInfo.project.name === 'desktop') {
@@ -102,27 +105,36 @@ test.describe('gym profile', () => {
   }) => {
     await signUp(page);
     await page.goto('/library/exercises');
-    await expect(filters(page).getByRole('button', { name: 'Mine', exact: true })).toBeVisible();
+    const panel = await catalogFilters(page);
+    await expect(panel.getByRole('button', { name: 'Mine', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Available in my gym' })).toHaveCount(0);
+    await closeCatalogFilters(page);
 
     await saveGymViaApi(page, ['dumbbells', 'flat_bench']);
     await page.goto('/library/exercises?q=squat');
-    const gymChip = filters(page).getByRole('button', { name: 'Available in my gym' });
-    await gymChip.click();
+    await (await catalogFilters(page)).getByRole('button', { name: 'Available in my gym' }).click();
     await expect(page).toHaveURL(/gym=1/);
+    await closeCatalogFilters(page);
     const results = page.getByRole('region', { name: 'Exercises' });
     await expect(results.getByRole('link', { name: /Goblet Squat/ })).toBeVisible();
     await expect(results.getByRole('link', { name: /^Back Squat/ })).toHaveCount(0);
     expect(await overflow(page)).toBeLessThanOrEqual(0);
 
     await page.reload();
-    await expect(gymChip).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      (await catalogFilters(page)).getByRole('button', { name: 'Available in my gym' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await closeCatalogFilters(page);
     await filters(page).getByRole('searchbox').fill('bench press');
     await expect(results.getByRole('link', { name: /Dumbbell Bench Press/ })).toBeVisible();
     await expect(results.getByRole('link', { name: /^Bench Press/ })).toHaveCount(0);
 
     await results.getByRole('link', { name: /Dumbbell Bench Press/ }).click();
-    await expect(page.getByText('Dumbbells · Flat bench or Adjustable bench')).toBeVisible();
+    const gymRow = page.getByRole('definition').filter({ has: page.getByRole('listitem') });
+    await expect(gymRow.getByRole('listitem')).toHaveText([
+      'Dumbbells',
+      'Flat bench or Adjustable bench',
+    ]);
   });
 
   test('offline, the gym controls are disabled with a hint', async ({ page, context }) => {

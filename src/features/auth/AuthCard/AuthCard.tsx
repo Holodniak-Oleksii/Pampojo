@@ -54,7 +54,7 @@ export function AuthCard({ mode, next, googleEnabled, initialError }: AuthCardPr
         ref={alertRef}
         role="alert"
         tabIndex={-1}
-        className="rounded-2xl border border-destructive/40 bg-card px-4 py-3 text-sm font-semibold text-destructive outline-none"
+        className="rounded-md border border-destructive/40 bg-card px-4 py-3 text-sm font-semibold text-destructive outline-none"
       >
         {message}
       </div>
@@ -62,18 +62,16 @@ export function AuthCard({ mode, next, googleEnabled, initialError }: AuthCardPr
   };
 
   return (
-    <div className="flex flex-col gap-6 rounded-[24px] bg-card p-6 shadow-soft md:p-8 lg:[@media(max-height:760px)]:gap-4 lg:[@media(max-height:760px)]:p-6">
-      <nav className="grid grid-cols-2 gap-1 rounded-full bg-background p-1">
+    <div className="flex flex-col gap-6 rounded-lg bg-card p-6 md:p-8 lg:[@media(max-height:760px)]:gap-4 lg:[@media(max-height:760px)]:p-6">
+      <nav className="grid grid-cols-2 gap-1 rounded-md bg-background p-1">
         {tabs.map((tab) => (
           <Link
             key={tab.mode}
             href={tab.href}
             aria-current={tab.mode === mode ? 'page' : undefined}
             className={cn(
-              'flex h-11 items-center justify-center rounded-full text-sm font-semibold transition-colors',
-              tab.mode === mode
-                ? 'bg-card shadow-soft'
-                : 'text-muted-foreground hover:text-foreground',
+              'flex h-11 items-center justify-center rounded-md text-sm font-semibold transition-colors',
+              tab.mode === mode ? 'bg-card' : 'text-muted-foreground hover:text-foreground',
             )}
           >
             {tab.label}
@@ -110,7 +108,7 @@ export function AuthCard({ mode, next, googleEnabled, initialError }: AuthCardPr
       ) : null}
 
       {!online ? (
-        <p className="flex items-center gap-2 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-semibold">
+        <p className="flex items-center gap-2 rounded-md bg-background px-4 py-3 text-sm font-semibold">
           <WifiOff aria-hidden="true" className="size-4 shrink-0" />
           {t("You're offline. Connect to the internet to log in.")}
         </p>

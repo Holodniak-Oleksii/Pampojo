@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Build exactly what a scratch plan describes, with tests, then record deviations in the plan. Step 3 of the spec workflow.
+description: Build exactly what a scratch plan describes, with tests, then record deviations in the plan. Step 4 of the spec workflow.
 argument-hint: <scratch file, e.g. scratch/00-project-setup.md>
 disable-model-invocation: true
 ---

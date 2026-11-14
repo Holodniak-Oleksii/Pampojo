@@ -13,6 +13,8 @@ export interface OnlineLinkButtonProps {
   variant?: ComponentProps<typeof Button>['variant'];
   size?: ComponentProps<typeof Button>['size'];
   className?: string;
+  /** For an icon-only button. */
+  ariaLabel?: string;
 }
 
 /** A link styled as a button that turns into a disabled button with a hint while offline. */
@@ -22,6 +24,7 @@ export function OnlineLinkButton({
   variant,
   size,
   className,
+  ariaLabel,
 }: OnlineLinkButtonProps) {
   const { t } = useTranslation();
   const online = useIsOnline();
@@ -29,7 +32,7 @@ export function OnlineLinkButton({
   if (!online) {
     return (
       <span className={cn('flex flex-col items-start gap-1', className)}>
-        <Button variant={variant} size={size} disabled>
+        <Button variant={variant} size={size} aria-label={ariaLabel} disabled>
           {children}
         </Button>
         <span className="text-sm text-muted-foreground">{t('Needs internet')}</span>
@@ -38,7 +41,9 @@ export function OnlineLinkButton({
   }
   return (
     <Button asChild variant={variant} size={size} className={className}>
-      <Link href={href}>{children}</Link>
+      <Link href={href} aria-label={ariaLabel}>
+        {children}
+      </Link>
     </Button>
   );
 }

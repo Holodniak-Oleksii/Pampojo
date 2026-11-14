@@ -1,20 +1,12 @@
-import { ArrowRight, CalendarCheck, ChartColumn, Plus } from 'lucide-react';
 import { getI18n } from '@/i18n/server';
+import { cn } from '@/lib/utils';
 
 export async function HowItWorks() {
   const { t } = await getI18n();
   const steps = [
-    { icon: Plus, title: t('Create a workout'), text: t('Choose exercises and save it once.') },
-    {
-      icon: CalendarCheck,
-      title: t('Schedule it'),
-      text: t('Put it on your calendar, once or every week.'),
-    },
-    {
-      icon: ChartColumn,
-      title: t('Train and track'),
-      text: t('Log every set and watch your progress grow.'),
-    },
+    { title: t('Create a workout'), text: t('Choose exercises and save it once.') },
+    { title: t('Schedule it'), text: t('Put it on your calendar, once or every week.') },
+    { title: t('Train and track'), text: t('Log every set and watch your progress grow.') },
   ];
 
   return (
@@ -22,33 +14,32 @@ export async function HowItWorks() {
       id="how-it-works"
       data-section="how-it-works"
       aria-labelledby="how-it-works-heading"
-      className="flex scroll-mt-24 flex-col gap-6"
+      className="flex scroll-mt-24 flex-col gap-7"
     >
       <h2 id="how-it-works-heading" className="text-3xl font-extrabold">
         {t('How it works')}
       </h2>
-      <ol className="grid gap-4 lg:grid-cols-3 lg:gap-10">
-        {steps.map(({ icon: Icon, title, text }, index) => (
-          <li
-            key={title}
-            className="relative flex items-start gap-4 rounded-[24px] bg-card p-5 shadow-soft"
-          >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent font-extrabold text-accent-foreground">
-              {index + 1}
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <h3 className="font-extrabold">{title}</h3>
-              <p className="text-sm text-muted-foreground">{text}</p>
-            </div>
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent">
-              <Icon aria-hidden="true" className="size-5" />
-            </span>
+      <ol className="grid gap-8 md:grid-cols-3 md:gap-6">
+        {steps.map(({ title, text }, index) => (
+          <li key={title} className="relative pt-9">
             {index < steps.length - 1 ? (
-              <ArrowRight
+              <span
                 aria-hidden="true"
-                className="absolute top-1/2 -right-8 hidden size-5 -translate-y-1/2 text-muted-foreground lg:block"
+                className="absolute top-[11px] -right-6 left-0 hidden h-0.5 bg-border-strong md:block"
               />
             ) : null}
+            <span
+              aria-hidden="true"
+              data-testid="step-marker"
+              className={cn(
+                'absolute top-0 left-0 flex size-6 rotate-45 items-center justify-center rounded-md',
+                index === 0 ? 'bg-accent text-foreground' : 'bg-foreground text-card',
+              )}
+            >
+              <span className="-rotate-45 text-xs font-extrabold">{index + 1}</span>
+            </span>
+            <h3 className="mb-1.5 text-lg font-extrabold">{title}</h3>
+            <p className="text-[15px] text-muted-foreground">{text}</p>
           </li>
         ))}
       </ol>

@@ -2,12 +2,12 @@ import { ChevronDown } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
-/** A native select styled like `Input`, with the chevron inset from the rounded edge. */
+/** A native select styled like `Input`, with the chevron inset from the edge. */
 export function Select({ className, children, ...props }: ComponentProps<'select'>) {
   return (
     <div className={cn('relative', className)}>
       <select
-        className="h-12 w-full cursor-pointer appearance-none rounded-full border border-input bg-card pr-12 pl-5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-12 w-full cursor-pointer appearance-none rounded-md border border-input bg-card pr-12 pl-4 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         {...props}
       >
         {children}
