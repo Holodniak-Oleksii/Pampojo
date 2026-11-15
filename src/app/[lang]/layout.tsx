@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Manrope } from 'next/font/google';
 import { QueryProvider } from '@/api/QueryProvider';
+import { PwaProvider } from '@/features/pwa';
 import { ThemedToaster, ThemeScript, ThemeSync } from '@/features/theme';
 import { I18nProvider } from '@/i18n/client';
 import { LOCALES } from '@/i18n/config';
@@ -24,7 +25,11 @@ const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { metadataBase: new URL(SITE_URL), title: t('Pampojo') };
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: t('Pampojo'),
+    appleWebApp: { capable: true, title: 'Pampojo', statusBarStyle: 'default' },
+  };
 }
 
 export default async function RootLayout({ children }: LayoutProps<'/[lang]'>) {
@@ -45,7 +50,7 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]'>) {
         <I18nProvider locale={locale} catalog={catalog}>
           <QueryProvider>
             <ThemeSync />
-            {children}
+            <PwaProvider>{children}</PwaProvider>
             <ThemedToaster />
           </QueryProvider>
         </I18nProvider>

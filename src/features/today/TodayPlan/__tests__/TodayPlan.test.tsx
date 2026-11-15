@@ -45,7 +45,7 @@ const legs = (override: Partial<ScheduleRule> = {}) =>
   });
 
 describe('TodayPlan (spec 11 AC6)', () => {
-  it('lists today\'s workouts, to do first, and a done one with its summary link', async () => {
+  it("lists today's workouts, to do first, and a done one with its summary link", async () => {
     respond([getScheduleRuleMock(), legs()]);
     await seedLocal(
       localSession({

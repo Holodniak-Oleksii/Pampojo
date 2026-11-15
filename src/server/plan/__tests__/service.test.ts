@@ -125,7 +125,11 @@ describe('putRule', () => {
       expect(again.items).toEqual(first.items);
       const { items } = await listRules(userId, tx);
       expect(items).toHaveLength(1);
-      expect(items[0]?.workout).toMatchObject({ name: 'Push Day', exerciseCount: 1, deleted: false });
+      expect(items[0]?.workout).toMatchObject({
+        name: 'Push Day',
+        exerciseCount: 1,
+        deleted: false,
+      });
     });
   });
 
@@ -156,9 +160,9 @@ describe('putRule', () => {
       expect(await code(put(settings(workoutId, { startDate: addDays(today(), -1) })))).toBe(
         'VALIDATION_FAILED',
       );
-      expect(
-        await code(put(settings(workoutId, { endDate: addDays(today(), 2 * 366 + 1) }))),
-      ).toBe('VALIDATION_FAILED');
+      expect(await code(put(settings(workoutId, { endDate: addDays(today(), 2 * 366 + 1) })))).toBe(
+        'VALIDATION_FAILED',
+      );
       expect(await code(put(settings(empty)))).toBe('VALIDATION_FAILED');
       expect(await code(put(settings(foreign)))).toBe('VALIDATION_FAILED');
 
@@ -356,9 +360,9 @@ describe('putSession scheduledFor (AC4)', () => {
       const yesterday = todayIn(ZONE, yesterdayStart);
       const replay = await putSession(userId, randomUUID(), body(yesterdayStart, yesterday), tx);
       expect(replay.scheduledFor).toBe(yesterday);
-      expect(
-        await code(putSession(userId, randomUUID(), body(new Date(), yesterday), tx)),
-      ).toBe('VALIDATION_FAILED');
+      expect(await code(putSession(userId, randomUUID(), body(new Date(), yesterday), tx))).toBe(
+        'VALIDATION_FAILED',
+      );
     });
   });
 });

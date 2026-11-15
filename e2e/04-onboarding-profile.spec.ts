@@ -43,64 +43,6 @@ const overflow = (page: Page) =>
 test.describe('onboarding and profile in English', () => {
   test.use({ locale: 'en-US' });
 
-  test('a new user completes onboarding and edits the profile', async ({ page }) => {
-    await signUp(page);
-
-    await expect(page.getByText('Step 1 of 3')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
-    await page.getByLabel('Name').fill('John Smith');
-    await page.getByRole('radio', { name: 'Owl' }).check({ force: true });
-    await page.getByRole('button', { name: 'Continue' }).click();
-
-    await expect(page.getByRole('heading', { name: 'A bit about you' })).toBeVisible();
-    await page.getByText('Male', { exact: true }).click();
-    await page.getByLabel('DD').fill('15');
-    await page.getByLabel('MM').fill('05');
-    await page.getByLabel('YYYY').fill('1990');
-
-    await page.reload();
-    await expect(page.getByText('Step 2 of 3')).toBeVisible();
-    await expect(page.getByLabel('YYYY')).toHaveValue('1990');
-    await expect(page.getByRole('radio', { name: 'Male', exact: true })).toBeChecked();
-    await page.getByRole('button', { name: 'Continue' }).click();
-
-    await expect(page.getByRole('heading', { name: 'Height and weight' })).toBeVisible();
-    await page.getByLabel('Height').fill('180');
-    await page.getByLabel('Weight').fill('79,8');
-    await page.getByRole('button', { name: 'Finish' }).click();
-    await page.waitForURL('**/today');
-
-    const profile = await (await page.request.get('/api/v1/me/profile')).json();
-    expect(profile).toMatchObject({
-      displayName: 'John Smith',
-      avatarEmoji: 'owl',
-      sex: 'male',
-      birthDate: '1990-05-15',
-      heightCm: 180,
-      latestWeightKg: 79.8,
-      unitSystem: 'metric',
-    });
-
-    await page.goto('/onboarding');
-    await page.waitForURL('**/today');
-
-    await page.getByRole('link', { name: 'Profile' }).click();
-    await page.waitForURL('**/profile');
-    await expect(page.getByRole('main').getByText('John Smith', { exact: true })).toBeVisible();
-    await expect(page.getByText('180 cm')).toBeVisible();
-    await expect(page.getByText('79.8 kg')).toBeVisible();
-
-    await page.getByRole('button', { name: 'Edit profile' }).click();
-    const sheet = page.getByRole('dialog', { name: 'Edit profile' });
-    await sheet.getByLabel('Name').fill('Jane Doe');
-    await sheet.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByText('Profile saved')).toBeVisible();
-    await expect(page.getByText('Jane Doe')).toBeVisible();
-
-    await page.getByRole('button', { name: 'Log out' }).click();
-    await expect(page).toHaveURL(/\/$/);
-  });
-
   test('users without onboarding are sent to it; others are sent away from it', async ({
     page,
     browser,

@@ -35,7 +35,11 @@ export function patchScheduleRule(
   id: string,
   input: PatchScheduleRuleInput,
 ): Promise<ScheduleRuleListResponse> {
-  return http(rulePath(id), { method: 'PATCH', body: input, schema: scheduleRuleListResponseSchema });
+  return http(rulePath(id), {
+    method: 'PATCH',
+    body: input,
+    schema: scheduleRuleListResponseSchema,
+  });
 }
 
 export async function deleteScheduleRule(id: string): Promise<void> {

@@ -56,6 +56,17 @@ describe('LogOutButton', () => {
     localStorage.removeItem('other-key');
   });
 
+  it('deletes the cached app pages once the server has signed out (spec 15 AC5)', async () => {
+    vi.mocked(authClient.signOut).mockResolvedValue({ data: { success: true }, error: null });
+    const cache = await caches.open('pampojo-pages');
+    await cache.put('/today', new Response('<html>user 1</html>'));
+    const screen = await render(<LogOutButton />);
+
+    await screen.getByRole('button', { name: 'Log out' }).click();
+
+    await expect.poll(() => caches.has('pampojo-pages')).toBe(false);
+  });
+
   it('keeps the draft when signing out fails on the network', async () => {
     vi.mocked(authClient.signOut).mockRejectedValue(new TypeError('Failed to fetch'));
     localStorage.setItem('pampojo:onboarding:user-1', '{}');

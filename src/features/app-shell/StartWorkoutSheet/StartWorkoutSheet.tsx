@@ -102,7 +102,9 @@ function WorkoutChoices({ onStarted }: { onStarted: () => void }) {
       </ul>
       {rest.length > 0 ? (
         <>
-          <h3 className="mt-1.5 text-[15px] font-bold text-muted-foreground">{t('All workouts')}</h3>
+          <h3 className="mt-1.5 text-[15px] font-bold text-muted-foreground">
+            {t('All workouts')}
+          </h3>
           <ul className="divide-y divide-border rounded-lg bg-card">{rest.map(row)}</ul>
         </>
       ) : null}

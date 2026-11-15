@@ -38,7 +38,9 @@ function checkRuleSettings(value: RuleSettings, ctx: z.RefinementCtx) {
   }
 }
 
-export const putScheduleRuleInputSchema = ruleSettingsObject.strict().superRefine(checkRuleSettings);
+export const putScheduleRuleInputSchema = ruleSettingsObject
+  .strict()
+  .superRefine(checkRuleSettings);
 
 export type PutScheduleRuleInput = z.input<typeof putScheduleRuleInputSchema>;
 export type ParsedScheduleRuleSettings = z.output<typeof putScheduleRuleInputSchema>;

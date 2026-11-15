@@ -1,3 +1,4 @@
+import { withSerwist } from '@serwist/turbopack';
 import type { NextConfig } from 'next';
 import { parseEnv } from './src/server/env-schema';
 
@@ -19,4 +20,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

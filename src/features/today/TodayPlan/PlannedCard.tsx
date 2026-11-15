@@ -13,7 +13,14 @@ export function Thumbnails({ urls, name }: { urls: readonly string[]; name: stri
   return (
     <span aria-hidden="true" className="flex gap-1.5">
       {urls.slice(0, 4).map((url) => (
-        <ExerciseImage key={url} src={url} name={name} alt="" compact className="size-[52px] rounded-sm" />
+        <ExerciseImage
+          key={url}
+          src={url}
+          name={name}
+          alt=""
+          compact
+          className="size-[52px] rounded-sm"
+        />
       ))}
     </span>
   );

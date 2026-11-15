@@ -3,6 +3,7 @@
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GymNudgeCard } from '@/features/gym/GymNudgeCard';
+import { InstallCard } from '@/features/pwa';
 import type { Gym } from '@/shared/schemas/gym';
 import { usePartOfDay } from '../usePartOfDay';
 import { useTodayLabel } from '../useTodayLabel';
@@ -35,6 +36,7 @@ export function TodayView({ displayName, initialGym, hasWorkouts }: TodayViewPro
         <Skeleton aria-hidden="true" className="h-5 w-72 max-w-full" />
       )}
       <GymNudgeCard initialGym={initialGym} />
+      <InstallCard />
       <TodayPlan hasWorkouts={hasWorkouts} />
     </div>
   );

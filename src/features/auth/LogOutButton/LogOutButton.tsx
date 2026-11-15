@@ -4,6 +4,7 @@ import { useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { deletePageCaches } from '@/features/pwa';
 import { deleteAllLocalDbs, flushAllLocalDbs } from '@/services/local-db';
 import { authClient } from '@/api/auth';
 import { navigateAfterAuth } from '../utils';
@@ -55,7 +56,7 @@ export function LogOutButton({ variant = 'secondary', size, className }: LogOutB
     }
     // After a server answer the session is gone (Better Auth clears the cookie even on an error).
     clearOnboardingDrafts();
-    await deleteAllLocalDbs();
+    await Promise.all([deleteAllLocalDbs(), deletePageCaches()]);
     navigateAfterAuth('/');
   };
 

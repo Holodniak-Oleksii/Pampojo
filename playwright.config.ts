@@ -10,6 +10,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
+    // The CI server is a production build with a service worker; only the PWA suite lets it run.
+    serviceWorkers: 'block',
   },
   projects: [
     {

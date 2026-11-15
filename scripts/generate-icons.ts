@@ -1,9 +1,11 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 // One-off generator: run `pnpm icons:generate` after changing the brand icon, then commit the output.
 const SOURCE = 'docs/brand/pampojo-icon.svg';
 const svg = readFileSync(SOURCE, 'utf8');
+// The tile colour of the brand icon, so the mask's bleed reads as the same tile.
+const MASKABLE_BACKGROUND = '#24221F';
 
 async function renderPng(size: number): Promise<Buffer> {
   const page = await browser.newPage({ viewport: { width: size, height: size } });
@@ -16,6 +18,20 @@ async function renderPng(size: number): Promise<Buffer> {
     omitBackground: true,
     clip: { x: 0, y: 0, width: size, height: size },
   });
+  await page.close();
+  return png;
+}
+
+// Maskable icons fill the whole square with the tile colour and keep the mark inside the 80% safe zone.
+async function renderMaskable(size: number): Promise<Buffer> {
+  const page = await browser.newPage({ viewport: { width: size, height: size } });
+  const encoded = Buffer.from(svg).toString('base64');
+  const inner = Math.round(size * 0.8);
+  await page.setContent(
+    `<html><body style="margin:0;width:${size}px;height:${size}px;display:grid;place-items:center;background:${MASKABLE_BACKGROUND}"><img src="data:image/svg+xml;base64,${encoded}" width="${inner}" height="${inner}" style="display:block"></body></html>`,
+  );
+  await page.locator('img').evaluate((img: HTMLImageElement) => img.decode());
+  const png = await page.screenshot({ clip: { x: 0, y: 0, width: size, height: size } });
   await page.close();
   return png;
 }
@@ -54,7 +70,14 @@ try {
   writeFileSync('src/app/favicon.ico', buildIco(icoImages));
   writeFileSync('src/app/apple-icon.png', await renderPng(180));
   writeFileSync('src/app/icon.svg', svg);
-  console.log('Wrote src/app/favicon.ico, src/app/apple-icon.png, src/app/icon.svg');
+  mkdirSync('public/icons', { recursive: true });
+  for (const size of [192, 512]) {
+    writeFileSync(`public/icons/icon-${size}.png`, await renderPng(size));
+    writeFileSync(`public/icons/maskable-${size}.png`, await renderMaskable(size));
+  }
+  console.log(
+    'Wrote src/app/favicon.ico, src/app/apple-icon.png, src/app/icon.svg, public/icons/*.png',
+  );
 } finally {
   await browser.close();
 }

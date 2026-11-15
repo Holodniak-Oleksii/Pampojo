@@ -11,6 +11,7 @@ import { LogOutButton } from '@/features/auth/LogOutButton';
 import { GymNudgeCard } from '@/features/gym/GymNudgeCard';
 import { GymProfileRow } from '@/features/gym/GymProfileRow';
 import { LanguageSwitcher } from '@/features/i18n/LanguageSwitcher';
+import { InstallRow } from '@/features/pwa';
 import { ThemeSwitch } from '@/features/theme/ThemeSwitch';
 import { useFormat } from '@/i18n/client';
 import { feetInchesFromCm, formatFeetInches, lbFromKg } from '@/lib/units';
@@ -77,6 +78,7 @@ export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
           <legend className="float-left px-3 text-muted-foreground">{t('Theme')}</legend>
           <ThemeSwitch variant="labels" className="clear-both" />
         </fieldset>
+        <InstallRow />
       </div>
       <div className="flex flex-col gap-3 sm:flex-row lg:max-w-[600px]">
         <Button size="lg" className="sm:flex-1" onClick={() => setEditing(true)}>

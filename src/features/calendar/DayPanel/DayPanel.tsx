@@ -87,7 +87,12 @@ export function DayPanel({
       ) : (
         <div className="flex flex-col items-start gap-3 rounded-lg bg-card p-4">
           <span className="flex items-center gap-2.5">
-            <Diamond tone="planned" variant="outline" size="md" className="border-[1.5px] border-dashed" />
+            <Diamond
+              tone="planned"
+              variant="outline"
+              size="md"
+              className="border-[1.5px] border-dashed"
+            />
             <span className="text-muted-foreground">{t('Nothing planned on this day.')}</span>
           </span>
           {canSchedule && !desktop ? (

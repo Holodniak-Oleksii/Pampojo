@@ -805,6 +805,38 @@ This supersedes the expanding row in "Workout builder rules".
 - Ended rules are read-only: no row menu, `PATCH` 400, `DELETE` a 204 no-op.
 **Why:** An offline start replayed after midnight must not be dropped. "Done" must show on every device. The past is never rewritten.
 
+## 2026-11-15 — PWA shell (spec 15)
+
+**Context:** `/drill 15`.
+**Decision:**
+- The service worker uses Serwist, recorded in ADR 0008 after its Turbopack integration is checked in `/scratch`.
+- App pages are network-first, with visited pages cached for offline and an `/offline` fallback for the rest. The page cache is deleted on logout.
+- Updates are silent: the new worker takes over on the next launch, with no prompt and no reload during use.
+- Install UI is a Today card on phones (hidden for 7 days after closing) and a Profile row, for the Chrome prompt and an iOS guide. Nothing shows when installed.
+- The manifest uses the light background #ECE9E4 for background and theme. There are no iOS startup images.
+- The Lighthouse PWA check is replaced by e2e installability checks on a production build. The lead checks real devices on a Vercel preview.
+**Why:** Lead's answers. Offline-first needs the app pages to open in the gym, a shared device must not show another user's pages, and a workout must never be interrupted by an update.
+
+## 2026-11-15 — PWA shell design (spec 15)
+
+**Context:** `/design 15`.
+**Decision:**
+- The Today install card is one compact row: app icon, title, action, close, with no description. The description moved to the iPhone guide intro.
+- The iPhone guide is a bottom sheet on phones and a 440px dialog from `lg`. Its steps are numbered diamonds with Safari glyph tiles.
+- The Profile install row comes after the theme fieldset.
+- The offline fallback has no app shell: a brand header and a centered card with a dashed planned diamond.
+**Why:** Lead approved the canvas, and asked for a more compact card.
+
+## 2026-11-15 — Serwist through the Turbopack route (spec 15)
+
+**Context:** `/scratch 15`. A spike built `@serwist/turbopack` 9.5 under `cacheComponents` and served `/serwist/sw.js`.
+**Decision:**
+- Use `@serwist/turbopack`, `serwist` and `esbuild` as dev dependencies (ADR 0008).
+- The worker has its own runtime caching (pages network-first, API and auth network-only), with `skipWaiting: false` and `clientsClaim: true`.
+- Registration has `reloadOnOnline` off.
+- Playwright blocks service workers except in the PWA suite.
+**Why:** The lead chose Serwist. The defaults would reload the page when the connection returns, and would change every other e2e suite on the CI production server.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.
