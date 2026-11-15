@@ -2,7 +2,9 @@
 
 import { useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { deleteAllLocalDbs, flushAllLocalDbs } from '@/services/local-db';
 import { authClient } from '@/api/auth';
 import { navigateAfterAuth } from '../utils';
 
@@ -28,9 +30,21 @@ export interface LogOutButtonProps {
 export function LogOutButton({ variant = 'secondary', size, className }: LogOutButtonProps) {
   const { t } = useTranslation();
   const [pending, setPending] = useState(false);
+  const [warning, setWarning] = useState(false);
 
   const logOut = async () => {
     if (pending) return;
+    setPending(true);
+    // Unsent workout data would be lost with the local database, so the user decides.
+    if ((await flushAllLocalDbs()) > 0) {
+      setPending(false);
+      setWarning(true);
+      return;
+    }
+    await signOut();
+  };
+
+  const signOut = async () => {
     setPending(true);
     try {
       await authClient.signOut();
@@ -41,12 +55,38 @@ export function LogOutButton({ variant = 'secondary', size, className }: LogOutB
     }
     // After a server answer the session is gone (Better Auth clears the cookie even on an error).
     clearOnboardingDrafts();
+    await deleteAllLocalDbs();
     navigateAfterAuth('/');
   };
 
   return (
-    <Button variant={variant} size={size} className={className} disabled={pending} onClick={logOut}>
-      {t('Log out')}
-    </Button>
+    <>
+      <Button
+        variant={variant}
+        size={size}
+        className={className}
+        disabled={pending}
+        onClick={logOut}
+      >
+        {t('Log out')}
+      </Button>
+      <ConfirmDialog
+        open={warning}
+        onOpenChange={setWarning}
+        stacked
+        destructive
+        title={t('Log out?')}
+        description={t(
+          'Unsynced workout data will be lost. Connect to the internet so it can sync.',
+        )}
+        confirmLabel={t('Log out')}
+        cancelLabel={t('Cancel')}
+        pending={pending}
+        onConfirm={() => {
+          setWarning(false);
+          void signOut();
+        }}
+      />
+    </>
   );
 }

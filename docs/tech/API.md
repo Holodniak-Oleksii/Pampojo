@@ -36,7 +36,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `PUT/DELETE /api/v1/exercises/{id}/frames/{frameId}` | Upload (multipart) or remove one photo frame of an own exercise | 07 |
 | `GET/PUT /api/v1/me/gym` | Gym equipment `{ equipment, updatedAt }`; `GET` is 404 `GYM_PROFILE_NOT_FOUND` before the first save; `PUT` upserts | 08 |
 | `GET /api/v1/workouts`, `GET/PUT/DELETE /api/v1/workouts/{id}` | Workouts with exercises, see below | 09 |
-| `PUT /api/v1/sessions/{id}`, `PATCH`, `GET` list/detail | Sessions | 10 |
+| `GET /api/v1/sessions` (`?status=&exerciseId=`), `GET/PUT/PATCH /api/v1/sessions/{id}` | Sessions, see below | 10 |
 | `PUT/PATCH/DELETE /api/v1/sets/{id}` | Set logs | 10 |
 | `GET /api/v1/exercises/{id}/last-performance` | Previous values in session | 10 |
 | `GET/PUT/PATCH/DELETE /api/v1/schedule-rules[/{id}]` | Plan rules | 11 |
@@ -64,6 +64,16 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
   - Targets the exercise's tracking type does not allow, an unknown exercise, or another user's or deleted own exercise give 400 `VALIDATION_FAILED`, with the path.
 - **`DELETE`** soft deletes and returns 204, also on a repeat.
 - **Errors:** `WORKOUT_NOT_FOUND` (404, also for another user's id) and `WORKOUT_LIMIT_REACHED` (422 at 200 workouts).
+
+## Sessions (spec 10)
+
+- **List.** `GET /api/v1/sessions` returns `{ items: [{ id, workoutId, workoutName, status, startedAt, finishedAt }] }`, newest `startedAt` first, at most 200, never abandoned. `status` is `in_progress` or `completed`; `exerciseId` keeps sessions with a live set of that exercise.
+- **Detail.** `GET /api/v1/sessions/{id}` returns the session with `workoutSnapshot`, `exercises` and its live `setLogs`. Abandoned is 404.
+- **`PUT /api/v1/sessions/{id}`** creates the session with a client id; a repeat returns the existing row.
+- **`PATCH /api/v1/sessions/{id}`** writes `exercises`, `notes`, or `status` (`completed` with `finishedAt`, or `abandoned`, which soft deletes its set logs). Plan and note changes need `in_progress`.
+- **`PUT/PATCH/DELETE /api/v1/sets/{id}`**: create or replace (clears `deletedAt`), change values, soft delete (204 on repeat). Values must match the exercise tracking type and the main metric is required.
+- **`GET /api/v1/exercises/{id}/last-performance`** returns `{ item: null | { sessionId, finishedAt, sets } }` from the latest completed session with a live set of the exercise.
+- **Errors:** `SESSION_NOT_FOUND` (404, also for another user's id), `SESSION_NOT_IN_PROGRESS` (409), validation 400.
 
 ## Export file format
 

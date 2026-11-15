@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import type { MouseEvent } from 'react';
+import { BrandMark } from '@/components/BrandMark';
+import type { MouseEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Diamond } from '@/components/Diamond';
 import { PlayDiamond } from '@/components/PlayDiamond';
@@ -17,9 +17,12 @@ const RING =
 export interface SidebarNavProps {
   section: Section | null;
   onStart: (event: MouseEvent<HTMLButtonElement>) => void;
+  inProgress?: boolean;
+  /** Shown under the Start button, such as the running session's bar. */
+  children?: ReactNode;
 }
 
-export function SidebarNav({ section, onStart }: SidebarNavProps) {
+export function SidebarNav({ section, onStart, inProgress = false, children }: SidebarNavProps) {
   const { t } = useTranslation();
   const labels = useSectionLabels();
 
@@ -30,8 +33,8 @@ export function SidebarNav({ section, onStart }: SidebarNavProps) {
         aria-label={t('Pampojo, Today')}
         className={cn('self-start rounded-md px-2', RING)}
       >
-        <Image
-          src="/brand/pampojo-wordmark.svg"
+        <BrandMark
+          variant="wordmark"
           alt=""
           width={148}
           height={32}
@@ -39,10 +42,16 @@ export function SidebarNav({ section, onStart }: SidebarNavProps) {
           className="h-8 w-auto"
         />
       </Link>
-      <Button size="lg" className="w-full" onClick={onStart}>
+      {/* "Продовжити тренування" is wider than the 224px button, so the label may wrap. */}
+      <Button
+        size="lg"
+        className="h-auto min-h-14 w-full px-4 py-2 leading-tight whitespace-normal"
+        onClick={onStart}
+      >
         <PlayDiamond />
-        {t('Start workout')}
+        {inProgress ? t('Continue workout') : t('Start workout')}
       </Button>
+      {children}
       <nav aria-label={t('Main navigation')}>
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => {

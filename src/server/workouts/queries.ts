@@ -100,6 +100,16 @@ export async function findWorkoutRow(
   return row;
 }
 
+/** The owner of a workout row, deleted or not. */
+export async function findWorkoutOwner(db: Executor, id: string): Promise<string | undefined> {
+  const [row] = await db
+    .select({ ownerId: workout.ownerId })
+    .from(workout)
+    .where(eq(workout.id, id))
+    .limit(1);
+  return row?.ownerId;
+}
+
 export async function hasActiveWorkout(db: Executor, userId: string): Promise<boolean> {
   const [row] = await db
     .select({ id: workout.id })

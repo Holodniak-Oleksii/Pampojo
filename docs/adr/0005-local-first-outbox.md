@@ -16,3 +16,7 @@ Gym data (catalog, workouts, plan, sessions, set logs, measurements) is mirrored
 - We own a small sync engine instead of adopting a sync product (PowerSync, ElectricSQL, Replicache). That keeps the stack free and is a good engineering story, at the cost of writing and testing it.
 - Conflicts are limited by design: set logs are append-mostly; editable rows use last write wins.
 - Before spec 16, the same repository interface calls the API directly, so UI code does not change.
+
+## Amendment (2026-11-15)
+
+Sessions and set logs move to Dexie and the outbox in spec 10, ahead of spec 16. Until 16, the outbox replays the idempotent REST endpoints (`PUT`/`PATCH`/`DELETE` on `/sessions` and `/sets`) in order, and other repositories still call the API directly. Spec 16 switches the outbox to `/sync/push`, adds pull and the remaining entities.

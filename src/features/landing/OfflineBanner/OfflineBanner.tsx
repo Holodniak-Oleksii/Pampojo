@@ -7,7 +7,7 @@ export async function OfflineBanner() {
     <section
       data-section="offline"
       aria-labelledby="offline-heading"
-      className="bg-foreground text-card"
+      className="bg-band text-band-foreground dark:border-y dark:border-border-strong"
     >
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-6 px-4 py-14 md:px-6">
         <h2

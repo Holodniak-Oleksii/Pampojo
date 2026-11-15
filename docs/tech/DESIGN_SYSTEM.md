@@ -12,7 +12,8 @@ Built on shadcn/ui with a custom Tailwind theme. Components come from shadcn fir
 - `--radius` is 6px, and the smaller radii come from the shape table.
 - Text on `--accent` uses `--foreground`. All text passes WCAG AA, which closes the spec 01 exception for secondary text.
 - Avatar backgrounds `--avatar-1` … `--avatar-8`: `#FBD9C3` peach, `#F9C9A0` apricot, `#F6E3A1` butter, `#CFE3C8` sage, `#C5E6DE` mint, `#C9DDF0` sky, `#DCD3EE` lavender, `#F3C9CF` rose. The 24 avatar emoji are listed in spec 01. On Today the avatar is not shown.
-- The app is light. Only the active session screen (spec 10) follows the system dark theme, with the dark session tokens.
+- Light and dark themes (spec 29): every token has a dark value (`VISUAL_LANGUAGE.md` "Dark theme"). The theme is a class on `<html>`, set from the device setting before the first paint; components never branch on the theme, they only read tokens.
+- `ThemeSwitch`: the three-option control (Profile row with labels, landing footer icon-only).
 
 ## Typography
 
@@ -28,9 +29,9 @@ Manrope through `next/font`, subsets `latin` and `cyrillic`, weights 400, 600, 7
 
 - `BottomNav`: a hexagonal charcoal panel with five slots and a central accent Play diamond cut into the panel.
 - `SidebarNav`: desktop. Start at the top, and the active row marked with an accent diamond.
-- `StatusPill`: online (light) or offline (dark, with a pending count); it opens the sync sheet.
+- `StatusPill`: online (card) or offline (the inverse of the page, with a pending count); it opens the sync sheet.
 - `WeekStrip`: 7 days with diamond markers.
-- `SetRow`, `RestTimer`, `ExerciseRow` (thumbnail, title, secondary line, value, chevron), `MuscleChips` (a family diamond before the label).
+- `SetRow`, `RestTimer`, `SessionBar` (spec 10), `ExerciseRow` (thumbnail, title, secondary line, value, chevron), `MuscleChips` (a family diamond before the label).
 - `EmojiAvatar`: an emoji on a 4px-radius square from the avatar palette.
 - Custom icons (workout, set done, record, rest, my gym): see `VISUAL_LANGUAGE.md`.
 - `SegmentedGauge` and `StatCard` from spec 01 are replaced by diamond rows and plain numbers. Spec 13 decides what remains.

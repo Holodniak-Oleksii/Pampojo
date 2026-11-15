@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { BrandMark } from '@/components/BrandMark';
 import { useTranslation } from 'react-i18next';
 import { StatusPill } from '@/components/StatusPill';
 import { useIsOnline } from '@/hooks/useIsOnline';
@@ -25,7 +25,7 @@ export function TopBar({ section }: TopBarProps) {
           aria-label={t('Pampojo, Today')}
           className="-ml-1.5 flex size-11 items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
         >
-          <Image src="/brand/pampojo-icon.svg" alt="" width={32} height={32} className="size-8" />
+          <BrandMark variant="icon" alt="" width={32} height={32} className="size-8" />
         </Link>
         <p className="min-w-0 truncate text-base font-semibold lg:hidden">
           {section ? labels[section] : null}

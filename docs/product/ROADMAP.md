@@ -22,6 +22,7 @@ Each line is a spec in `docs/specs/`. Specs are delivered in order; a milestone 
 ## M2 — Training
 
 - `10-workout-session` — session mode, set logging, rest timer.
+- `29-dark-theme` — dark theme for the whole product, Profile and landing switch (system / light / dark).
 - `11-calendar-plan` — scheduling with recurring rules.
 - `12-history-adherence` — calendar history, statuses, adherence, Today data.
 

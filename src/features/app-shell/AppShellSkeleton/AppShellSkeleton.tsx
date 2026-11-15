@@ -31,11 +31,11 @@ export function AppShellSkeleton() {
           <Skeleton className="h-32 w-full rounded-lg" />
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-0 bg-primary pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 bg-nav pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
         <div className="mx-auto grid h-[76px] max-w-[600px] grid-cols-5 items-center px-2">
           {NAV_SLOTS.map((slot) => (
             <div key={slot} className="flex justify-center">
-              <Skeleton className="size-8 rounded-md bg-primary-foreground/15" />
+              <Skeleton className="size-8 rounded-md bg-nav-foreground/15" />
             </div>
           ))}
         </div>

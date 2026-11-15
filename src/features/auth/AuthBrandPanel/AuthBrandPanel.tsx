@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { BrandMark } from '@/components/BrandMark';
 import { HeroWorkoutCard } from '@/features/landing/HeroWorkoutCard';
 import { getI18n } from '@/i18n/server';
 
@@ -6,8 +6,8 @@ export async function AuthBrandPanel() {
   const { t } = await getI18n();
   return (
     <aside className="hidden min-h-0 flex-col gap-8 overflow-hidden rounded-lg bg-border/60 p-10 pb-0 lg:flex">
-      <Image
-        src="/brand/pampojo-wordmark.svg"
+      <BrandMark
+        variant="wordmark"
         alt=""
         width={185}
         height={40}

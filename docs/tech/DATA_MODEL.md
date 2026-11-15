@@ -129,12 +129,13 @@ Occurrences are computed, not stored. An `occurrence_exception` table (skip or m
 | --- | --- | --- |
 | id | uuid PK | Client-generated |
 | userId | uuid → user | |
-| workoutId | uuid null | Null for an ad-hoc session |
-| scheduledFor | date null | The occurrence this session fulfils |
-| workoutSnapshot | jsonb | Workout as it was at start, so later edits do not rewrite history |
-| status | text | `in_progress`, `completed`, `abandoned` |
-| startedAt, finishedAt | timestamptz | |
-| notes | text null | |
+| workoutId | uuid null → workout | Always set from spec 10; `set null` if the workout row is removed |
+| scheduledFor | date null | The occurrence this session fulfils (spec 11) |
+| workoutSnapshot | jsonb | Workout as it was at start, never changed afterwards |
+| exercises | jsonb | The session plan in session order: `[{ id, exerciseId, plannedSets, target…, notes, exercise: { id, name, trackingType, laterality, thumbnailUrl } }]` (spec 10) |
+| status | text | `in_progress`, `completed`, `abandoned`; one `in_progress` per user is enforced by the client |
+| startedAt, finishedAt | timestamptz | `finishedAt` is set for `completed` |
+| notes | text null | Up to 1000 |
 | createdAt, updatedAt | | |
 
 ## set_log
@@ -143,12 +144,12 @@ Occurrences are computed, not stored. An `occurrence_exception` table (skip or m
 | --- | --- | --- |
 | id | uuid PK | Client-generated |
 | sessionId | uuid → workout_session | |
+| sessionExerciseId | uuid | The `exercises[].id` entry of the session; the order comes from `exercises` |
 | exerciseId | uuid → exercise | The exercise actually performed |
-| substitutedFromExerciseId | uuid null | Planned exercise when swapped |
-| exercisePosition | smallint | Order in the session |
-| setIndex | smallint | |
-| weightKg, reps, durationSec, distanceM | nullable numerics | Depends on `trackingType` |
-| rpe | numeric null | Optional effort 1–10 |
+| substitutedFromExerciseId | uuid null | Planned exercise when swapped (spec 18) |
+| setIndex | smallint | 0-based row, 0–19; unique per entry among live rows |
+| weightKg, reps, durationSec, distanceM | nullable numerics | By `trackingType`: weight 0–500 step 0.25, reps 1–100, duration 1–3600 s, distance 1–100 000 m |
+| rpe | numeric null | Optional effort 1–10, no UI yet |
 | completedAt | timestamptz | |
 | createdAt, updatedAt, deletedAt | | |
 

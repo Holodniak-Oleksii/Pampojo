@@ -33,4 +33,4 @@ UX around offline (status count, blocked actions, logout guard, images) — spec
 
 ## Open questions
 
-- If spec 10 already built the local layer (see its open question), this spec shrinks to sync for the remaining entities.
+- Spec 10 built the Dexie database, the outbox and the session repository, with the outbox replaying REST calls (ADR 0005 amendment). This spec moves the outbox to `/sync/push`, adds pull and the remaining entities.

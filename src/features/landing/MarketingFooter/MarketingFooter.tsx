@@ -1,6 +1,7 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import { BrandMark } from '@/components/BrandMark';
 import { LanguageSwitcher } from '@/features/i18n/LanguageSwitcher';
+import { ThemeSwitch } from '@/features/theme/ThemeSwitch';
 import { getI18n } from '@/i18n/server';
 
 export async function MarketingFooter() {
@@ -28,13 +29,7 @@ export async function MarketingFooter() {
       <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-8 px-4 py-10 md:grid-cols-[1.5fr_1fr_1fr_auto] md:px-6">
         <div className="col-span-2 flex flex-col gap-3 md:col-span-1">
           <Link href="/" aria-label={t('Pampojo home')} className="w-fit">
-            <Image
-              src="/brand/pampojo-wordmark.svg"
-              alt=""
-              width={148}
-              height={32}
-              className="h-8 w-auto"
-            />
+            <BrandMark variant="wordmark" alt="" width={148} height={32} className="h-8 w-auto" />
           </Link>
           <p className="text-sm text-muted-foreground">
             {t('A workout log that works without a signal')}
@@ -55,7 +50,10 @@ export async function MarketingFooter() {
           </nav>
         ))}
         <div className="col-span-2 flex flex-wrap items-center justify-between gap-3 md:col-span-1 md:flex-col md:items-end md:justify-start">
-          <LanguageSwitcher />
+          <div className="flex items-center gap-3">
+            <ThemeSwitch variant="icons" />
+            <LanguageSwitcher />
+          </div>
           <p className="text-sm text-muted-foreground">
             {t('© {{year}} Pampojo', { year: process.env.NEXT_PUBLIC_BUILD_YEAR })}
           </p>

@@ -11,6 +11,7 @@ import { LogOutButton } from '@/features/auth/LogOutButton';
 import { GymNudgeCard } from '@/features/gym/GymNudgeCard';
 import { GymProfileRow } from '@/features/gym/GymProfileRow';
 import { LanguageSwitcher } from '@/features/i18n/LanguageSwitcher';
+import { ThemeSwitch } from '@/features/theme/ThemeSwitch';
 import { useFormat } from '@/i18n/client';
 import { feetInchesFromCm, formatFeetInches, lbFromKg } from '@/lib/units';
 import type { Gym } from '@/shared/schemas/gym';
@@ -72,6 +73,10 @@ export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
           <span className="text-muted-foreground">{t('Language')}</span>
           <LanguageSwitcher />
         </div>
+        <fieldset className="flex min-w-0 flex-col gap-2.5 rounded-lg bg-card px-2 pt-3.5 pb-2 lg:col-span-2">
+          <legend className="float-left px-3 text-muted-foreground">{t('Theme')}</legend>
+          <ThemeSwitch variant="labels" className="clear-both" />
+        </fieldset>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row lg:max-w-[600px]">
         <Button size="lg" className="sm:flex-1" onClick={() => setEditing(true)}>
