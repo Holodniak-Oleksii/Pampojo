@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import { BrandMark } from '@/components/BrandMark';
 import { LogOutButton } from '@/features/auth/LogOutButton';
 import { getI18n } from '@/i18n/server';
 
@@ -9,8 +9,8 @@ export default async function OnboardingLayout({ children }: LayoutProps<'/[lang
     <div className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-4 md:px-6">
       <header className="flex h-16 items-center justify-between gap-4">
         <Link href="/" aria-label={t('Pampojo home')} className="rounded-md">
-          <Image
-            src="/brand/pampojo-wordmark.svg"
+          <BrandMark
+            variant="wordmark"
             alt=""
             width={148}
             height={32}

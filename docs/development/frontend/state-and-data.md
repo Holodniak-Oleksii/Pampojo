@@ -36,7 +36,7 @@ export interface SessionRepository {
 }
 ```
 
-Before spec 16 the implementation calls the API. Spec 16 replaces it with Dexie + outbox. UI code does not change. Every write generates its id on the client (`crypto.randomUUID()`).
+Before spec 16 most implementations call the API, and spec 16 replaces them with Dexie + outbox. Sessions and set logs use Dexie + outbox from spec 10 (ADR 0005 amendment). UI code does not change. Every write generates its id on the client (`crypto.randomUUID()`).
 
 ## Zustand
 

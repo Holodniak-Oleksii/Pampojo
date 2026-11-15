@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Manrope } from 'next/font/google';
 import { QueryProvider } from '@/api/QueryProvider';
-import { Toaster } from '@/components/ui/sonner';
+import { ThemedToaster, ThemeScript, ThemeSync } from '@/features/theme';
 import { I18nProvider } from '@/i18n/client';
 import { LOCALES } from '@/i18n/config';
 import { getCatalog, getI18n, getLocale } from '@/i18n/server';
@@ -32,12 +32,21 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]'>) {
   const catalog = await getCatalog(locale);
 
   return (
-    <html lang={locale} className={`${manrope.variable} h-full antialiased`}>
+    // The theme script changes the class before hydration, so React must not compare it.
+    <html
+      lang={locale}
+      className={`${manrope.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale} catalog={catalog}>
           <QueryProvider>
+            <ThemeSync />
             {children}
-            <Toaster />
+            <ThemedToaster />
           </QueryProvider>
         </I18nProvider>
       </body>

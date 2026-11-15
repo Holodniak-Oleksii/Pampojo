@@ -27,6 +27,7 @@ import { MUSCLE_FAMILY_OF } from '@/constants/exercise';
 import { WORKOUT_NAME_MAX } from '@/constants/workout';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import { useExerciseLabels } from '@/features/exercises/hooks/useExerciseLabels';
+import { useStartSession } from '@/features/session/hooks/useStartSession';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import type { WorkoutListItem } from '@/shared/schemas/workout';
 import { duplicateInput } from '../utils';
@@ -43,6 +44,7 @@ export function WorkoutList() {
   const put = usePutWorkoutMutation();
   const remove = useDeleteWorkoutMutation();
   const [deleting, setDeleting] = useState<WorkoutListItem | null>(null);
+  const { start, pending: starting } = useStartSession();
 
   async function duplicate(item: WorkoutListItem) {
     try {
@@ -161,6 +163,16 @@ export function WorkoutList() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-48">
+                <DropdownMenuItem
+                  className="min-h-11 font-bold"
+                  disabled={item.exerciseCount === 0 || starting}
+                  onSelect={() => void start(item.id)}
+                >
+                  <span aria-hidden="true" className="flex size-5 items-center justify-center">
+                    <Diamond tone="accent" size="md" />
+                  </span>
+                  {t('Start')}
+                </DropdownMenuItem>
                 <DropdownMenuItem className="min-h-11" onSelect={() => void duplicate(item)}>
                   <Copy aria-hidden="true" />
                   {t('Duplicate')}

@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { authClient } from '@/api/auth';
+import Dexie from 'dexie';
+import { openLocalDb } from '@/services/local-db';
+import { localSession, resetLocalDbs } from '@/test/local-session';
 import { render } from '@/test/render';
 import { LogOutButton } from '../LogOutButton';
 
@@ -63,5 +66,47 @@ describe('LogOutButton', () => {
     await expect.element(screen.getByRole('button', { name: 'Log out' })).toBeEnabled();
     expect(localStorage.getItem('pampojo:onboarding:user-1')).toBe('{}');
     localStorage.removeItem('pampojo:onboarding:user-1');
+  });
+
+  it('warns about an unsent outbox and deletes the local databases after logging out (spec 10 AC14)', async () => {
+    vi.mocked(authClient.signOut).mockResolvedValue({ data: { success: true }, error: null });
+    const fetchMock = vi.fn(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const db = openLocalDb('00000000-0000-4000-8000-00000000eeee');
+    await db.sessions.put(localSession());
+    await db.outbox.add({
+      id: crypto.randomUUID(),
+      method: 'PUT',
+      path: '/api/v1/sets/x',
+      body: {},
+      createdAt: new Date().toISOString(),
+      attempts: 0,
+    });
+    const screen = await render(<LogOutButton />);
+
+    await screen.getByRole('button', { name: 'Log out' }).click();
+    await expect
+      .element(
+        screen
+          .getByRole('dialog', { name: 'Log out?' })
+          .getByText('Unsynced workout data will be lost. Connect to the internet so it can sync.'),
+      )
+      .toBeVisible();
+    expect(authClient.signOut).not.toHaveBeenCalled();
+
+    await screen
+      .getByRole('dialog', { name: 'Log out?' })
+      .getByRole('button', { name: 'Log out' })
+      .click();
+    await vi.waitFor(() => expect(authClient.signOut).toHaveBeenCalledTimes(1));
+    await expect
+      .poll(async () =>
+        (await Dexie.getDatabaseNames()).filter((name) => name.startsWith('pampojo-')),
+      )
+      .toEqual([]);
+    vi.unstubAllGlobals();
+    await resetLocalDbs();
   });
 });

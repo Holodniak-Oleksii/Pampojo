@@ -66,7 +66,13 @@ function ExistingWorkout({ id }: { id: string }) {
     );
   }
   // Keyed by the save time, so a refetch after a save seeds a fresh draft.
-  return <WorkoutEditorForm key={query.data.updatedAt} initial={draftFromWorkout(query.data)} />;
+  return (
+    <WorkoutEditorForm
+      key={query.data.updatedAt}
+      initial={draftFromWorkout(query.data)}
+      persisted
+    />
+  );
 }
 
 export function WorkoutEditor(props: WorkoutEditorProps) {

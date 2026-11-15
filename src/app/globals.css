@@ -2,9 +2,12 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* Spec 29: the theme is a class on <html>, set before the first paint by the inline theme script. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --shadow-soft: 0 12px 32px rgb(36 34 31 / 0.12);
+  --shadow-soft: 0 12px 32px var(--shadow-color);
   --color-avatar-1: var(--avatar-1);
   --color-avatar-2: var(--avatar-2);
   --color-avatar-3: var(--avatar-3);
@@ -41,6 +44,23 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-nav: var(--nav);
+  --color-nav-foreground: var(--nav-foreground);
+  --color-band: var(--band);
+  --color-band-foreground: var(--band-foreground);
+  --color-session-border: var(--session-border);
+  --color-session-button: var(--session-button);
+  --color-session-button-foreground: var(--session-button-foreground);
+  --color-scrim: var(--scrim);
+  --color-destructive-text: var(--destructive-text);
+  --color-input-surface: var(--input-surface);
+  --color-disabled-outline: var(--disabled-outline);
+  --color-placeholder: var(--placeholder);
+  --color-session-surface: var(--session-surface);
+  --color-session-foreground: var(--session-foreground);
+  --color-session-muted: var(--session-muted);
+  --color-session-track: var(--session-track);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -81,6 +101,27 @@
   --planned: #aea79f;
   --success: #5baa6a;
   --destructive: #e5534b;
+  /* #24221f on the destructive red is 4.28:1; the slightly darker charcoal passes AA. */
+  --destructive-foreground: #1e1c1a;
+  --destructive-text: #c2413a;
+  --input-surface: #f8f7f4;
+  --disabled-outline: #aea79f;
+  --placeholder: #5c5751;
+  /* The session bar stays dark on light screens (spec 10). */
+  --session-surface: #1e1c1a;
+  --session-foreground: #f3f1ec;
+  --session-muted: #b3aca3;
+  --session-track: #3a3633;
+  --session-border: #1e1c1a;
+  --session-button: #f3f1ec;
+  --session-button-foreground: #1e1c1a;
+  --nav: #24221f;
+  --nav-foreground: #f8f7f4;
+  --band: #24221f;
+  --band-foreground: #f8f7f4;
+  --scrim: rgb(36 34 31 / 0.45);
+  --shadow-color: rgb(36 34 31 / 0.12);
+  color-scheme: light;
   --border: #e0dbd4;
   --border-strong: #d9d3cb;
   --band-surface: #33302c;
@@ -114,6 +155,78 @@
   --sidebar-accent-foreground: #24221f;
   --sidebar-border: #e0dbd4;
   --sidebar-ring: #24221f;
+}
+
+/* Dark theme (spec 29): the same tokens with the dark values from VISUAL_LANGUAGE.md. */
+.dark {
+  --background: #1e1c1a;
+  --foreground: #f3f1ec;
+  --card: #2a2724;
+  --card-foreground: #f3f1ec;
+  --popover: #2a2724;
+  --popover-foreground: #f3f1ec;
+  /* Raised dark buttons: a near-white primary glared on the dark page (lead, 2026-11-15). */
+  --primary: #4a4541;
+  --primary-foreground: #f3f1ec;
+  --secondary: #2a2724;
+  --secondary-foreground: #f3f1ec;
+  --muted: #3a3633;
+  --muted-foreground: #b3aca3;
+  --accent-foreground: #1e1c1a;
+  --planned: #8c857d;
+  --success: #6fbf7d;
+  --destructive-foreground: #1e1c1a;
+  --destructive-text: #f28a84;
+  --input-surface: #353130;
+  --disabled-outline: #5a544f;
+  --placeholder: #6e6862;
+  --session-surface: #353130;
+  --session-foreground: #f3f1ec;
+  --session-muted: #b3aca3;
+  --session-track: #4a4541;
+  --session-border: #4a4541;
+  --session-button: #4a4541;
+  --session-button-foreground: #f3f1ec;
+  --nav: #2a2724;
+  --nav-foreground: #f3f1ec;
+  --band: #2a2724;
+  --band-foreground: #f3f1ec;
+  --band-surface: #353130;
+  --border: #3a3633;
+  --border-strong: #4a4541;
+  --input: #3a3633;
+  --ring: #f3f1ec;
+  --chart-1: #f3f1ec;
+  --chart-3: #b3aca3;
+  --chart-4: #8c857d;
+  --chart-5: #6fbf7d;
+  --sidebar: #2a2724;
+  --sidebar-foreground: #f3f1ec;
+  --sidebar-primary: #4a4541;
+  --sidebar-primary-foreground: #f3f1ec;
+  --sidebar-accent-foreground: #1e1c1a;
+  --sidebar-border: #3a3633;
+  --sidebar-ring: #f3f1ec;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow-color: rgb(0 0 0 / 0.45);
+  color-scheme: dark;
+}
+
+/* The "set done" click: the diamond overshoots once as it fills (VISUAL_LANGUAGE.md motion). */
+@keyframes set-done {
+  0% {
+    transform: rotate(45deg) scale(0.55);
+  }
+  60% {
+    transform: rotate(45deg) scale(1.18);
+  }
+  100% {
+    transform: rotate(45deg) scale(1);
+  }
+}
+
+.set-done {
+  animation: set-done 220ms ease-out;
 }
 
 @layer base {

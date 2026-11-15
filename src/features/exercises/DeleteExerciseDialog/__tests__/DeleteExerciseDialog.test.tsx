@@ -40,4 +40,33 @@ describe('DeleteExerciseDialog', () => {
       .toHaveAttribute('href', '/library/workouts/00000000-0000-4000-8000-00000000a001');
     expect(screen.getByRole('link', { name: 'Legs' }).elements()).toHaveLength(0);
   });
+
+  it('lists the completed sessions that logged the exercise (spec 10 AC15)', async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const url = new URL(String(input), 'http://localhost');
+      if (url.pathname === '/api/v1/sessions') {
+        expect(url.searchParams.get('status')).toBe('completed');
+        expect(url.searchParams.get('exerciseId')).toBe(EXERCISE);
+        return Response.json({
+          items: [
+            {
+              id: '00000000-0000-4000-8000-00000000d001',
+              workoutId: null,
+              workoutName: 'Push Day',
+              status: 'completed',
+              startedAt: '2024-03-05T10:00:00.000Z',
+              finishedAt: '2024-03-05T11:00:00.000Z',
+            },
+          ],
+        });
+      }
+      return Response.json({ items: [] });
+    });
+    const screen = await render(<DeleteExerciseDialog exerciseId={EXERCISE} disabled={false} />);
+    await screen.getByRole('button', { name: 'Delete' }).click();
+    await expect
+      .element(screen.getByText('Its sets will be removed from these workouts:'))
+      .toBeVisible();
+    await expect.element(screen.getByText('Push Day, Mar 5, 2024')).toBeVisible();
+  });
 });

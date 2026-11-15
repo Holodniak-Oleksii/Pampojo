@@ -9,7 +9,7 @@ import { NAV_ITEMS, SECTION, type NavItem, type Section } from '../constants';
 import { useSectionLabels } from '../useSectionLabels';
 
 const RING =
-  'outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary';
+  'outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-nav';
 
 const BAR_ITEMS = NAV_ITEMS.filter((item) => item.section !== SECTION.TODAY);
 const BEFORE_START = BAR_ITEMS.slice(0, 2);
@@ -18,9 +18,11 @@ const AFTER_START = BAR_ITEMS.slice(2);
 export interface BottomNavProps {
   section: Section | null;
   onStart: (event: MouseEvent<HTMLButtonElement>) => void;
+  /** A session runs: Play continues it. */
+  inProgress?: boolean;
 }
 
-export function BottomNav({ section, onStart }: BottomNavProps) {
+export function BottomNav({ section, onStart, inProgress = false }: BottomNavProps) {
   const { t } = useTranslation();
   const labels = useSectionLabels();
 
@@ -35,7 +37,7 @@ export function BottomNav({ section, onStart }: BottomNavProps) {
           aria-current={active ? 'page' : undefined}
           className={cn(
             'flex size-12 items-center justify-center rounded-md transition-colors motion-reduce:transition-none',
-            active ? 'text-accent' : 'text-primary-foreground',
+            active ? 'text-accent' : 'text-nav-foreground',
             RING,
           )}
         >
@@ -48,23 +50,23 @@ export function BottomNav({ section, onStart }: BottomNavProps) {
   return (
     <nav
       aria-label={t('Main navigation')}
-      className="fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)] text-primary-foreground lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)] text-nav-foreground lg:hidden"
     >
       {/* Chamfered panel in three pieces, so the corners keep their shape at any width. */}
-      <div aria-hidden="true" className="absolute inset-0 flex flex-col text-primary">
+      <div aria-hidden="true" className="absolute inset-0 flex flex-col text-nav">
         <div className="flex h-6">
           <PanelCorner />
-          <div className="flex-1 bg-primary" />
+          <div className="flex-1 bg-nav" />
           <PanelCorner className="-scale-x-100" />
         </div>
-        <div className="flex-1 bg-primary" />
+        <div className="flex-1 bg-nav" />
       </div>
       <ul className="relative mx-auto grid h-[76px] max-w-[600px] grid-cols-5 items-center px-2">
         {BEFORE_START.map(renderLink)}
         <li className="flex justify-center">
           <button
             type="button"
-            aria-label={t('Start workout')}
+            aria-label={inProgress ? t('Continue workout') : t('Start workout')}
             onClick={onStart}
             className={cn(
               '-mt-11 flex size-[60px] rotate-45 items-center justify-center rounded-lg border-[5px] border-background bg-accent text-foreground transition-transform duration-120 active:scale-[0.92]',

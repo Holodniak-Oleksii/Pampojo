@@ -62,21 +62,29 @@ The 17 muscle groups fold into 6 families. A colour always sits next to its name
 
 Use: filter chips and section headings (a small diamond before the label) and charts (shares of weekly volume). Exercise rows carry no muscle colour.
 
-### Dark session (spec 10)
+### Dark theme (spec 29)
 
-The active session screen follows the system theme. Every other screen stays light in the MVP.
+The whole product has a dark theme, picked by the device setting "Як у системі / Світла / Темна" (default: the system). It extends the spec 10 dark session tokens to every token; the full table, with the light value of each token, is in `docs/specs/29-dark-theme.md` "Design". Key values:
 
-| Token | Value |
+| Token | Dark value |
 | --- | --- |
 | background | `#1E1C1A` |
-| surface | `#2A2724` |
+| card, sheet, dialog, menu | `#2A2724` |
 | input field | `#353130` |
 | text | `#F3F1EC` |
 | secondary text | `#B3ACA3` |
-| divider | `#3A3633` |
-| primary button | `#F3F1EC` with `#1E1C1A` text |
+| divider / strong divider | `#3A3633` / `#4A4541` |
+| primary button | raised `#4A4541` with `#F3F1EC` text |
+| planned outline / disabled outline | `#8C857D` / `#5A544F` |
+| placeholder | `#6E6862` |
+| destructive text | `#F28A84` |
+| bottom nav panel, logo square | `#2A2724` |
+| session bar | `#353130` with a `#4A4541` border |
+| offline pill | the inverse of the page (`#F3F1EC` with dark text) |
 
-The accent stays `#EC8447`.
+- The accent stays `#EC8447`, with dark text on it.
+- Muscle family colours, avatar backgrounds and photos are the same in both themes.
+- Until spec 29 ships, only the session screen follows the system theme (spec 10).
 
 ### Type — Manrope
 
@@ -149,6 +157,12 @@ The structure is unchanged: Calendar, Library, Play, Progress, Profile.
 - **Multi-select picker rows:** unpicked show a `--planned` outline diamond, and picked a dark diamond with the pick number.
 - **Drag:** a 6-dot handle in `--planned`. The dragged item floats with the soft shadow and a 1.5° tilt. The drop position is a 3px accent line with an accent diamond.
 - **Item details:** a sheet (bottom on mobile, side on desktop) opened by tapping the row. Rows carry no chevron.
+
+### Session (spec 10)
+
+- **Set check:** a 30px diamond in a 56px button. Logged is accent-filled with a dark check, the current set a light outline, the others a planned outline, and disabled a dashed outline.
+- **Rest timer:** a ring that drains linearly in the accent. On mobile it sits in a bar docked to the bottom, and on desktop in a panel in the right column. Past zero the ring is full and the time counts up in the accent.
+- **Session bar:** a dark bar above the bottom nav (top of the sidebar on desktop) while a session runs in the background. It shows the name, the rest or elapsed time, and "Повернутися".
 
 ### Icons
 

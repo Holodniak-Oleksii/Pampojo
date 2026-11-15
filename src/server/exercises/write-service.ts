@@ -1,4 +1,8 @@
 import 'server-only';
+import {
+  removeExerciseFromInProgressSessions,
+  softDeleteExerciseSetLogs,
+} from '@/server/sessions/queries';
 import { removeExerciseFromWorkouts } from '@/server/workouts/queries';
 import { randomUUID } from 'node:crypto';
 import {
@@ -242,6 +246,8 @@ export async function deleteOwnExercise(
     keys = frameKeys(row.media);
     await updateExerciseColumns(tx, id, { deletedAt: new Date() });
     await removeExerciseFromWorkouts(tx, userId, id);
+    await softDeleteExerciseSetLogs(tx, userId, id);
+    await removeExerciseFromInProgressSessions(tx, userId, id);
   });
   await removeQuietly(keys);
 }

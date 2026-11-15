@@ -7,7 +7,10 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useDeleteExerciseMutation } from '@/api/exercises';
+import { useSessionsQuery } from '@/api/sessions';
 import { useWorkoutsQuery } from '@/api/workouts';
+import { SESSION_STATUS } from '@/constants/session';
+import { useLocale } from '@/i18n/client';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
@@ -25,6 +28,21 @@ export function DeleteExerciseDialog({ exerciseId, disabled }: DeleteExerciseDia
   const usedIn = (workouts.data?.items ?? []).filter((workout) =>
     workout.exerciseIds.includes(exerciseId),
   );
+  const locale = useLocale();
+  const sessions = useSessionsQuery(
+    { status: SESSION_STATUS.COMPLETED, exerciseId },
+    { enabled: open },
+  );
+  const history = sessions.data?.items ?? [];
+  const thisYear = new Date().getFullYear();
+  const sessionDate = (iso: string) => {
+    const date = new Date(iso);
+    return new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
+      ...(date.getFullYear() === thisYear ? {} : { year: 'numeric' }),
+    }).format(date);
+  };
 
   async function confirm() {
     try {
@@ -67,6 +85,23 @@ export function DeleteExerciseDialog({ exerciseId, disabled }: DeleteExerciseDia
                   >
                     {workout.name}
                   </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {history.length > 0 ? (
+          <div className="flex flex-col gap-2 text-sm">
+            <p className="text-muted-foreground">
+              {t('Its sets will be removed from these workouts:')}
+            </p>
+            <ul className="flex max-h-40 flex-col gap-1 overflow-y-auto">
+              {history.map((session) => (
+                <li key={session.id} className="font-semibold">
+                  {t('{{name}}, {{date}}', {
+                    name: session.workoutName,
+                    date: sessionDate(session.finishedAt ?? session.startedAt),
+                  })}
                 </li>
               ))}
             </ul>

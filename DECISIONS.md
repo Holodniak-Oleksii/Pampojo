@@ -681,11 +681,101 @@ This supersedes the expanding row in "Workout builder rules".
 - The workout limit error is `WORKOUT_LIMIT_REACHED` 422, matching `EXERCISE_LIMIT_REACHED`.
 **Why:** Lead's answers. The error code follows the existing convention.
 
+## 2026-11-15 — Sessions are local first from spec 10
+
+**Context:** `/drill 10`; ADR 0005 had sessions call the API directly until spec 16.
+**Decision:** Sessions and set logs live in a per-user Dexie database with an outbox from spec 10. The outbox replays the idempotent REST `PUT`/`PATCH`/`DELETE` calls in order under a Web Lock; `/sync/push`, pull and other entities stay in 16. Starting offline works only from the TanStack Query cache until 16. ADR 0005 gets an amendment.
+**Why:** Lead's choice: a session in a basement gym must not lose sets, even before spec 16.
+
+## 2026-11-15 — Log out clears local session data
+
+**Context:** `/drill 10`; sessions now stay in the browser, and a phone can be shared.
+**Decision:** Log out sends the outbox first, warns if entries remain ("Вийти" / "Скасувати"), then deletes the local database. Spec 17 replaces the warning with the full guard.
+**Why:** Lead's choice: no one else's training data on a shared device.
+
+## 2026-11-15 — Session plan and set prefill
+
+**Context:** `/drill 10`.
+**Decision:**
+- `workout_session.exercises jsonb` holds the session plan (order, added exercises, planned sets); `workoutSnapshot` never changes. `set_log` gets `sessionExerciseId` and drops `exercisePosition`.
+- Set rows prefill from the same set of the last completed session, then from targets (reps from the range minimum); otherwise empty.
+- The check needs reps, duration or distance; weight may be empty (`null`). Tapping a logged set's check unlogs it.
+- Exercises can be added from the 09 picker and removed when they have no logged sets. No empty sessions.
+- `time` and `distance` sets are entered by hand.
+- Limits match the builder: 30 exercises, 20 sets, weight 0–500 kg step 0.25, reps 1–100; session note 1000.
+**Why:** Lead's answers.
+
+## 2026-11-15 — Rest timer
+
+**Context:** `/drill 10`; workouts have no rest target.
+**Decision:** The timer starts on every logged set at 90 s, or the length last set with −15/+15 for that exercise on this device (`localStorage`). At zero, while visible: a vibration where supported and a quiet sound, which a session menu toggle turns off; then it counts up.
+**Why:** Lead's choice.
+
+## 2026-11-15 — Starting and forgotten sessions
+
+**Context:** `/drill 10`.
+**Decision:** Start from the Start sheet list, "Почати" in the workout card menu and in the saved editor. While a session is in progress, every Start opens it and the sheet shows only "Продовжити". A session in progress for more than 12 hours prompts "Завершити" (`finishedAt` = last set time) or "Видалити"; nothing happens automatically.
+**Why:** Lead's answers.
+
+## 2026-11-15 — Session design
+
+**Context:** `/design 10` on the canvas `Mz5pBtc95Bq5uMFr6BtoWc`.
+**Decision:**
+- "Згорнути" leaves the session running and goes to `/today`. A dark session bar above the bottom nav (top of the sidebar on desktop) shows the rest or elapsed time and returns with "Повернутися".
+- A strip of exercise diamonds with "Вправа N з M" opens the exercise list sheet. A "Далі" row shows the next exercise.
+- Set checks are diamonds: logged accent-filled, current light outline, disabled dashed. Logged fields turn transparent and stay editable.
+- The rest timer is a draining ring: in a bar docked to the bottom on mobile, in a right-column panel on desktop. Past zero it reads "+0:12" and "Час на підхід N".
+- The summary adds a row per exercise ("N × heaviest weight") under the four numbers.
+- While a session runs, the Start sheet shows "Тренування триває" with the progress, "Продовжити <name>" and a hint.
+- New dark session values for the planned and disabled outlines, the strong divider, the placeholder and destructive text are in `VISUAL_LANGUAGE.md`.
+- The new copy is as on the canvas.
+**Why:** Lead's answers on the mockups.
+
+## 2026-11-15 — Session plan choices
+
+**Context:** `/scratch 10`.
+**Decision:**
+- `dexie` and `dexie-react-hooks` are added. IndexedDB tests run in the Vitest browser project, with no `fake-indexeddb`.
+- `GET /api/v1/sessions` takes `status` and `exerciseId` filters. The own exercise delete dialog lists completed sessions with `?status=completed&exerciseId=`. There is no usage endpoint.
+**Why:** Lead's answers. Dexie is already in the stack, and the list filter is reused by spec 12.
+
+## 2026-11-15 — App-wide theme switch
+
+**Context:** `/review 10`; only the session screen followed the system theme, and the rest of the app stayed light.
+**Decision:** The whole app gets a dark theme. A Profile setting offers "Як у системі / Світла / Темна" and is stored on the device (`localStorage`). This needs a new spec (drill → design for every screen). It supersedes "the rest of the app stays light" in "Offline presentation and dark session" once that spec ships.
+**Why:** Lead's request. A device setting works offline and needs no migration.
+
+## 2026-11-15 — Dark theme scope (spec 29)
+
+**Context:** `/drill 29`.
+**Decision:**
+- The dark theme extends the dark session tokens to every token; `/design 29` fills the gaps.
+- The default is "Як у системі". Every screen follows the setting, the landing included; the OG image stays light.
+- The session follows the app theme; the session-only system rule from spec 10 goes away.
+- The setting is in the Profile ("Тема") and in the landing footer next to the language switcher.
+- Spec 29 comes right after spec 10, before 11.
+**Why:** Lead's answers. An early dark theme means specs 11 and later are designed in both themes from the start.
+
+## 2026-11-15 — Dark theme design (spec 29)
+
+**Context:** `/design 29` on the canvas `7doeoVV5yXb83acZcKGPLj`.
+**Decision:**
+- Only Today and Profile are drawn. Every other screen follows the dark token table in spec 29, and `/review 29` checks each screen against it.
+- The bottom nav panel in dark uses the card colour `#2A2724`.
+- The Profile "Тема" row is a full-width segmented control with icons.
+- In dark, the session bar is a raised `#353130` with a `#4A4541` border.
+- Primary buttons are light on dark in the dark theme.
+**Why:** Lead's answers. The lead said the other screens follow the same style and need no drawing.
+
+## 2026-11-15 — Dark theme buttons
+
+**Context:** `/implement 29`. The lead saw near-white primary buttons on the dark page.
+**Decision:** In the dark theme, primary buttons (and other `--primary` surfaces) are raised dark `#4A4541` with `#F3F1EC` text. The session bar button uses its own `--session-button` tokens with the same values. This supersedes "Primary buttons are light on dark" in "Dark theme design (spec 29)".
+**Why:** Lead's call: white buttons glared in the dark theme.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.
 
 
-- Data layer before spec 15: write sessions straight to the server, or build the local Dexie layer from spec 10? (spec 10)
-- Rest timer length now that workouts have no rest target: a global setting, a fixed 90 s, or a manual start? (spec 10)
 - Speech-to-text and image generation providers. (specs 20, 24)

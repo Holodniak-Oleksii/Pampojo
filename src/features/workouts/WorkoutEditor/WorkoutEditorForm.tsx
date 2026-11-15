@@ -17,6 +17,8 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { ArrowLeft, Plus } from 'lucide-react';
+import { Diamond } from '@/components/Diamond';
+import { useStartSession } from '@/features/session/hooks/useStartSession';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, type MouseEvent } from 'react';
@@ -58,7 +60,14 @@ function catalogData(data: unknown): CatalogDragData | null {
     : null;
 }
 
-export function WorkoutEditorForm({ initial }: { initial: Draft }) {
+export function WorkoutEditorForm({
+  initial,
+  persisted = false,
+}: {
+  initial: Draft;
+  /** A saved workout can be started from the editor. */
+  persisted?: boolean;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const online = useIsOnline();
@@ -69,6 +78,7 @@ export function WorkoutEditorForm({ initial }: { initial: Draft }) {
   const [saved, setSaved] = useState(false);
   const dirty = !saved && JSON.stringify(draft) !== JSON.stringify(initial);
   useDiscardGuard(dirty);
+  const { start, pending: startPending } = useStartSession();
 
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -195,14 +205,27 @@ export function WorkoutEditorForm({ initial }: { initial: Draft }) {
       }}
     >
       <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start lg:gap-6">
-        <Link
-          href={LIST_PATH}
-          onClick={leave}
-          className="inline-flex min-h-11 items-center gap-2 self-start font-semibold lg:col-span-2"
-        >
-          <ArrowLeft aria-hidden="true" className="size-5" />
-          {t('Workouts')}
-        </Link>
+        <div className="flex items-center justify-between gap-3 lg:col-span-2">
+          <Link
+            href={LIST_PATH}
+            onClick={leave}
+            className="inline-flex min-h-11 items-center gap-2 font-semibold"
+          >
+            <ArrowLeft aria-hidden="true" className="size-5" />
+            {t('Workouts')}
+          </Link>
+          {persisted ? (
+            <Button
+              size="sm"
+              disabled={dirty || startPending || draft.items.length === 0}
+              title={dirty ? t('Save your changes first') : undefined}
+              onClick={() => void start(initial.id)}
+            >
+              <Diamond tone="accent" size="md" />
+              {t('Start')}
+            </Button>
+          ) : null}
+        </div>
 
         {desktop ? (
           <CatalogColumn disabled={readOnly || room <= 0} onAdd={(item) => add([item])} />

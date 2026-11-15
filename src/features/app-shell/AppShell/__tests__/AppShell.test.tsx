@@ -4,7 +4,10 @@ import { usePathname } from 'next/navigation';
 import { render } from '@/test/render';
 import { AppShell } from '../AppShell';
 
-vi.mock('next/navigation', () => ({ usePathname: vi.fn() }));
+vi.mock('next/navigation', () => ({ usePathname: vi.fn(), useRouter: () => ({ push: vi.fn() }) }));
+
+// The Start sheet lists workouts and looks for a session in progress.
+const fetchMock = vi.fn<typeof fetch>(async () => Response.json({ items: [] }));
 
 const MAIN_NAV = { name: 'Main navigation' } as const;
 
@@ -21,9 +24,11 @@ const renderShell = (pathname: string) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubGlobal('fetch', fetchMock);
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -196,6 +201,7 @@ describe('AppShell', () => {
 
     await screen.getByRole('complementary').getByRole('button', { name: 'Start workout' }).click();
     const link = screen.getByRole('dialog').getByRole('link', { name: 'Create workout' });
+    await expect.element(link).toBeVisible();
     // Keep the test page in place; only the sheet's own reaction is under test.
     link.element().addEventListener('click', (event) => event.preventDefault(), { once: true });
     await link.click();

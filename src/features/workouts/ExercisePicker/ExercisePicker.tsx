@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { EXERCISE_SEARCH_MAX } from '@/constants/exercise';
+import { cn } from '@/lib/utils';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import { FilterSheet } from '@/features/exercises/FilterSheet';
 import type { ExerciseListItem } from '@/shared/schemas/exercise';
@@ -21,9 +22,17 @@ export interface ExercisePickerProps {
   /** How many more exercises fit in the workout. */
   room: number;
   onAdd: (items: ExerciseListItem[]) => void;
+  /** Extra classes for the sheet, such as the session theme. */
+  className?: string;
 }
 
-export function ExercisePicker({ open, onOpenChange, room, onAdd }: ExercisePickerProps) {
+export function ExercisePicker({
+  open,
+  onOpenChange,
+  room,
+  onAdd,
+  className,
+}: ExercisePickerProps) {
   const { t } = useTranslation();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -31,7 +40,10 @@ export function ExercisePicker({ open, onOpenChange, room, onAdd }: ExercisePick
         side="bottom"
         closeLabel={t('Close')}
         aria-describedby={undefined}
-        className="h-dvh max-h-dvh gap-0 rounded-none bg-background motion-reduce:animate-none"
+        className={cn(
+          'h-dvh max-h-dvh gap-0 rounded-none bg-background motion-reduce:animate-none',
+          className,
+        )}
       >
         {open ? <PickerBody room={room} onAdd={onAdd} /> : null}
       </SheetContent>

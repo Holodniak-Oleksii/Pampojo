@@ -13,6 +13,7 @@ const buttonVariants = cva(
         secondary:
           'bg-card text-foreground ring-1 ring-border ring-inset hover:bg-background aria-expanded:bg-background',
         ghost: 'bg-transparent text-foreground hover:bg-card aria-expanded:bg-card',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
       },
       size: {
         sm: 'h-11 px-4 text-sm',

@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { ORIGINAL_PATH_HEADER } from '@/constants/routing';
+import { CurrentUserProvider } from '@/features/auth/CurrentUser';
 import { safeNext } from '@/features/auth/utils';
 import { getRequestSession } from '@/server/auth/request-session';
 import { getRequestOnboardingComplete } from '@/server/profile/request-onboarding';
@@ -13,5 +14,5 @@ export async function SessionGate({ children }: { children: ReactNode }) {
     redirect(`/login?next=${encodeURIComponent(path)}`);
   }
   if (!(await getRequestOnboardingComplete(session.user.id))) redirect('/onboarding');
-  return <>{children}</>;
+  return <CurrentUserProvider userId={session.user.id}>{children}</CurrentUserProvider>;
 }
