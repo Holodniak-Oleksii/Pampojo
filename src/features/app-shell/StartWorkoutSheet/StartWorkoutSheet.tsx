@@ -7,12 +7,14 @@ import { useRouter } from 'next/navigation';
 import type { RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWorkoutsQuery, workoutKeys } from '@/api/workouts';
+import { Diamond } from '@/components/Diamond';
 import { EmptyState } from '@/components/EmptyState';
 import { PlayDiamond } from '@/components/PlayDiamond';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useCurrentUserId } from '@/features/auth/CurrentUser';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
+import { useTodayPlan } from '@/features/plan';
 import { ForgottenSessionDialog } from '@/features/session/ForgottenSessionDialog';
 import { useInProgress } from '@/features/session/hooks/useInProgress';
 import { useNow } from '@/features/session/hooks/useNow';
@@ -22,6 +24,7 @@ import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { cn } from '@/lib/utils';
 import { useSessionRepository, type InProgressSummary } from '@/services/local-db';
+import type { WorkoutListItem } from '@/shared/schemas/workout';
 
 export interface StartWorkoutSheetProps {
   open: boolean;
@@ -35,6 +38,7 @@ function WorkoutChoices({ onStarted }: { onStarted: () => void }) {
   const queryClient = useQueryClient();
   const query = useWorkoutsQuery();
   const { start, pending } = useStartSession();
+  const plan = useTodayPlan();
 
   if (query.isPending) {
     return (
@@ -67,57 +71,99 @@ function WorkoutChoices({ onStarted }: { onStarted: () => void }) {
     );
   }
 
+  const planned = new Set(
+    plan.items.filter((entry) => entry.done === null).map((entry) => entry.rule.workoutId),
+  );
+  const todays = items.filter((item) => planned.has(item.id));
+  const rest = items.filter((item) => !planned.has(item.id));
+  const row = (item: WorkoutListItem) => (
+    <WorkoutChoiceRow
+      key={item.id}
+      item={item}
+      uncached={!online && !queryClient.getQueryData(workoutKeys.detail(item.id))}
+      pending={pending}
+      onStart={async () => {
+        if (await start(item.id)) onStarted();
+      }}
+    />
+  );
+
+  if (todays.length === 0) {
+    return <ul className="divide-y divide-border rounded-lg bg-card">{rest.map(row)}</ul>;
+  }
   return (
-    <ul className="divide-y divide-border rounded-lg bg-card">
-      {items.map((item) => {
-        const empty = item.exerciseCount === 0;
-        const uncached = !online && !queryClient.getQueryData(workoutKeys.detail(item.id));
-        return (
-          <li key={item.id}>
-            <button
-              type="button"
-              disabled={empty || uncached || pending}
-              onClick={async () => {
-                if (await start(item.id)) onStarted();
-              }}
-              className="flex min-h-[72px] w-full items-center gap-3 py-2.5 pr-3 pl-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:text-muted-foreground"
-            >
-              {empty ? (
-                <span
-                  aria-hidden="true"
-                  className="size-[52px] shrink-0 rounded-sm border-[1.5px] border-dashed border-planned"
-                />
-              ) : (
-                <ExerciseImage
-                  src={item.thumbnailUrls[0] ?? null}
-                  name={item.name}
-                  alt=""
-                  compact
-                  className="size-[52px] shrink-0 rounded-sm"
-                />
-              )}
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-base font-bold">{item.name}</span>
-                <span className="text-muted-foreground">
-                  {empty
-                    ? t('0 exercises. Add exercises to start.')
-                    : uncached
-                      ? t('Needs internet')
-                      : t('{{count}} exercises', { count: item.exerciseCount })}
-                </span>
-              </span>
-              {empty || uncached ? null : (
-                <span aria-hidden="true" className="flex size-10 items-center justify-center">
-                  <span className="scale-[1.45]">
-                    <PlayDiamond />
-                  </span>
-                </span>
-              )}
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="flex flex-col gap-3.5">
+      <h3 className="flex items-center gap-2 text-[15px] font-extrabold">
+        <Diamond tone="accent" variant="outline" className="border-[1.5px]" />
+        {t('Planned for today')}
+      </h3>
+      <ul className="divide-y divide-border rounded-lg bg-card ring-[1.5px] ring-accent">
+        {todays.map(row)}
+      </ul>
+      {rest.length > 0 ? (
+        <>
+          <h3 className="mt-1.5 text-[15px] font-bold text-muted-foreground">{t('All workouts')}</h3>
+          <ul className="divide-y divide-border rounded-lg bg-card">{rest.map(row)}</ul>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function WorkoutChoiceRow({
+  item,
+  uncached,
+  pending,
+  onStart,
+}: {
+  item: WorkoutListItem;
+  uncached: boolean;
+  pending: boolean;
+  onStart: () => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const empty = item.exerciseCount === 0;
+  return (
+    <li>
+      <button
+        type="button"
+        disabled={empty || uncached || pending}
+        onClick={() => void onStart()}
+        className="flex min-h-[72px] w-full items-center gap-3 py-2.5 pr-3 pl-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:text-muted-foreground"
+      >
+        {empty ? (
+          <span
+            aria-hidden="true"
+            className="size-[52px] shrink-0 rounded-sm border-[1.5px] border-dashed border-planned"
+          />
+        ) : (
+          <ExerciseImage
+            src={item.thumbnailUrls[0] ?? null}
+            name={item.name}
+            alt=""
+            compact
+            className="size-[52px] shrink-0 rounded-sm"
+          />
+        )}
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-base font-bold">{item.name}</span>
+          <span className="text-muted-foreground">
+            {empty
+              ? t('0 exercises. Add exercises to start.')
+              : uncached
+                ? t('Needs internet')
+                : t('{{count}} exercises', { count: item.exerciseCount })}
+          </span>
+        </span>
+        {empty || uncached ? null : (
+          <span aria-hidden="true" className="flex size-10 items-center justify-center">
+            <span className="scale-[1.45]">
+              <PlayDiamond />
+            </span>
+          </span>
+        )}
+      </button>
+    </li>
   );
 }
 

@@ -46,6 +46,8 @@ export interface OutboxEntry {
 }
 
 export const localSessionSchema = sessionSchema.omit({ setLogs: true }).extend({
+  // Rows written before spec 11 have no scheduledFor.
+  scheduledFor: z.string().nullable().default(null),
   restEndsAt: z.string().nullable(),
   restDurationSec: z.number(),
   restSetId: z.string().nullable(),

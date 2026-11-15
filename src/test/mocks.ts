@@ -1,5 +1,7 @@
 import type { Exercise, ExerciseListItem } from '@/shared/schemas/exercise';
+import { todayIn } from '@/lib/dates';
 import type { Gym } from '@/shared/schemas/gym';
+import type { ScheduleRule } from '@/shared/schemas/plan';
 import type { Profile } from '@/shared/schemas/profile';
 import type { Workout, WorkoutExercise, WorkoutListItem } from '@/shared/schemas/workout';
 import type { DeepPartial } from '@/types/utils';
@@ -169,6 +171,33 @@ export function getWorkoutListItemMock(override?: DeepPartial<WorkoutListItem>):
       exerciseIds: ['6f1c2b9e-3a4d-4c5b-8e7f-9a0b1c2d3e4f'],
       primaryMuscles: ['chest', 'shoulders', 'triceps'],
       thumbnailUrls: ['https://example.com/bench-0-thumb.webp'],
+    },
+    override,
+  );
+}
+
+/** Today on the device clock, which the plan uses until the profile loads. */
+export function deviceToday(): string {
+  return todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone);
+}
+
+/** A rule that runs every day from today, for the workout of `getWorkoutListItemMock`. */
+export function getScheduleRuleMock(override?: DeepPartial<ScheduleRule>): ScheduleRule {
+  return mergeMock<ScheduleRule>(
+    {
+      id: '00000000-0000-4000-8000-00000000b001',
+      workoutId: '00000000-0000-4000-8000-00000000a001',
+      startDate: deviceToday(),
+      endDate: null,
+      weekdays: [1, 2, 3, 4, 5, 6, 7],
+      intervalWeeks: 1,
+      updatedAt: '2026-11-14T10:00:00Z',
+      workout: {
+        id: '00000000-0000-4000-8000-00000000a001',
+        name: 'Push Day',
+        exerciseCount: 5,
+        deleted: false,
+      },
     },
     override,
   );

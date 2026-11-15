@@ -138,6 +138,8 @@ test.describe('dark theme', () => {
   });
 
   test('pages fit the screen in both themes (AC9)', async ({ page }) => {
+    // Twelve page loads, each waiting for network idle: slower CI runners need more than 30 s.
+    test.setTimeout(90_000);
     await signUp(page);
     for (const scheme of ['dark', 'light'] as const) {
       await page.emulateMedia({ colorScheme: scheme });

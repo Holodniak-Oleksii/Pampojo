@@ -12,6 +12,7 @@ import {
   type PampojoDb,
 } from './db';
 import { lastPerformanceFor } from './last-performance';
+import { findScheduledSessions } from './scheduled';
 import { createSessionRepository, type SessionRepository } from './session-repository';
 import type { LastPerformance } from '@/shared/schemas/session';
 
@@ -80,4 +81,13 @@ export function useLastPerformance(
     );
     return Object.fromEntries(entries);
   }, [db, sessionId, key]);
+}
+
+/** Local sessions linked to a planned date; `undefined` while loading. */
+export function useLocalScheduledSessions(
+  userId: string,
+  date: string,
+): LocalSession[] | undefined {
+  const db = useLocalDb(userId);
+  return useLiveQuery(() => findScheduledSessions(db, date), [db, date]);
 }

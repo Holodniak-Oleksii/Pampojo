@@ -53,12 +53,13 @@ export async function findSessionRow(
 export async function listSessionRows(
   db: Executor,
   userId: string,
-  filters: { status?: SessionStatus; exerciseId?: string },
+  filters: { status?: SessionStatus; exerciseId?: string; scheduledFor?: string },
 ): Promise<SessionRow[]> {
   const statuses = filters.status
     ? [filters.status]
     : [SESSION_STATUS.IN_PROGRESS, SESSION_STATUS.COMPLETED];
   const conditions = [eq(workoutSession.userId, userId), inArray(workoutSession.status, statuses)];
+  if (filters.scheduledFor) conditions.push(eq(workoutSession.scheduledFor, filters.scheduledFor));
   if (filters.exerciseId) {
     conditions.push(sql`exists (
       select 1 from ${setLog}

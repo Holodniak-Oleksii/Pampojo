@@ -12,6 +12,7 @@ import { resolveFrames } from '@/server/exercises/media';
 import { lockOwner } from '@/server/exercises/queries';
 import { knownTrackingType, only, orNull } from '@/server/exercises/service';
 import { DomainError } from '@/server/http/errors';
+import { endWorkoutRules } from '@/server/plan/queries';
 import type {
   ParsedPutWorkoutInput,
   Workout,
@@ -233,6 +234,7 @@ export async function deleteWorkout(
     if (!row || row.ownerId !== userId) throw notFound();
     if (row.deletedAt) return;
     await softDeleteWorkout(tx, userId, id);
+    await endWorkoutRules(tx, userId, id);
   });
 }
 

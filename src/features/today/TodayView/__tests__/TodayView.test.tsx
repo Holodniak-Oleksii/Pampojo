@@ -3,6 +3,8 @@ import { getGymMock } from '@/test/mocks';
 import { render } from '@/test/render';
 import { TodayView } from '../TodayView';
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 vi.mock('@/api/gym', async () => {
   const { useQuery } = await import('@tanstack/react-query');
   const fetchGym = vi.fn(() => new Promise(() => {}));

@@ -1,6 +1,6 @@
 import { onlineManager } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getWorkoutListItemMock, getWorkoutMock } from '@/test/mocks';
+import { getScheduleRuleMock, getWorkoutListItemMock, getWorkoutMock } from '@/test/mocks';
 import { render } from '@/test/render';
 import { WorkoutList } from '..';
 
@@ -96,6 +96,20 @@ describe('WorkoutList', () => {
     expect(put?.body.name).toBe('Push Day (copy)');
     expect(put?.url.pathname).not.toBe('/api/v1/workouts/00000000-0000-4000-8000-00000000a001');
     expect(push).toHaveBeenCalledWith(put?.url.pathname.replace('/api/v1', '/library'));
+  });
+
+  it('says a planned workout also leaves the calendar (spec 11 AC8)', async () => {
+    respond((url) =>
+      url.pathname === '/api/v1/schedule-rules'
+        ? Response.json({ items: [getScheduleRuleMock()] })
+        : Response.json({ items: [getWorkoutListItemMock()] }),
+    );
+    const screen = await render(<WorkoutList />);
+    await screen.getByRole('button', { name: 'Actions for Push Day' }).click();
+    await screen.getByRole('menuitem', { name: 'Delete' }).click();
+    await expect
+      .element(screen.getByText('It will also be removed from the calendar.'))
+      .toBeVisible();
   });
 
   it('asks before deleting and deletes', async () => {

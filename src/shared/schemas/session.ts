@@ -8,7 +8,7 @@ import {
 } from '@/constants/session';
 import { TARGET_RANGE, WORKOUT_NAME_MAX, WORKOUT_NOTE_MAX } from '@/constants/workout';
 import { lateralitySchema, trackingTypeSchema } from './exercise';
-import { enumOf } from './utils';
+import { calendarDateSchema, enumOf } from './utils';
 
 export const sessionIdParamsSchema = z.object({ id: z.uuid() });
 export const setIdParamsSchema = z.object({ id: z.uuid() });
@@ -98,6 +98,8 @@ export const putSessionInputSchema = z
     workoutSnapshot: workoutSnapshotSchema,
     exercises: sessionExercisesSchema,
     startedAt: isoDate,
+    /** The planned date this session fulfils (spec 11). */
+    scheduledFor: calendarDateSchema.nullable().optional(),
   })
   .strict();
 
@@ -189,6 +191,7 @@ export const sessionSchema = z.object({
   workoutId: z.uuid().nullable(),
   workoutSnapshot: workoutSnapshotSchema,
   exercises: z.array(sessionExerciseSchema),
+  scheduledFor: z.string().nullable(),
   status: sessionStatusSchema,
   startedAt: z.string(),
   finishedAt: z.string().nullable(),
@@ -203,6 +206,7 @@ export const sessionListQuerySchema = z
   .object({
     status: z.enum([SESSION_STATUS.IN_PROGRESS, SESSION_STATUS.COMPLETED]).optional(),
     exerciseId: z.uuid().optional(),
+    scheduledFor: calendarDateSchema.optional(),
   })
   .strict();
 
@@ -212,6 +216,7 @@ export const sessionListItemSchema = z.object({
   id: z.uuid(),
   workoutId: z.uuid().nullable(),
   workoutName: z.string(),
+  scheduledFor: z.string().nullable(),
   status: sessionStatusSchema,
   startedAt: z.string(),
   finishedAt: z.string().nullable(),

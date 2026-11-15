@@ -6,10 +6,22 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { fetchSession, fetchSessions } from '@/api/sessions';
+import { fetchScheduleRules, planKeys } from '@/api/plan';
 import { fetchWorkout, workoutKeys } from '@/api/workouts';
 import { SESSION_STATUS } from '@/constants/session';
 import { useCurrentUserId } from '@/features/auth/CurrentUser';
-import { prefetchLastPerformance, useLocalDb, useSessionRepository } from '@/services/local-db';
+import {
+  planTodayForStart,
+  resolveScheduledFor,
+  type ScheduledSession,
+} from '@/features/plan';
+import {
+  findScheduledSessions,
+  prefetchLastPerformance,
+  useLocalDb,
+  useSessionRepository,
+} from '@/services/local-db';
+import type { ScheduleRuleListResponse } from '@/shared/schemas/plan';
 import type { Workout } from '@/shared/schemas/workout';
 import { buildSessionFromWorkout } from '../utils';
 
@@ -24,6 +36,30 @@ export function useStartSession() {
   const db = useLocalDb(userId);
   const repository = useSessionRepository(userId);
   const [pending, setPending] = useState(false);
+
+  /** Today's date when this start fulfils today's plan for the workout, else null (spec 11). */
+  const plannedDateFor = useCallback(
+    async (workoutId: string): Promise<string | null> => {
+      const today = await planTodayForStart(queryClient);
+      if (today === null) return null;
+      let rules = queryClient.getQueryData<ScheduleRuleListResponse>(planKeys.list())?.items;
+      const sessions: ScheduledSession[] = await findScheduledSessions(db, today);
+      if (navigator.onLine) {
+        try {
+          rules ??= await queryClient.fetchQuery({
+            queryKey: planKeys.list(),
+            queryFn: fetchScheduleRules,
+          }).then((response) => response.items);
+          sessions.push(...(await fetchSessions({ scheduledFor: today })).items);
+        } catch {
+          // Without the server the local data decides.
+        }
+      }
+      const live = (rules ?? []).filter((rule) => !rule.workout.deleted);
+      return resolveScheduledFor({ workoutId, rules: live, today, sessions });
+    },
+    [queryClient, db],
+  );
 
   const start = useCallback(
     async (workoutId: string): Promise<boolean> => {
@@ -69,12 +105,14 @@ export function useStartSession() {
 
         const id = crypto.randomUUID();
         const { workoutSnapshot, exercises } = buildSessionFromWorkout(workout);
+        const scheduledFor = await plannedDateFor(workout.id);
         await repository.start({
           id,
           workoutId: workout.id,
           workoutSnapshot,
           exercises,
           startedAt: new Date().toISOString(),
+          scheduledFor,
         });
         void prefetchLastPerformance(
           db,
@@ -89,7 +127,7 @@ export function useStartSession() {
         setPending(false);
       }
     },
-    [pending, repository, router, queryClient, db, t],
+    [pending, repository, router, queryClient, db, t, plannedDateFor],
   );
 
   return { start, pending };
