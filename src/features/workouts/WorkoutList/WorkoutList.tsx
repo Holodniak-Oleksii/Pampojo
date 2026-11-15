@@ -212,7 +212,9 @@ export function WorkoutList() {
         onConfirm={() => void confirmDelete()}
       >
         {deleting && plannedIds.has(deleting.id) ? (
-          <p className="-mt-3 text-sm font-bold">{t('It will also be removed from the calendar.')}</p>
+          <p className="-mt-3 text-sm font-bold">
+            {t('It will also be removed from the calendar.')}
+          </p>
         ) : null}
       </ConfirmDialog>
     </>

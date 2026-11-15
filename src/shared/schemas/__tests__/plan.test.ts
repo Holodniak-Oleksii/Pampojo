@@ -57,17 +57,15 @@ describe('putScheduleRuleInputSchema', () => {
   });
 
   it('rejects an end before the start', () => {
-    expect(
-      putScheduleRuleInputSchema.safeParse({ ...weekly, endDate: '2026-11-15' }).success,
-    ).toBe(false);
+    expect(putScheduleRuleInputSchema.safeParse({ ...weekly, endDate: '2026-11-15' }).success).toBe(
+      false,
+    );
   });
 });
 
 describe('patchScheduleRuleInputSchema', () => {
   it('needs newId', () => {
     expect(patchScheduleRuleInputSchema.safeParse(weekly).success).toBe(false);
-    expect(patchScheduleRuleInputSchema.safeParse({ ...weekly, newId: NEW_ID }).success).toBe(
-      true,
-    );
+    expect(patchScheduleRuleInputSchema.safeParse({ ...weekly, newId: NEW_ID }).success).toBe(true);
   });
 });

@@ -16,7 +16,13 @@ function translator(locale: Locale): TFunction {
 const WORKOUT = 'w1';
 const TODAY = '2026-11-16'; // a Monday
 const rules = [
-  { workoutId: WORKOUT, startDate: '2026-11-01', endDate: null, weekdays: [1, 4], intervalWeeks: 1 },
+  {
+    workoutId: WORKOUT,
+    startDate: '2026-11-01',
+    endDate: null,
+    weekdays: [1, 4],
+    intervalWeeks: 1,
+  },
 ];
 const session = (overrides: Partial<ScheduledSession>): ScheduledSession => ({
   id: 's1',
@@ -72,7 +78,7 @@ describe('ruleSummary', () => {
     const t = translator('uk');
     expect(ruleSummary(t, 'uk', base)).toBe('Щопонеділка й щочетверга');
     expect(ruleSummary(t, 'uk', { ...base, weekdays: [1, 3, 5] })).toBe(
-      'Щопонеділка, щосереди й щоп\'ятниці',
+      "Щопонеділка, щосереди й щоп'ятниці",
     );
     expect(ruleSummary(t, 'uk', { ...base, intervalWeeks: 2 })).toBe('Кожні 2 тижні: пн, чт');
     expect(ruleSummary(t, 'uk', { ...base, weekdays: [1, 2, 3, 4, 5, 6, 7] })).toBe('Щодня');

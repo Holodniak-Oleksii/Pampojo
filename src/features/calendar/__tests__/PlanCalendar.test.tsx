@@ -47,9 +47,7 @@ describe('PlanCalendar', () => {
     respond([getScheduleRuleMock()]);
     const screen = await render(<PlanCalendar />);
     const today = deviceToday();
-    await expect
-      .element(screen.getByRole('heading', { name: /^Today, / }))
-      .toBeVisible();
+    await expect.element(screen.getByRole('heading', { name: /^Today, / })).toBeVisible();
     await expect.element(screen.getByRole('button', { name: 'Start', exact: true })).toBeVisible();
 
     const tomorrow = addDays(today, 1);
@@ -87,9 +85,7 @@ describe('PlanCalendar', () => {
 
   it('hides the menu of an ended rule', async () => {
     const today = deviceToday();
-    respond([
-      getScheduleRuleMock({ startDate: addDays(today, -6), endDate: addDays(today, -1) }),
-    ]);
+    respond([getScheduleRuleMock({ startDate: addDays(today, -6), endDate: addDays(today, -1) })]);
     const screen = await render(<PlanCalendar />);
     const yesterday = addDays(today, -1);
     await expect.element(screen.getByText('Nothing planned on this day.')).toBeVisible();

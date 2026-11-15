@@ -5,7 +5,11 @@ Gyms are often in basements. The app must open, show today's workout and log a f
 ## Building blocks
 
 - **Web app manifest** — install to home screen, standalone display, icons. Spec 15.
-- **Service worker** — precaches the app shell; runtime-caches exercise images. Spec 15, 17.
+- **Service worker** — Serwist (ADR 0008), production builds only.
+  - It precaches the build output, `public/` and the `/offline` page.
+  - It keeps visited app pages in `pampojo-pages`: network-first with a 4 s timeout, and `/offline` for pages never opened online. It never caches `/api`, auth or marketing pages.
+  - Logout deletes `pampojo-pages`. A new version waits for the next launch and clears `pampojo-pages` when it activates.
+  - Exercise images are runtime-cached in spec 17. Specs 15 and 17.
 - **Dexie (IndexedDB)** — local copy of the user's data and the outbox. Spec 16.
 - **Sync API** — `POST /api/v1/sync/push`, `GET /api/v1/sync/pull`. Spec 16.
 

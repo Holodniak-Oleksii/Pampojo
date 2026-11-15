@@ -1,0 +1,1 @@
+export { AppIconTile } from './AppIconTile';

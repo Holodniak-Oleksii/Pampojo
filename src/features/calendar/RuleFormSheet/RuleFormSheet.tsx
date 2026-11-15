@@ -288,7 +288,11 @@ function RuleForm({
           />
           {weekly ? (
             <>
-              <div role="group" aria-label={t('Days of the week')} className="grid grid-cols-7 gap-1.5">
+              <div
+                role="group"
+                aria-label={t('Days of the week')}
+                className="grid grid-cols-7 gap-1.5"
+              >
                 {[1, 2, 3, 4, 5, 6, 7].map((day) => {
                   const on = form.weekdays.includes(day);
                   return (

@@ -9,7 +9,10 @@ export function CalendarSkeleton() {
         <span className="h-7 w-44 rounded-md bg-card" />
         <div className="grid grid-cols-7 gap-0.5 lg:gap-1.5">
           {Array.from({ length: 35 }, (_, index) => (
-            <span key={index} className="flex h-12 justify-center pt-2 lg:h-24 lg:rounded-sm lg:bg-card">
+            <span
+              key={index}
+              className="flex h-12 justify-center pt-2 lg:h-24 lg:rounded-sm lg:bg-card"
+            >
               <span className="h-3.5 w-5.5 rounded-[3px] bg-card lg:hidden" />
             </span>
           ))}

@@ -4,7 +4,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { todayIn } from '@/lib/dates';
 import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
-import { exercise, profile, scheduleRule, user, workout, workoutExercise } from '@/server/db/schema';
+import {
+  exercise,
+  profile,
+  scheduleRule,
+  user,
+  workout,
+  workoutExercise,
+} from '@/server/db/schema';
 import { addDays } from '@/shared/plan/occurrences';
 import { deleteUsersByEmail } from '@/test/db';
 import { DELETE, PATCH, PUT } from '../[id]/route';
@@ -129,9 +136,7 @@ describe('PUT /schedule-rules/{id}', () => {
     const intruder = await createUser();
     signIn(intruder);
     expect((await send('DELETE', id)).status).toBe(404);
-    expect((await send('PUT', randomUUID(), rule(workoutId, { weekdays: [7] }))).status).toBe(
-      400,
-    );
+    expect((await send('PUT', randomUUID(), rule(workoutId, { weekdays: [7] }))).status).toBe(400);
   });
 });
 

@@ -20,9 +20,22 @@ export interface MonthGridProps {
   onSelect: (date: string) => void;
 }
 
-const KEY_STEP: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+const KEY_STEP: Record<string, number> = {
+  ArrowLeft: -1,
+  ArrowRight: 1,
+  ArrowUp: -7,
+  ArrowDown: 7,
+};
 
-export function MonthGrid({ month, dates, today, selected, byDate, variant, onSelect }: MonthGridProps) {
+export function MonthGrid({
+  month,
+  dates,
+  today,
+  selected,
+  byDate,
+  variant,
+  onSelect,
+}: MonthGridProps) {
   const { t } = useTranslation();
   const locale = useLocale();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -155,7 +168,12 @@ export function MonthGrid({ month, dates, today, selected, byDate, variant, onSe
                 ) : null}
                 <span aria-hidden="true" className="mt-2 flex items-center gap-1">
                   {shown.map((rule) => (
-                    <Diamond key={rule.id} tone="planned" variant="outline" className="border-[1.5px]" />
+                    <Diamond
+                      key={rule.id}
+                      tone="planned"
+                      variant="outline"
+                      className="border-[1.5px]"
+                    />
                   ))}
                   {rules.length > shown.length ? (
                     <span className="text-xs leading-none text-muted-foreground">

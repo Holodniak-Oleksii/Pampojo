@@ -253,7 +253,10 @@ export async function putSession(
     await assertVisibleExercises(tx, userId, input);
     const scheduledFor = input.scheduledFor ?? null;
     // The day of the start, not of the request: an offline start may be replayed after midnight.
-    if (scheduledFor !== null && scheduledFor !== (await userToday(tx, userId, new Date(input.startedAt)))) {
+    if (
+      scheduledFor !== null &&
+      scheduledFor !== (await userToday(tx, userId, new Date(input.startedAt)))
+    ) {
       throw invalid(['scheduledFor'], 'Not the day the session started');
     }
     await insertSession(tx, {

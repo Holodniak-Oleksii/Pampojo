@@ -206,7 +206,11 @@ export async function patchRule(
 }
 
 /** Removes a rule from today on. Repeats and ended rules are no-ops. */
-export async function deleteRule(userId: string, id: string, db: Executor = getDb()): Promise<void> {
+export async function deleteRule(
+  userId: string,
+  id: string,
+  db: Executor = getDb(),
+): Promise<void> {
   await db.transaction(async (tx) => {
     await lockPlanOwner(tx, userId);
     const row = await lockRuleRow(tx, id);

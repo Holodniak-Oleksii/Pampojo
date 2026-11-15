@@ -19,7 +19,10 @@ export const scheduleRule = pgTable(
       .references(() => workout.id, { onDelete: 'cascade' }),
     startDate: date('start_date').notNull(),
     endDate: date('end_date'),
-    weekdays: smallint('weekdays').array().notNull().default(sql`'{}'::smallint[]`),
+    weekdays: smallint('weekdays')
+      .array()
+      .notNull()
+      .default(sql`'{}'::smallint[]`),
     intervalWeeks: smallint('interval_weeks').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

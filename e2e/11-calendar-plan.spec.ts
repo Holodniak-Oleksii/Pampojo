@@ -43,7 +43,9 @@ async function createWorkout(page: Page, name: string) {
   const response = await page.request.put(`/api/v1/workouts/${id}`, {
     data: {
       name,
-      exercises: [{ id: randomUUID(), exerciseId: plank!.id, targetSets: 1, targetDurationSec: 30 }],
+      exercises: [
+        { id: randomUUID(), exerciseId: plank!.id, targetSets: 1, targetDurationSec: 30 },
+      ],
     },
   });
   expect(response.ok()).toBe(true);

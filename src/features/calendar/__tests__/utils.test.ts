@@ -37,7 +37,10 @@ describe('calendar utils', () => {
     expect(isEditable(rule(), '2026-11-15')).toBe(true);
     expect(isEditable(rule({ endDate: '2026-11-14' }), '2026-11-15')).toBe(false);
     expect(
-      isEditable(rule({ workout: { id: 'w1', name: 'x', exerciseCount: 1, deleted: true } }), '2026-11-15'),
+      isEditable(
+        rule({ workout: { id: 'w1', name: 'x', exerciseCount: 1, deleted: true } }),
+        '2026-11-15',
+      ),
     ).toBe(false);
   });
 });

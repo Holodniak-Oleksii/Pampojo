@@ -10,11 +10,8 @@ import { fetchScheduleRules, planKeys } from '@/api/plan';
 import { fetchWorkout, workoutKeys } from '@/api/workouts';
 import { SESSION_STATUS } from '@/constants/session';
 import { useCurrentUserId } from '@/features/auth/CurrentUser';
-import {
-  planTodayForStart,
-  resolveScheduledFor,
-  type ScheduledSession,
-} from '@/features/plan';
+import { planTodayForStart, resolveScheduledFor, type ScheduledSession } from '@/features/plan';
+import { requestPersistentStorage } from '@/features/pwa';
 import {
   findScheduledSessions,
   prefetchLastPerformance,
@@ -46,10 +43,12 @@ export function useStartSession() {
       const sessions: ScheduledSession[] = await findScheduledSessions(db, today);
       if (navigator.onLine) {
         try {
-          rules ??= await queryClient.fetchQuery({
-            queryKey: planKeys.list(),
-            queryFn: fetchScheduleRules,
-          }).then((response) => response.items);
+          rules ??= await queryClient
+            .fetchQuery({
+              queryKey: planKeys.list(),
+              queryFn: fetchScheduleRules,
+            })
+            .then((response) => response.items);
           sessions.push(...(await fetchSessions({ scheduledFor: today })).items);
         } catch {
           // Without the server the local data decides.
@@ -114,6 +113,7 @@ export function useStartSession() {
           startedAt: new Date().toISOString(),
           scheduledFor,
         });
+        void requestPersistentStorage();
         void prefetchLastPerformance(
           db,
           exercises.map((item) => item.exerciseId),
