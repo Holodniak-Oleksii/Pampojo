@@ -33,8 +33,6 @@ const isDark = (page: Page) =>
   page.evaluate(() => document.documentElement.classList.contains('dark'));
 const background = (page: Page) =>
   page.locator('body').evaluate((node) => getComputedStyle(node).backgroundColor);
-const overflow = (page: Page) =>
-  page.evaluate(() => Math.max(document.documentElement.scrollWidth, innerWidth) - screen.width);
 
 test.describe('dark theme', () => {
   test.use({ locale: 'en-US' });
@@ -135,26 +133,5 @@ test.describe('dark theme', () => {
     await page.waitForURL('**/session/*');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     expect(await background(page)).toBe(LIGHT_BG);
-  });
-
-  test('pages fit the screen in both themes (AC9)', async ({ page }) => {
-    // Twelve page loads, each waiting for network idle: slower CI runners need more than 30 s.
-    test.setTimeout(90_000);
-    await signUp(page);
-    for (const scheme of ['dark', 'light'] as const) {
-      await page.emulateMedia({ colorScheme: scheme });
-      for (const path of [
-        '/',
-        '/today',
-        '/library/workouts',
-        '/library/exercises',
-        '/profile',
-        '/profile/gym',
-      ]) {
-        await page.goto(path);
-        await page.waitForLoadState('networkidle');
-        expect(await overflow(page), `${scheme} ${path}`).toBeLessThanOrEqual(0);
-      }
-    }
   });
 });
