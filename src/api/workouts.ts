@@ -7,6 +7,7 @@ import {
   type WorkoutListResponse,
 } from '@/shared/schemas/workout';
 import { ApiError, http } from './http';
+import { planKeys } from './plan';
 
 const WORKOUTS_PATH = '/api/v1/workouts';
 const NOT_FOUND = 'WORKOUT_NOT_FOUND';
@@ -72,6 +73,8 @@ export function useDeleteWorkoutMutation() {
     onSuccess: (_data, id) => {
       queryClient.removeQueries({ queryKey: workoutKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: workoutKeys.list() });
+      // The server ended the workout's schedule rules in the same delete.
+      void queryClient.invalidateQueries({ queryKey: planKeys.all });
     },
   });
 }

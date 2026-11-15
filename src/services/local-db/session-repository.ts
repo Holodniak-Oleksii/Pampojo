@@ -19,6 +19,8 @@ export interface StartSessionInput {
   workoutSnapshot: WorkoutSnapshot;
   exercises: SessionExercise[];
   startedAt: string;
+  /** Today's planned date this start fulfils, or null. */
+  scheduledFor: string | null;
 }
 
 export interface LogSetInput {
@@ -65,6 +67,7 @@ export function createSessionRepository(db: PampojoDb) {
         workoutSnapshot: input.workoutSnapshot,
         exercises: input.exercises,
         startedAt: input.startedAt,
+        scheduledFor: input.scheduledFor,
       };
       await write(async () => {
         await db.sessions.put({
@@ -72,6 +75,7 @@ export function createSessionRepository(db: PampojoDb) {
           workoutId: input.workoutId,
           workoutSnapshot: input.workoutSnapshot,
           exercises: input.exercises,
+          scheduledFor: input.scheduledFor,
           status: SESSION_STATUS.IN_PROGRESS,
           startedAt: input.startedAt,
           finishedAt: null,

@@ -6,3 +6,4 @@ export * from './measurement';
 export * from './profile';
 export * from './workout';
 export * from './session';
+export * from './plan';

@@ -14,6 +14,7 @@ import {
   useWorkoutsQuery,
   workoutKeys,
 } from '@/api/workouts';
+import { useScheduleRulesQuery } from '@/api/plan';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Diamond } from '@/components/Diamond';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import { MUSCLE_FAMILY_OF } from '@/constants/exercise';
 import { WORKOUT_NAME_MAX } from '@/constants/workout';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import { useExerciseLabels } from '@/features/exercises/hooks/useExerciseLabels';
+import { usePlanToday } from '@/features/plan';
 import { useStartSession } from '@/features/session/hooks/useStartSession';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import type { WorkoutListItem } from '@/shared/schemas/workout';
@@ -41,6 +43,13 @@ export function WorkoutList() {
   const labels = useExerciseLabels();
   const queryClient = useQueryClient();
   const query = useWorkoutsQuery();
+  const rules = useScheduleRulesQuery();
+  const today = usePlanToday();
+  const plannedIds = new Set(
+    (rules.data?.items ?? [])
+      .filter((rule) => rule.endDate === null || rule.endDate >= today)
+      .map((rule) => rule.workoutId),
+  );
   const put = usePutWorkoutMutation();
   const remove = useDeleteWorkoutMutation();
   const [deleting, setDeleting] = useState<WorkoutListItem | null>(null);
@@ -198,8 +207,14 @@ export function WorkoutList() {
         cancelLabel={t('Cancel')}
         confirmLabel={t('Delete')}
         pending={remove.isPending}
+        destructive
+        stacked
         onConfirm={() => void confirmDelete()}
-      />
+      >
+        {deleting && plannedIds.has(deleting.id) ? (
+          <p className="-mt-3 text-sm font-bold">{t('It will also be removed from the calendar.')}</p>
+        ) : null}
+      </ConfirmDialog>
     </>
   );
 }

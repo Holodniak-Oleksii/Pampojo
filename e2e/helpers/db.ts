@@ -23,3 +23,17 @@ const RUN_ID = Math.random().toString(36).slice(2, 10);
 export function e2eRunPrefix(file: string): string {
   return `${file}-${RUN_ID}`;
 }
+
+/** Moves an e2e user's schedule rule into the past, which the API refuses to create. */
+export async function backdateScheduleRule(id: string, days: number): Promise<void> {
+  if (!process.env.DATABASE_URL && existsSync('.env.local')) process.loadEnvFile('.env.local');
+  const sql = postgres(process.env.DATABASE_URL ?? '', { prepare: false, max: 1 });
+  try {
+    await sql`
+      update schedule_rule set start_date = start_date - ${days}::int
+      where id = ${id}
+        and user_id in (select id from "user" where email like 'e2e-%@example.com')`;
+  } finally {
+    await sql.end();
+  }
+}

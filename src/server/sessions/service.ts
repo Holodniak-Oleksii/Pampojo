@@ -11,6 +11,7 @@ import {
 import type { TrackingType } from '@/constants/exercise';
 import { getDb } from '@/server/db/client';
 import { DomainError } from '@/server/http/errors';
+import { userToday } from '@/server/plan/today';
 import { findVisibleExercises, findWorkoutOwner } from '@/server/workouts/queries';
 import type {
   LastPerformanceResponse,
@@ -97,6 +98,7 @@ function toSession(row: SessionRow, logs: SetLogRow[]): Session {
     workoutId: row.workoutId,
     workoutSnapshot: row.workoutSnapshot,
     exercises: row.exercises,
+    scheduledFor: row.scheduledFor,
     status: row.status as SessionStatus,
     startedAt: row.startedAt.toISOString(),
     finishedAt: row.finishedAt ? row.finishedAt.toISOString() : null,
@@ -208,6 +210,7 @@ export async function listSessions(
       id: row.id,
       workoutId: row.workoutId,
       workoutName: row.workoutSnapshot.name,
+      scheduledFor: row.scheduledFor,
       status: row.status as SessionStatus,
       startedAt: row.startedAt.toISOString(),
       finishedAt: row.finishedAt ? row.finishedAt.toISOString() : null,
@@ -248,10 +251,16 @@ export async function putSession(
       throw invalid(['workoutSnapshot', 'workoutId'], 'Snapshot does not match the workout');
     }
     await assertVisibleExercises(tx, userId, input);
+    const scheduledFor = input.scheduledFor ?? null;
+    // The day of the start, not of the request: an offline start may be replayed after midnight.
+    if (scheduledFor !== null && scheduledFor !== (await userToday(tx, userId, new Date(input.startedAt)))) {
+      throw invalid(['scheduledFor'], 'Not the day the session started');
+    }
     await insertSession(tx, {
       id,
       userId,
       workoutId: input.workoutId,
+      scheduledFor,
       workoutSnapshot: input.workoutSnapshot,
       exercises: input.exercises,
       status: SESSION_STATUS.IN_PROGRESS,

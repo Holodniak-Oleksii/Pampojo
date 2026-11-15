@@ -214,7 +214,6 @@ test.describe('app shell in English', () => {
     await signUp(page);
 
     const sections = [
-      ['/calendar', 'Calendar', 'Nothing scheduled yet'],
       ['/progress', 'Progress', 'No progress yet'],
       ['/library/workouts', 'Library', 'No workouts yet'],
     ] as const;
@@ -223,8 +222,10 @@ test.describe('app shell in English', () => {
       await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
       await expect(page.getByRole('heading', { level: 2, name: empty })).toBeVisible();
     }
+    // The calendar stopped being a placeholder in spec 11.
     await page.goto('/calendar');
-    await expect(page.getByText('Your planned and past workouts will show up here.')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Calendar' })).toBeAttached();
+    await expect(page.getByText('Nothing planned on this day.')).toBeVisible();
     await page.goto('/progress');
     await expect(page.getByText('Finish a workout to see your strength charts.')).toBeVisible();
 

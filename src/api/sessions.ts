@@ -28,6 +28,7 @@ function listQuery(filters: SessionListQuery): string {
   const params = new URLSearchParams();
   if (filters.status) params.set('status', filters.status);
   if (filters.exerciseId) params.set('exerciseId', filters.exerciseId);
+  if (filters.scheduledFor) params.set('scheduledFor', filters.scheduledFor);
   const query = params.toString();
   return query ? `?${query}` : '';
 }

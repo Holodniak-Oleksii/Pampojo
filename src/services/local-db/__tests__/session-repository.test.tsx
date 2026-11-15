@@ -52,6 +52,7 @@ async function setup() {
     workoutSnapshot: snapshot,
     exercises: plan(entryId),
     startedAt: new Date().toISOString(),
+    scheduledFor: null,
   });
   return { db, repo, sessionId, entryId };
 }

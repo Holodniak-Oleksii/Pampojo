@@ -773,6 +773,38 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** In the dark theme, primary buttons (and other `--primary` surfaces) are raised dark `#4A4541` with `#F3F1EC` text. The session bar button uses its own `--session-button` tokens with the same values. This supersedes "Primary buttons are light on dark" in "Dark theme design (spec 29)".
 **Why:** Lead's call: white buttons glared in the dark theme.
 
+## 2026-11-15 — Calendar plan rules (spec 11)
+
+**Context:** `/drill 11`.
+**Decision:**
+- Editing a rule that already started splits it: the old rule ends yesterday, and a new one starts today. Future rules change in place. Delete and workout delete end started rules yesterday and soft delete future ones.
+- Any number of different workouts per day, but the same workout cannot be planned twice on one date (422 `SCHEDULE_OVERLAP`).
+- "Почати" exists only for today's occurrences. Starting a workout planned today from anywhere sets `scheduledFor = today` when today's occurrence has no session yet.
+- "After N times" (1–100) is converted to `endDate`. "Every N weeks" is 1–4, counted from the start week. The calendar starts on Monday in both languages.
+- A start date is today or later, an end at most 2 years after the start, and at most 100 active rules.
+- Today shows "Виконано" for a planned workout done today, and the next planned workout when today has none. The Start sheet gets a "Сьогодні за планом" section.
+**Why:** Lead's answers. The past stays honest for adherence (spec 12).
+
+## 2026-11-15 — Calendar plan design (spec 11)
+
+**Context:** `/design 11`.
+**Decision:**
+- Mobile calendar: month grid with outline diamond markers, the day panel under it, an accent "+" next to the month. Desktop: names in the cells, a 340px day panel, and "Запланувати на цей день" there only.
+- The rule form is a bottom sheet on mobile and a 480px right side sheet on desktop. "Після N" shows the computed last date.
+- The calendar day panel shows "Виконано" instead of "Почати" for today's done workouts, as Today does. Other statuses stay in spec 12.
+- The Start sheet's "Сьогодні за планом" card is ringed in accent.
+- New copy as on the canvas: rule summaries, "Зміни діють з сьогодні…", "Переглянути підсумок", the Today next-workout card, the offline line.
+**Why:** Lead approved the canvas.
+
+## 2026-11-15 — Calendar plan API details (spec 11)
+
+**Context:** `/scratch 11`.
+**Decision:**
+- `scheduledFor` on `PUT /sessions` must equal the date of `startedAt` in the profile time zone, not the server's today.
+- `Session` and session list items expose `scheduledFor`, and `GET /sessions` takes `?scheduledFor=`. The client merges it with local Dexie sessions.
+- Ended rules are read-only: no row menu, `PATCH` 400, `DELETE` a 204 no-op.
+**Why:** An offline start replayed after midnight must not be dropped. "Done" must show on every device. The past is never rewritten.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

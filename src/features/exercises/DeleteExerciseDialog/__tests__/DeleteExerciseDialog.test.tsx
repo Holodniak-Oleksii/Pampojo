@@ -53,6 +53,7 @@ describe('DeleteExerciseDialog', () => {
               id: '00000000-0000-4000-8000-00000000d001',
               workoutId: null,
               workoutName: 'Push Day',
+              scheduledFor: null,
               status: 'completed',
               startedAt: '2024-03-05T10:00:00.000Z',
               finishedAt: '2024-03-05T11:00:00.000Z',

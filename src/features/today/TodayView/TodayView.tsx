@@ -7,7 +7,7 @@ import type { Gym } from '@/shared/schemas/gym';
 import { usePartOfDay } from '../usePartOfDay';
 import { useTodayLabel } from '../useTodayLabel';
 import { PART_OF_DAY } from '../utils';
-import { TodayEmpty } from './TodayEmpty';
+import { TodayPlan } from '../TodayPlan';
 
 export interface TodayViewProps {
   displayName: string;
@@ -35,7 +35,7 @@ export function TodayView({ displayName, initialGym, hasWorkouts }: TodayViewPro
         <Skeleton aria-hidden="true" className="h-5 w-72 max-w-full" />
       )}
       <GymNudgeCard initialGym={initialGym} />
-      <TodayEmpty hasWorkouts={hasWorkouts} />
+      <TodayPlan hasWorkouts={hasWorkouts} />
     </div>
   );
 }

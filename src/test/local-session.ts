@@ -65,6 +65,7 @@ export function localSession(override: Partial<LocalSession> = {}): LocalSession
     workoutId: WORKOUT_ID,
     workoutSnapshot: { workoutId: WORKOUT_ID, name: 'Push Day', description: null, exercises: [] },
     exercises,
+    scheduledFor: null,
     status: 'in_progress',
     startedAt,
     finishedAt: null,

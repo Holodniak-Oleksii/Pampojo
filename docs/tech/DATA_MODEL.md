@@ -112,16 +112,18 @@ One gym per user in the MVP. A user without a row has not set up a gym (spec 08)
 
 | Column | Type | Notes |
 | --- | --- | --- |
-| id | uuid PK | |
-| userId | uuid → user | |
-| workoutId | uuid → workout | |
+| id | uuid PK | Client-generated |
+| userId | uuid → user (cascade) | |
+| workoutId | uuid → workout (cascade) | Workouts are soft deleted, so a rule keeps its workout |
 | startDate | date | |
-| endDate | date null | `null` = open-ended; equals `startDate` for a one-off |
-| weekdays | smallint[] | ISO 1–7; empty for one-off |
-| intervalWeeks | smallint | 1 = every week |
+| endDate | date null | `null` = open-ended; equals `startDate` for a one-off; at most `startDate` + 2 years |
+| weekdays | smallint[] | ISO 1–7, sorted; empty for a one-off |
+| intervalWeeks | smallint | 1–4; weeks count from the Monday of the start week |
 | createdAt, updatedAt, deletedAt | | |
 
-Occurrences are computed, not stored. An `occurrence_exception` table (skip or move one date) can be added when spec 12 needs it.
+Index `(userId, deletedAt, endDate)` and one on `workoutId`. Checks enforce the ranges above.
+
+Occurrences are computed, not stored (`src/shared/plan/occurrences.ts`). A rule is active while `endDate` is null or not before today in the profile time zone. Editing a started rule ends it yesterday and creates a new rule, so the past never changes. An `occurrence_exception` table (skip or move one date) can be added when spec 12 needs it.
 
 ## workout_session
 
@@ -130,7 +132,7 @@ Occurrences are computed, not stored. An `occurrence_exception` table (skip or m
 | id | uuid PK | Client-generated |
 | userId | uuid → user | |
 | workoutId | uuid null → workout | Always set from spec 10; `set null` if the workout row is removed |
-| scheduledFor | date null | The occurrence this session fulfils (spec 11) |
+| scheduledFor | date null | The planned date this session fulfils (spec 11); equals the start date in the profile time zone |
 | workoutSnapshot | jsonb | Workout as it was at start, never changed afterwards |
 | exercises | jsonb | The session plan in session order: `[{ id, exerciseId, plannedSets, target…, notes, exercise: { id, name, trackingType, laterality, thumbnailUrl } }]` (spec 10) |
 | status | text | `in_progress`, `completed`, `abandoned`; one `in_progress` per user is enforced by the client |

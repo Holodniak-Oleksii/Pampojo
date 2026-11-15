@@ -2,7 +2,8 @@ import { onlineManager } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRef } from 'react';
 import { localSession, localSet, resetLocalDbs, seedLocal } from '@/test/local-session';
-import { getWorkoutListItemMock } from '@/test/mocks';
+import type { ScheduleRule } from '@/shared/schemas/plan';
+import { getScheduleRuleMock, getWorkoutListItemMock } from '@/test/mocks';
 import { render } from '@/test/render';
 import { StartWorkoutSheet } from '..';
 
@@ -11,10 +12,14 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 const fetchMock = vi.fn<typeof fetch>();
 
-function respond(workouts = [getWorkoutListItemMock({ name: 'Push Day', exerciseCount: 5 })]) {
+function respond(
+  workouts = [getWorkoutListItemMock({ name: 'Push Day', exerciseCount: 5 })],
+  rules: ScheduleRule[] = [],
+) {
   fetchMock.mockImplementation(async (input) => {
     const url = new URL(String(input), 'http://localhost');
     if (url.pathname === '/api/v1/workouts') return Response.json({ items: workouts });
+    if (url.pathname === '/api/v1/schedule-rules') return Response.json({ items: rules });
     if (url.pathname === '/api/v1/sessions') return Response.json({ items: [] });
     return Response.json({ error: { code: 'NOT_FOUND' } }, { status: 404 });
   });
@@ -79,5 +84,28 @@ describe('StartWorkoutSheet', () => {
     );
     const screen = await render(sheet());
     await expect.element(screen.getByText(/Unfinished workout from/)).toBeVisible();
+  });
+
+  it('shows the workouts planned for today first, without repeating them (spec 11 AC6)', async () => {
+    respond(
+      [
+        getWorkoutListItemMock({ name: 'Push Day', exerciseCount: 5 }),
+        getWorkoutListItemMock({
+          id: '00000000-0000-4000-8000-00000000a009',
+          name: 'Legs',
+          exerciseCount: 6,
+        }),
+      ],
+      [getScheduleRuleMock()],
+    );
+    const screen = await render(sheet());
+    await expect.element(screen.getByRole('heading', { name: 'Planned for today' })).toBeVisible();
+    await expect.element(screen.getByRole('heading', { name: 'All workouts' })).toBeVisible();
+    const lists = screen.getByRole('list').elements();
+    expect(lists).toHaveLength(2);
+    expect(lists[0]?.textContent).toContain('Push Day');
+    expect(lists[0]?.textContent).not.toContain('Legs');
+    expect(lists[1]?.textContent).toContain('Legs');
+    expect(lists[1]?.textContent).not.toContain('Push Day');
   });
 });
