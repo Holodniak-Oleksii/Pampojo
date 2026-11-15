@@ -182,6 +182,8 @@ test.describe('calendar plan', () => {
     await page.waitForURL('**/session/*');
     const sessionId = page.url().split('/session/')[1]!;
     await page.getByRole('button', { name: 'Check set 1' }).click();
+    // Finish reads the logged sets from the local database, so wait until the set shows as done.
+    await expect(page.getByRole('button', { name: 'Set 1 done, uncheck' })).toBeVisible();
     // Every set is checked, so Finish ends the workout without asking.
     await page.getByRole('button', { name: 'Finish', exact: true }).dispatchEvent('click');
     await expect(page.getByRole('heading', { name: 'Workout finished' })).toBeVisible();
