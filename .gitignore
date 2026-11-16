@@ -42,3 +42,7 @@ next-env.d.ts
 
 # Lighthouse CI reports
 .lighthouseci/
+
+# Service worker built by `serwist build`
+public/sw.js
+public/sw.js.map

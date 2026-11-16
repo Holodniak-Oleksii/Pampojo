@@ -58,5 +58,7 @@ export default defineConfig([
     'src/server/db/migrations/**',
     'test-results/**',
     'playwright-report/**',
+    // Built by `serwist build`.
+    'public/sw.js*',
   ]),
 ]);

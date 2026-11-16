@@ -34,7 +34,7 @@ flowchart LR
 | Forms | React Hook Form + Zod resolver | |
 | Validation | Zod, shared by client and server | `src/shared/schemas` |
 | Local data | Dexie (IndexedDB) | Spec 16, ADR 0005 |
-| PWA | Web app manifest (`src/app/manifest.ts`) + Serwist service worker through its Turbopack route (`/serwist/sw.js`) | ADR 0001, 0008 |
+| PWA | Web app manifest (`src/app/manifest.ts`) + Serwist service worker built after `next build` into `public/sw.js` (`serwist build`) | ADR 0001, 0008 |
 | Database | Supabase Postgres + Drizzle ORM + drizzle-kit | ADR 0004 |
 | Files | Supabase Storage | Exercise images and animations |
 | Auth | Better Auth (email + password, Google) with the Drizzle adapter | ADR 0003 |

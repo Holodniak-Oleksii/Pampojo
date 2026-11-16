@@ -837,6 +837,18 @@ This supersedes the expanding row in "Workout builder rules".
 - Playwright blocks service workers except in the PWA suite.
 **Why:** The lead chose Serwist. The defaults would reload the page when the connection returns, and would change every other e2e suite on the CI production server.
 
+## 2026-11-16 — Service worker built at build time (spec 15)
+
+**Context:** `https://pampojo.vercel.app/serwist/sw.js` answered 500. The Turbopack route was not prerendered under `cacheComponents`, and the Vercel function lacked `esbuild`, the worker source and `.next/static`.
+**Decision:** Use Serwist's configurator mode: `serwist.config.js` and `next build && serwist build`, writing `public/sw.js` (gitignored, served at `/sw.js`). `@serwist/turbopack` is replaced by `@serwist/next` and `@serwist/cli`. ADR 0008 is amended.
+**Why:** The lead asked to fix the service worker. A static file works on every host.
+
+## 2026-11-16 — Vercel functions in London
+
+**Context:** Production functions ran in `iad1` (Washington) while the database is in `eu-west-2` (London). Every query crossed the Atlantic, and API calls with transactions took 1–3 s.
+**Decision:** `vercel.json` sets `"regions": ["lhr1"]`, next to the database.
+**Why:** Lead's approval. Several sequential queries per request make the round trip the main cost.
+
 ## Open questions
 
 Raise these during `/drill` of the listed spec.

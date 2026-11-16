@@ -115,7 +115,7 @@ test.describe('PWA shell', () => {
     );
     // A changed script URL is an update to the same registration, like a new deploy's worker.
     await page.evaluate(async () => {
-      await navigator.serviceWorker.register('/serwist/sw.js?v=next', {
+      await navigator.serviceWorker.register('/sw.js?v=next', {
         scope: '/',
         type: 'module',
       });
