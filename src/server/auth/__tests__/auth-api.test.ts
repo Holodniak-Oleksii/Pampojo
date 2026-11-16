@@ -18,7 +18,10 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Each test file owns an email prefix, because files run in parallel and clean up by pattern.
 const testEmail = () => `test-auth-${randomUUID()}@example.com`;
-const testIp = () => `203.0.113.${Math.floor(Math.random() * 250) + 1}`;
+// The rate limit lives in the shared database, so each request gets its own address from the IPv6
+// documentation range: 250 IPv4 addresses collided with other tests and parallel CI runs.
+// Better Auth keys IPv6 by its /64, so the random part is the /64 itself.
+const testIp = () => `2001:db8:${randomUUID().slice(0, 4)}:${randomUUID().slice(0, 4)}::1`;
 
 function post(path: string, body: unknown, ip = testIp()) {
   return getAuth().handler(
@@ -44,7 +47,7 @@ async function signUp(email = testEmail()) {
 
 afterAll(async () => {
   await deleteUsersByEmail('test-auth-%@example.com');
-  await deleteRateLimitsByKey('%203.0.113.%');
+  await deleteRateLimitsByKey('%2001:db8:%');
 });
 
 describe('email sign-up', () => {
