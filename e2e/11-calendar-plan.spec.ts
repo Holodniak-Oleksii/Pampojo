@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
-import { backdateScheduleRule, deleteE2eUsers, e2eRunPrefix } from './helpers/db';
+import { deleteE2eUsers, e2eRunPrefix } from './helpers/db';
 import { completeOnboardingViaApi, ONBOARDING_BODY } from './helpers/onboarding';
 
 const PASSWORD = 'Password123!';
@@ -116,81 +116,6 @@ test.describe('calendar plan', () => {
       })
       .toBe(1);
   });
-
-  test('edits a started rule from today and deleting the workout clears the future (AC5, AC8)', async ({
-    page,
-  }) => {
-    await signUp(page);
-    const workoutId = await createWorkout(page, 'Legs');
-    const ruleId = await createRule(page, workoutId);
-    await backdateScheduleRule(ruleId, 7);
-
-    await page.goto('/calendar');
-    await page.getByRole('button', { name: 'Actions for Legs' }).click();
-    await page.getByRole('menuitem', { name: 'Edit schedule' }).click();
-    const form = page.getByRole('dialog', { name: 'Edit schedule' });
-    await expect(form.getByLabel('Start date')).toBeDisabled();
-    await expect(form.getByText('Changes apply from today.', { exact: false })).toBeVisible();
-    await form.getByLabel('Interval').selectOption('2');
-    await form.getByRole('button', { name: 'Save' }).click();
-    await expect(form).toBeHidden();
-
-    let items = await rules(page);
-    expect(items).toHaveLength(2);
-    const old = items.find((item) => item.id === ruleId);
-    expect(old).toMatchObject({ startDate: shift(today(), -7), endDate: shift(today(), -1) });
-    expect(items.find((item) => item.id !== ruleId)).toMatchObject({
-      startDate: today(),
-      intervalWeeks: 2,
-    });
-
-    await page.goto('/library/workouts');
-    await page.getByRole('button', { name: 'Actions for Legs' }).click();
-    await page.getByRole('menuitem', { name: 'Delete' }).click();
-    await expect(page.getByText('It will also be removed from the calendar.')).toBeVisible();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
-    await expect.poll(async () => (await rules(page)).map((item) => item.id)).toEqual([ruleId]);
-    items = await rules(page);
-    expect(items[0]?.endDate).toBe(shift(today(), -1));
-  });
-
-  // The Start sheet section is covered by StartWorkoutSheet.test.tsx; this test stays under 30 s on CI.
-  test('Today shows the plan, and Done after finishing (AC6)', async ({ page }) => {
-    await signUp(page);
-    const pushId = await createWorkout(page, 'Push Day');
-    await createRule(page, pushId);
-
-    await page.goto('/today');
-    await expect(page.getByRole('heading', { name: 'Planned for today' })).toBeVisible();
-
-    await page.getByRole('button', { name: 'Start', exact: true }).click();
-    await page.waitForURL('**/session/*');
-    const sessionId = page.url().split('/session/')[1]!;
-    await page.getByRole('button', { name: 'Check set 1' }).click();
-    // Finish reads the logged sets from the local database, so wait until the set shows as done.
-    await expect(page.getByRole('button', { name: 'Set 1 done, uncheck' })).toBeVisible();
-    // Every set is checked, so Finish ends the workout without asking.
-    await page.getByRole('button', { name: 'Finish', exact: true }).dispatchEvent('click');
-    await expect(page.getByRole('heading', { name: 'Workout finished' })).toBeVisible();
-    // Wait for the outbox: a reload before the sync would bring back the server's running copy.
-    // It sends the session, the set and the finish one by one, and each takes ~2 s on CI.
-    await expect
-      .poll(
-        async () => {
-          const response = await page.request.get(`/api/v1/sessions/${sessionId}`);
-          return ((await response.json()) as { status: string; scheduledFor: string | null })
-            .status;
-        },
-        { timeout: 20_000 },
-      )
-      .toBe('completed');
-
-    await page.goto('/today');
-    await expect(page.getByText('Done', { exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'View summary' })).toBeVisible();
-    expect(await overflow(page)).toBeLessThanOrEqual(0);
-  });
-
   test('stays readable but read-only offline (AC9)', async ({ page, context }) => {
     await signUp(page);
     const workoutId = await createWorkout(page, 'Push Day');

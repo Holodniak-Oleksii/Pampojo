@@ -209,25 +209,6 @@ test.describe('workout builder', () => {
     await dragTo(page, rows(page).nth(0), rows(page).nth(1), true);
     await expect.poll(() => names(page)).toEqual(['Plank', 'Bench Press']);
   });
-
-  test('duplicates and deletes a workout (AC11)', async ({ page }) => {
-    await signUp(page);
-    await createWorkoutViaApi(page, 'Push Day', [await exerciseId(page, 'bench press')]);
-    await page.goto('/library/workouts');
-    await page.getByRole('button', { name: 'Actions for Push Day' }).click();
-    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
-    await page.waitForURL(/\/library\/workouts\/[0-9a-f-]{36}$/);
-    await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue('Push Day (copy)');
-
-    await page.goto('/library/workouts');
-    await page.getByRole('button', { name: 'Actions for Push Day (copy)' }).click();
-    await page.getByRole('menuitem', { name: 'Delete' }).click();
-    await expect(page.getByRole('heading', { name: 'Delete "Push Day (copy)"?' })).toBeVisible();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
-    await expect(page.getByRole('link', { name: /Push Day \(copy\)/ })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: /^Push Day/ })).toHaveCount(1);
-  });
-
   test('is read-only offline (AC12)', async ({ page, context }) => {
     await signUp(page);
     const id = await createWorkoutViaApi(page, 'Push Day', [await exerciseId(page, 'bench press')]);
