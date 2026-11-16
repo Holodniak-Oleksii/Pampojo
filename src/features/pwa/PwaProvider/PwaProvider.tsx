@@ -1,6 +1,6 @@
 'use client';
 
-import { SerwistProvider } from '@serwist/turbopack/react';
+import { SerwistProvider } from '@serwist/next/react';
 import { useEffect, type ReactNode } from 'react';
 import { SW_URL } from '../constants';
 import { attachInstallListeners, isStandalone } from '../install';
