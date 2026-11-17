@@ -61,8 +61,12 @@ async function createWorkout(page: Page, name: string): Promise<string> {
 const overflow = (page: Page) =>
   page.evaluate(() => Math.max(document.documentElement.scrollWidth, innerWidth) - screen.width);
 
+// On CI each API call takes 1-5 s, and a start or a page load waits for several of them in a row.
+const NETWORK_TIMEOUT = 20_000;
+
 test.describe('history and adherence', () => {
   test.use({ locale: 'en-US' });
+  test.slow();
 
   test('a missed day is made up from the dialog and then shows as done late (AC4, AC6, AC7)', async ({
     page,
@@ -84,7 +88,7 @@ test.describe('history and adherence', () => {
       .first()
       .click();
     const dialog = page.getByRole('dialog', { name: /^Make up .*'s Push Day\?$/ });
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: NETWORK_TIMEOUT });
     const put = page.waitForRequest(
       (request) => request.method() === 'PUT' && /\/api\/v1\/sessions\/[^/]+$/.test(request.url()),
     );
@@ -115,9 +119,9 @@ test.describe('history and adherence', () => {
     );
     await page.goto('/calendar?view=list');
     const rows = page.getByRole('link', { name: /Workout \d+/ });
-    await expect(rows).toHaveCount(20);
+    await expect(rows).toHaveCount(20, { timeout: NETWORK_TIMEOUT });
     await rows.last().scrollIntoViewIfNeeded();
-    await expect(rows).toHaveCount(25);
+    await expect(rows).toHaveCount(25, { timeout: NETWORK_TIMEOUT });
     expect(await overflow(page)).toBeLessThanOrEqual(0);
   });
 });

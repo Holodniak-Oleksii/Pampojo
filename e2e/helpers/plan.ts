@@ -40,20 +40,24 @@ export async function insertCompletedSessions(
   const sql = connect();
   try {
     const userId = await userIdOf(sql, email);
-    for (const session of sessions) {
-      const snapshot = {
+    // One statement: on CI every round trip to the database costs hundreds of milliseconds.
+    const rows = sessions.map((session) => ({
+      id: randomUUID(),
+      user_id: userId,
+      workout_id: workoutId,
+      scheduled_for: session.scheduledFor ?? null,
+      workout_snapshot: sql.json({
         workoutId,
         name: session.name ?? 'Push Day',
         description: null,
         exercises: [],
-      };
-      await sql`
-        insert into workout_session
-          (id, user_id, workout_id, scheduled_for, workout_snapshot, exercises, status, started_at, finished_at)
-        values (${randomUUID()}, ${userId}, ${workoutId}, ${session.scheduledFor ?? null},
-          ${sql.json(snapshot)}, ${sql.json([])}, 'completed', ${session.startedAt},
-          ${new Date(session.startedAt.getTime() + 50 * 60_000)})`;
-    }
+      }),
+      exercises: sql.json([]),
+      status: 'completed',
+      started_at: session.startedAt,
+      finished_at: new Date(session.startedAt.getTime() + 50 * 60_000),
+    }));
+    await sql`insert into workout_session ${sql(rows)}`;
   } finally {
     await sql.end();
   }
