@@ -78,6 +78,8 @@ async function startFromSheet(page: Page, name: string, mobile: boolean) {
 test.describe('workout session', () => {
   test.use({ locale: 'en-US', colorScheme: 'dark' });
   test('discards a workout after confirming (AC9)', async ({ page }, testInfo) => {
+    // On CI each API call can take 1-5 s, and the outbox sends the PUT and the PATCH in turn.
+    test.slow();
     await signUp(page);
     await createWorkout(page, 'Discard Day');
     const sessionId = await startFromSheet(page, 'Discard Day', testInfo.project.name === 'mobile');
@@ -89,7 +91,9 @@ test.describe('workout session', () => {
       .click();
     await page.waitForURL('**/today');
     await expect
-      .poll(async () => (await page.request.get(`/api/v1/sessions/${sessionId}`)).status())
+      .poll(async () => (await page.request.get(`/api/v1/sessions/${sessionId}`)).status(), {
+        timeout: 20_000,
+      })
       .toBe(404);
   });
 

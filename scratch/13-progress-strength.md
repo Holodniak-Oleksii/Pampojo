@@ -493,6 +493,10 @@ No open question blocks the implementation.
 - Test fixes outside the plan scope (lead's request, because CI on PR #22 failed on them):
   - Test users get emails with a per-run prefix from `testPrefix(scope)` in `src/test/db.ts`, and cleanup deletes only that prefix. Before this, CI and Main ran at the same time on the shared database, and one run deleted the users of the other. Also, the `test-profile-%` pattern deleted the users of `test-profile-route-…`.
   - `LogOutButton.test.tsx` waits until `signOut` is called. The component calls it only after the async outbox flush, so the old test failed on slow CI.
+- e2e fixes after the full CI run with the `e2e` label:
+  - `e2e/05-app-shell.spec.ts` expects the new progress empty state, not the old placeholder text.
+  - The Start test in `05` targets the button of the app shell. The progress empty state has a second "Start workout" button.
+  - The discard test in `10` and the duplicate test in `07` use `test.slow()`. On that CI run, each API call took up to 5 s, and both tests hit the 30 s limit.
 
 ## 12. Review — 2026-11-17
 
