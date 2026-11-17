@@ -41,7 +41,8 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `GET /api/v1/exercises/{id}/last-performance` | Previous values in session | 10 |
 | `GET /api/v1/schedule-rules`, `PUT/PATCH/DELETE /api/v1/schedule-rules/{id}` | Plan rules, see below | 11 |
 | `GET /api/v1/calendar?from=&to=` | Occurrences with statuses and the completed sessions of each date, see below | 12 |
-| `GET /api/v1/progress/exercises/{id}` | Series and records | 13 |
+| `GET /api/v1/progress/exercises` | Trained exercises and this month's numbers, see below | 13 |
+| `GET /api/v1/progress/exercises/{id}?range=` | Chart points and all-time records, see below | 13 |
 | `GET/PUT/DELETE /api/v1/measurements[/{id}]` | Body measurements | 14 |
 | `POST /api/v1/sync/push`, `GET /api/v1/sync/pull?since=` | Offline sync | 16 |
 | `GET /api/v1/exercises/{id}/substitutes` | Deterministic suggestions | 18 |
@@ -77,7 +78,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
   - Both checks use the start time, not the request time, so a late outbox replay still passes.
 - **`PATCH /api/v1/sessions/{id}`** writes `exercises`, `notes`, or `status` (`completed` with `finishedAt`, or `abandoned`, which soft deletes its set logs). Plan and note changes need `in_progress`.
 - **`PUT/PATCH/DELETE /api/v1/sets/{id}`**: create or replace (clears `deletedAt`), change values, soft delete (204 on repeat). Values must match the exercise tracking type and the main metric is required.
-- **`GET /api/v1/exercises/{id}/last-performance`** returns `{ item: null | { sessionId, finishedAt, sets } }` from the latest completed session with a live set of the exercise.
+- **`GET /api/v1/exercises/{id}/last-performance`** returns `{ item: null | { sessionId, finishedAt, sets }, bests }` from the latest completed session with a live set of the exercise. `bests` is the all-time bests of the exercise (spec 13), or null when `item` is null.
 - **Errors:** `SESSION_NOT_FOUND` (404, also for another user's id), `SESSION_NOT_IN_PROGRESS` (409), validation 400.
 
 ## Schedule rules (spec 11)
@@ -96,6 +97,19 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
   - A session is a completed session that started on that date in the profile time zone: the list item fields plus `kind` (`on_time`, `late` or `extra`).
   - The late window of an occurrence on date D ends on the earlier of the day before the next occurrence of the same workout and D + 7. The first completed session that fulfils an occurrence counts, and others are extra.
   - It runs 3 queries for any range.
+
+## Progress (spec 13)
+
+A counted set is a live set log in a completed session. A set counts for the exercise that the user performed. Dates and the month use the profile time zone.
+
+- **`GET /api/v1/progress/exercises`** returns `{ items: [{ exerciseId, name, trackingType, thumbnailUrl, lastTrainedAt }], month: { workouts, volumeKg } }`.
+  - `items` are the exercises with a counted set, the latest `lastTrainedAt` first. A deleted exercise is left out.
+  - `month` counts the completed sessions that started in the current month up to today, and their `weight_reps` volume (`Σ weight × reps`).
+- **`GET /api/v1/progress/exercises/{id}?range=1m|3m|6m|1y|all`** (default `3m`) returns `{ trackingType, points, records }`.
+  - `points`: one item per completed session with a counted set, in the range that ends today, oldest first: `{ sessionId, date, topWeightKg, e1rmKg, volumeKg, reps, durationSec, distanceM }`. A value that does not apply to the tracking type is null.
+  - `records`: all-time, by tracking type: `{ type, value, weightKg, reps, sessionId, date }`. `type` is `heaviest_weight`, `best_e1rm`, `most_reps`, `best_volume`, `longest_duration` or `longest_distance`. `weightKg` is the set weight for `most_reps` and `best_e1rm`, and `reps` is the set reps for `best_e1rm`.
+  - An exercise with no counted set gives empty lists.
+- **Errors:** `EXERCISE_NOT_FOUND` (404, also for another user's own exercise), `PROFILE_NOT_FOUND` (404), an unknown `range` is 400.
 
 ## Export file format
 

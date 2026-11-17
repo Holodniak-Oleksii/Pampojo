@@ -12,6 +12,8 @@ import type {
 } from '@/shared/schemas/session';
 import type { LocalSession, LocalSetLog, PampojoDb } from './db';
 import { enqueue, notifyOutbox } from './outbox';
+import { rememberNewRecords } from './records';
+import type { Bests } from '@/shared/schemas/progress';
 
 export interface StartSessionInput {
   id: string;
@@ -86,6 +88,7 @@ export function createSessionRepository(db: PampojoDb) {
           restSetId: null,
           currentEntryId: input.exercises[0]?.id ?? null,
           drafts: {},
+          newRecords: null,
         });
         await enqueue(db, { method: 'PUT', path: sessionPath(input.id), body });
       });
@@ -249,7 +252,9 @@ export function createSessionRepository(db: PampojoDb) {
           { status: SESSION_STATUS.COMPLETED, finishedAt, restEndsAt: null, restSetId: null },
         );
       });
-      await rememberLastPerformance(db, sessionId);
+      // Records first: rememberLastPerformance overwrites the stored bests that are the baseline.
+      const bests = await rememberNewRecords(db, sessionId);
+      await rememberLastPerformance(db, sessionId, bests);
     },
 
     async abandon(sessionId: string): Promise<void> {
@@ -281,6 +286,7 @@ export function createSessionRepository(db: PampojoDb) {
           restSetId: existing?.restSetId ?? null,
           currentEntryId: existing?.currentEntryId ?? session.exercises[0]?.id ?? null,
           drafts: existing?.drafts ?? {},
+          newRecords: existing?.newRecords ?? null,
         });
         await db.setLogs.bulkPut(setLogs.map((set) => ({ ...set, deletedAt: null })));
       });
@@ -295,7 +301,11 @@ export function createSessionRepository(db: PampojoDb) {
 export type SessionRepository = ReturnType<typeof createSessionRepository>;
 
 /** After a finish, the session's sets become "last time" for its exercises, also offline. */
-async function rememberLastPerformance(db: PampojoDb, sessionId: string): Promise<void> {
+async function rememberLastPerformance(
+  db: PampojoDb,
+  sessionId: string,
+  bests: ReadonlyMap<string, Bests | null>,
+): Promise<void> {
   const session = await db.sessions.get(sessionId);
   if (!session?.finishedAt) return;
   const sets = (await db.setLogs.where('sessionId').equals(sessionId).toArray()).filter(
@@ -312,6 +322,7 @@ async function rememberLastPerformance(db: PampojoDb, sessionId: string): Promis
       sessionId,
       finishedAt: session.finishedAt as string,
       fetchedAt,
+      bests: bests.get(exerciseId) ?? null,
       sets: items
         .sort((a, b) => a.completedAt.localeCompare(b.completedAt) || a.setIndex - b.setIndex)
         .map((set) => ({

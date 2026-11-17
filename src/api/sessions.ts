@@ -5,7 +5,7 @@ import {
   lastPerformanceResponseSchema,
   sessionListResponseSchema,
   sessionSchema,
-  type LastPerformance,
+  type LastPerformanceResponse,
   type Session,
   type SessionListQuery,
   type SessionListResponse,
@@ -52,11 +52,10 @@ export async function fetchSession(id: string): Promise<Session | null> {
   }
 }
 
-export async function fetchLastPerformance(exerciseId: string): Promise<LastPerformance | null> {
-  const response = await http(`/api/v1/exercises/${exerciseId}/last-performance`, {
+export async function fetchLastPerformance(exerciseId: string): Promise<LastPerformanceResponse> {
+  return http(`/api/v1/exercises/${exerciseId}/last-performance`, {
     schema: lastPerformanceResponseSchema,
   });
-  return response.item;
 }
 
 export function useSessionsQuery(

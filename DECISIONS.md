@@ -904,6 +904,61 @@ This supersedes the expanding row in "Workout builder rules".
 - The history cursor is base64url of `{ startedAt, id }`, ordered `started_at desc, id desc`.
 **Why:** Unsynced sessions must count at once (AC11), and the plan must not add a dependency.
 
+## 2026-11-17 — Strength records and metrics (spec 13)
+
+**Context:** `/grilling 13`; "most reps at a weight" had more than one meaning, and `reps`, `time` and `distance` had no records.
+**Decision:**
+- `weight_reps` has 4 fixed records: heaviest weight, best estimated 1RM, most reps in one set (with its weight), best session volume.
+- `reps`, `time` and `distance` have one chart metric and one record each: most reps, longest duration, longest distance.
+- Unilateral volume counts as logged, with no doubling, the same as the spec 10 summary.
+**Why:** Lead's choice. A fixed list is easy to compare and to show as new in the summary.
+
+## 2026-11-17 — New records in the session summary (spec 13)
+
+**Context:** `/grilling 13`; sessions can finish offline, and the first session of an exercise makes every value a record.
+**Decision:**
+- The first session of an exercise sets a baseline and shows no new records.
+- At session start, the client stores the current bests of each exercise in Dexie next to `lastPerformance`. `last-performance` gains a `bests` field.
+- The summary compares with the stored bests, so it works offline.
+**Why:** Lead's choice. The row then means real progress, and it works without network.
+
+## 2026-11-17 — Progress screen choices (spec 13)
+
+**Context:** `/grilling 13`.
+**Decision:**
+- The selector lists only trained exercises, the most recent first. With no history, the whole page shows the empty state with "Почати тренування".
+- "Workouts this month" and "volume this month" stay as two plain numbers, not cards.
+- Offline, views opened before come from the query cache. Other views show "Потрібен інтернет".
+- A record row links to its session summary.
+- The lead approved the uk copy in the spec's Copy section.
+**Why:** Lead's choices.
+
+## 2026-11-17 — Progress design (spec 13)
+
+**Context:** `/design 13`; the lead approved the `PMain` board and asked to plan without more boards.
+**Decision:**
+- `/progress` stacks the month numbers, the exercise selector, the metric switch, the chart card with the range inside it, and the records card.
+- The chart is an accent line with outline diamond points and a filled accent diamond on the last point.
+- The other states, desktop and the summary records row follow the text in the spec's Design section, with patterns from specs 10–12.
+- The lead approved the new copy on the board: "Рекорди", "Вага", "Обʼєм", "… зараз", "за …", "Востаннє …", "Змінити".
+**Why:** Lead's choice; the other states reuse agreed patterns.
+
+## 2026-11-17 — Progress plan choices (spec 13)
+
+**Context:** `/scratch 13`.
+**Decision:**
+- Add `recharts` and the shadcn `chart` component, as `ARCHITECTURE.md` plans. `/progress` loads the chart with a dynamic import.
+- At finish, the device computes the new records once and saves them on the local session row. A summary with no saved list (another device, cleared local data) hides the "Нові рекорди" row. There is no server endpoint for it.
+- Copy for the other tracking types: "Найбільше повторень" / "Повторення", "Найдовший час" / "Час", "Найбільша дистанція" / "Дистанція".
+- The exercise details page shows a secondary "Переглянути прогрес" link when the exercise has history.
+**Why:** Lead's choices.
+
+## 2026-11-17 — Record types with no baseline value (spec 13)
+
+**Context:** `/review 13`; an exercise can have history but no value for one record type, for example only bodyweight sets and no "Heaviest weight".
+**Decision:** Keep the current rule. The first value of a record type counts as a new record when the exercise already has history. Only the first session of an exercise is a baseline.
+**Why:** Lead's choice.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

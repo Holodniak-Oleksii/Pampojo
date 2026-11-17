@@ -10,6 +10,12 @@ import {
   type SetLog,
   type SetValues,
 } from '@/shared/schemas/session';
+import {
+  bestsSchema,
+  newRecordSchema,
+  type Bests,
+  type NewRecord,
+} from '@/shared/schemas/progress';
 
 export const LOCAL_DB_PREFIX = 'pampojo-';
 
@@ -21,6 +27,8 @@ export interface LocalSession extends Omit<Session, 'setLogs'> {
   currentEntryId: string | null;
   /** Unlogged row edits, keyed `${entryId}:${setIndex}`; never sent to the server. */
   drafts: Record<string, SetValues>;
+  /** Records beaten by this session, computed at finish on this device; null when not computed. */
+  newRecords: NewRecord[] | null;
 }
 
 export interface LocalSetLog extends SetLog {
@@ -33,6 +41,7 @@ export interface LocalLastPerformance {
   finishedAt: string;
   sets: LastPerformanceSet[];
   fetchedAt: string;
+  bests: Bests | null;
 }
 
 export interface OutboxEntry {
@@ -53,6 +62,7 @@ export const localSessionSchema = sessionSchema.omit({ setLogs: true }).extend({
   restSetId: z.string().nullable(),
   currentEntryId: z.string().nullable(),
   drafts: z.record(z.string(), setValuesSchema),
+  newRecords: z.array(newRecordSchema).nullable().default(null),
 });
 
 export const localSetLogSchema = setLogSchema.extend({ deletedAt: z.string().nullable() });
@@ -63,6 +73,7 @@ export const localLastPerformanceSchema = z.object({
   finishedAt: z.string(),
   sets: z.array(lastPerformanceSetSchema),
   fetchedAt: z.string(),
+  bests: bestsSchema.nullable().default(null),
 });
 
 export class PampojoDb extends Dexie {

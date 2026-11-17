@@ -12,12 +12,13 @@ export async function prefetchLastPerformance(
   await Promise.all(
     unique.map(async (exerciseId) => {
       try {
-        const item = await fetchLastPerformance(exerciseId);
+        const { item, bests } = await fetchLastPerformance(exerciseId);
         if (item) {
           await db.lastPerformance.put({
             exerciseId,
             ...item,
             fetchedAt: new Date().toISOString(),
+            bests,
           });
         } else {
           await db.lastPerformance.delete(exerciseId);

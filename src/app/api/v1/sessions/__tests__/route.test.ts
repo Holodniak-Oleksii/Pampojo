@@ -4,7 +4,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { exercise, user, workout, workoutSession } from '@/server/db/schema';
+import type { Tx } from '@/server/plan/queries';
 import { deleteUsersByEmail } from '@/test/db';
+import { insertSessionWithSets } from '@/test/progress-fixtures';
 import { GET as LAST } from '../../exercises/[id]/last-performance/route';
 import { GET, PATCH, PUT } from '../[id]/route';
 import { GET as LIST } from '../route';
@@ -167,6 +169,40 @@ describe('/api/v1/sessions', () => {
         params: Promise.resolve({ id: bench }),
       },
     );
-    expect(await response.json()).toEqual({ item: null });
+    expect(await response.json()).toEqual({ item: null, bests: null });
+  });
+
+  it('returns the all-time bests with last performance (spec 13)', async () => {
+    const userId = await createUser();
+    signIn(userId);
+    const workoutId = await createWorkout(userId);
+    const db = getDb() as unknown as Tx;
+    const day = (back: number) => new Date(Date.now() - back * 86_400_000);
+    await insertSessionWithSets(db, {
+      userId,
+      workoutId,
+      startedAt: day(10),
+      sets: [{ exerciseId: bench, weightKg: 100, reps: 3 }],
+    });
+    await insertSessionWithSets(db, {
+      userId,
+      workoutId,
+      startedAt: day(3),
+      sets: [{ exerciseId: bench, weightKg: 80, reps: 10 }],
+    });
+    const response = await LAST(
+      new Request(`http://localhost/api/v1/exercises/${bench}/last-performance`),
+      { params: Promise.resolve({ id: bench }) },
+    );
+    const json = (await response.json()) as { item: { sets: unknown[] }; bests: unknown };
+    expect(json.item.sets).toHaveLength(1);
+    expect(json.bests).toEqual({
+      heaviestWeightKg: 100,
+      bestE1rmKg: 110,
+      mostReps: { reps: 10, weightKg: 80 },
+      bestVolumeKg: 800,
+      longestDurationSec: null,
+      longestDistanceM: null,
+    });
   });
 });
