@@ -5,9 +5,11 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { exercise, user } from '@/server/db/schema';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { DELETE as deleteFrameRoute, PUT as putFrameRoute } from '../[id]/frames/[frameId]/route';
 import { DELETE, GET, PATCH, PUT } from '../[id]/route';
+
+const PREFIX = testPrefix('exercises-write-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.mock('@/server/storage', async (importOriginal) => ({
@@ -52,7 +54,7 @@ async function frame(method: 'PUT' | 'DELETE', id: string, frameId: string, file
 async function signIn(): Promise<string> {
   const [row] = await getDb()
     .insert(user)
-    .values({ name: 'test', email: `test-exercises-write-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   vi.mocked(getSession).mockResolvedValue({ user: { id: row.id } } as Awaited<
@@ -89,7 +91,7 @@ beforeEach(() => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-exercises-write-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('exercise write routes', () => {

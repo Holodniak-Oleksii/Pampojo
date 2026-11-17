@@ -5,7 +5,9 @@ import { DomainError } from '../errors';
 import { withHandler } from '../handler';
 import { json } from '../response';
 import { getAuth } from '@/server/auth/auth';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
+
+const PREFIX = testPrefix('handler');
 
 // The auth tests sign up a real user against the remote database, which takes seconds on CI.
 vi.setConfig({ testTimeout: 30_000 });
@@ -113,7 +115,7 @@ describe('withHandler auth', () => {
   const authed = withHandler({ auth: 'required' }, async ({ userId }) => json({ userId }));
 
   afterAll(async () => {
-    await deleteUsersByEmail('test-handler-%@example.com');
+    await deleteUsersByEmail(`${PREFIX}-%@example.com`);
   });
 
   it('returns 401 UNAUTHORIZED without a session', async () => {
@@ -124,7 +126,7 @@ describe('withHandler auth', () => {
   });
 
   it('passes the signed-in user id to the handler', async () => {
-    const email = `test-handler-${randomUUID()}@example.com`;
+    const email = `${PREFIX}-${randomUUID()}@example.com`;
     const signUp = await getAuth().handler(
       new Request('http://localhost:3000/api/auth/sign-up/email', {
         method: 'POST',

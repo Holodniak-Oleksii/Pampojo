@@ -3,8 +3,10 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getDb } from '@/server/db/client';
 import { user } from '@/server/db/schema';
 import { getSession } from '@/server/auth/session';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { GET, PATCH, PUT } from '../route';
+
+const PREFIX = testPrefix('profile-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
@@ -32,7 +34,7 @@ const request = (method: string, payload?: unknown) =>
 async function signedInAs() {
   const [row] = await getDb()
     .insert(user)
-    .values({ name: 'test', email: `test-profile-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   vi.mocked(getSession).mockResolvedValue({ user: { id: row.id } } as Awaited<
@@ -46,7 +48,7 @@ beforeEach(() => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-profile-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('/api/v1/me/profile', () => {

@@ -490,6 +490,9 @@ No open question blocks the implementation.
   - `chartSummary` is in `utils.ts`, with tests for 0, 1 and 2 points. It takes `formatDate` from the caller. The reason is that `utils.ts` is on the server path of the page, and the plan feature index loads client components.
   - With one point, the chart label has no change part. This needs a new copy key: "{{metric}}, {{exercise}}: {{value}} {{date}}, {{count}} workouts" (uk "… {{count}} тренувань").
 - Finding 5 stays as it is: a record type with no baseline value counts as new (lead's decision, see `DECISIONS.md`).
+- Test fixes outside the plan scope (lead's request, because CI on PR #22 failed on them):
+  - Test users get emails with a per-run prefix from `testPrefix(scope)` in `src/test/db.ts`, and cleanup deletes only that prefix. Before this, CI and Main ran at the same time on the shared database, and one run deleted the users of the other. Also, the `test-profile-%` pattern deleted the users of `test-profile-route-…`.
+  - `LogOutButton.test.tsx` waits until `signOut` is called. The component calls it only after the async outbox flush, so the old test failed on slow CI.
 
 ## 12. Review — 2026-11-17
 

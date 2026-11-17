@@ -4,7 +4,7 @@ import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { exercise } from '@/server/db/schema';
 import type { Tx } from '@/server/plan/queries';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { newHistoryUser, newHistoryWorkout } from '@/test/history-fixtures';
 import { insertSessionWithSets, systemExerciseId } from '@/test/progress-fixtures';
 import { GET as DETAIL } from '../exercises/[id]/route';
@@ -13,7 +13,7 @@ import { GET as LIST } from '../exercises/route';
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
 
-const PREFIX = 'test-progress-route';
+const PREFIX = testPrefix('progress-route');
 let userId: string;
 let otherUserId: string;
 let bench: string;

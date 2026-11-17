@@ -4,9 +4,11 @@ import { normalizeSearch } from '@/lib/search';
 import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { exercise, exerciseTranslation, user } from '@/server/db/schema';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { GET as getDetail } from '../[id]/route';
 import { GET as getList } from '../route';
+
+const PREFIX = testPrefix('exercises-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
@@ -23,7 +25,7 @@ const detail = (id: string, cookie?: string) =>
 async function createUser(): Promise<string> {
   const [row] = await getDb()
     .insert(user)
-    .values({ name: 'test', email: `test-exercises-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   return row.id;
@@ -61,7 +63,7 @@ beforeEach(() => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-exercises-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('GET /api/v1/exercises', () => {

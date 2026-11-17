@@ -4,8 +4,10 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { gymProfile, user } from '@/server/db/schema';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { GET, PUT } from '../route';
+
+const PREFIX = testPrefix('gym-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
@@ -22,7 +24,7 @@ const request = (method: string, payload?: unknown) =>
 async function createUser() {
   const [row] = await getDb()
     .insert(user)
-    .values({ name: 'test', email: `test-gym-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   return row.id;
@@ -39,7 +41,7 @@ beforeEach(() => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-gym-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('/api/v1/me/gym', () => {

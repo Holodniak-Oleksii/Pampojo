@@ -5,11 +5,13 @@ import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { exercise, user, workout, workoutSession } from '@/server/db/schema';
 import type { Tx } from '@/server/plan/queries';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { insertSessionWithSets } from '@/test/progress-fixtures';
 import { GET as LAST } from '../../exercises/[id]/last-performance/route';
 import { GET, PATCH, PUT } from '../[id]/route';
 import { GET as LIST } from '../route';
+
+const PREFIX = testPrefix('sessions-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
@@ -30,7 +32,7 @@ const send = (method: 'GET' | 'PUT' | 'PATCH', id: string, payload?: unknown) =>
 async function createUser() {
   const [row] = await getDb()
     .insert(user)
-    .values({ name: 'test', email: `test-sessions-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   return row.id;
@@ -96,7 +98,7 @@ beforeEach(() => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-sessions-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('/api/v1/sessions', () => {

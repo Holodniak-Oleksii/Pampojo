@@ -7,7 +7,7 @@ import * as schema from '@/server/db/schema';
 import { getEnv } from '@/server/env';
 import type { Tx } from '@/server/plan/queries';
 import { addDays } from '@/shared/plan/occurrences';
-import { deleteUsersByEmail, withRollback } from '@/test/db';
+import { deleteUsersByEmail, withRollback, testPrefix } from '@/test/db';
 import {
   benchExerciseId,
   insertCompletedSession,
@@ -19,7 +19,7 @@ import { getCalendar } from '../service';
 
 vi.setConfig({ testTimeout: 60_000 });
 
-const PREFIX = 'test-calendar-service';
+const PREFIX = testPrefix('calendar-service');
 let bench: string;
 
 beforeAll(async () => {

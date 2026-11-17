@@ -8,14 +8,14 @@ import { getEnv } from '@/server/env';
 import type { Tx } from '@/server/plan/queries';
 import { addDays } from '@/shared/plan/occurrences';
 import { estimateOneRepMax } from '@/shared/progress/metrics';
-import { deleteUsersByEmail, withRollback } from '@/test/db';
+import { deleteUsersByEmail, withRollback, testPrefix } from '@/test/db';
 import { newHistoryUser, newHistoryWorkout } from '@/test/history-fixtures';
 import { insertSessionWithSets, systemExerciseId } from '@/test/progress-fixtures';
 import { findBests, getExerciseProgress, listProgressExercises } from '../service';
 
 vi.setConfig({ testTimeout: 60_000 });
 
-const PREFIX = 'test-progress-service';
+const PREFIX = testPrefix('progress-service');
 const KYIV = 'Europe/Kyiv';
 let bench: string;
 let squat: string;

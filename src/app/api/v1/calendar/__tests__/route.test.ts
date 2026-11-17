@@ -4,14 +4,14 @@ import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import type { Tx } from '@/server/plan/queries';
 import { addDays } from '@/shared/plan/occurrences';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { newHistoryUser } from '@/test/history-fixtures';
 import { GET } from '../route';
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
 
-const PREFIX = 'test-calendar-route';
+const PREFIX = testPrefix('calendar-route');
 let userId: string;
 
 const get = (from: string, to: string) =>

@@ -4,7 +4,7 @@ import { todayIn } from '@/lib/dates';
 import { DomainError } from '@/server/http/errors';
 import { addDays } from '@/shared/plan/occurrences';
 import { putSessionInputSchema } from '@/shared/schemas/session';
-import { deleteUsersByEmail, withRollback } from '@/test/db';
+import { deleteUsersByEmail, withRollback, testPrefix } from '@/test/db';
 import {
   benchExerciseId,
   insertCompletedSession,
@@ -16,7 +16,7 @@ import { listSessions, putSession } from '../service';
 
 vi.setConfig({ testTimeout: 60_000 });
 
-const PREFIX = 'test-session-history';
+const PREFIX = testPrefix('session-history');
 let bench: string;
 
 beforeAll(async () => {

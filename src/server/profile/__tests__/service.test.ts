@@ -5,7 +5,7 @@ import { todayIn } from '@/lib/dates';
 import { getDb } from '@/server/db/client';
 import { account, bodyMeasurement, profile, user } from '@/server/db/schema';
 import { completeOnboardingInputSchema } from '@/shared/schemas/profile';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import {
   completeOnboarding,
   findProfile,
@@ -14,6 +14,8 @@ import {
   isOnboardingComplete,
   updateProfile,
 } from '../service';
+
+const PREFIX = testPrefix('profile');
 
 // Every case talks to the remote database.
 vi.setConfig({ testTimeout: 30_000 });
@@ -38,7 +40,7 @@ const input = (override: Record<string, unknown> = {}) =>
 async function createUser(name = 'test') {
   const [row] = await getDb()
     .insert(user)
-    .values({ name, email: `test-profile-${randomUUID()}@example.com` })
+    .values({ name, email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   return row.id;
@@ -52,7 +54,7 @@ async function weights(userId: string) {
 }
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-profile-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('completeOnboarding', () => {
