@@ -22,12 +22,27 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Review this pull request: code quality, potential bugs, security, performance.
-            The PR branch is already checked out in the current working directory.
+            Review this pull request for bugs, security, performance and code quality.
+            The PR branch is checked out in the current working directory.
+            `CLAUDE.md` and `docs/development/` give the rules of this repo.
 
-            Use `mcp__github_inline_comment__create_inline_comment` (with `confirmed: true`)
-            for every concrete issue. When you propose a fix, ALWAYS include it as a
-            GitHub ```suggestion block that replaces exactly the commented lines.
-            Use `gh pr comment` only for a short overall summary.
+            Scope:
+            1. Run `gh pr diff ${{ github.event.pull_request.number }} --name-only` to get every changed file.
+            2. Review every file in that list: source, tests and docs. Do not stop after one area.
+            3. If a diff hunk does not give enough context, read the whole file.
+
+            Comments:
+            - Post every finding as an inline comment on the exact changed line.
+              Use `mcp__github_inline_comment__create_inline_comment` with `confirmed: true`.
+            - This includes minor findings. Start each comment with a severity:
+              [bug], [security], [perf], [minor] or [nit].
+            - If you propose a fix, add a GitHub ```suggestion block that replaces
+              exactly the commented lines.
+            - Never put a finding only in the summary.
+
+            Summary:
+            - At the end, post one short `gh pr comment`.
+            - Give the files that you reviewed and the number of inline comments for each severity.
+            - Do not repeat the findings there.
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --allowedTools "Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
