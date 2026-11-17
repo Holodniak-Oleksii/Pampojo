@@ -8,6 +8,7 @@ import type { Gym } from '@/shared/schemas/gym';
 import { usePartOfDay } from '../usePartOfDay';
 import { useTodayLabel } from '../useTodayLabel';
 import { PART_OF_DAY } from '../utils';
+import { LastSessionCard, TodayProgress } from '../TodayHistory';
 import { TodayPlan } from '../TodayPlan';
 
 export interface TodayViewProps {
@@ -37,7 +38,14 @@ export function TodayView({ displayName, initialGym, hasWorkouts }: TodayViewPro
       )}
       <GymNudgeCard initialGym={initialGym} />
       <InstallCard />
-      <TodayPlan hasWorkouts={hasWorkouts} />
+      {/* One render per card: on desktop the grid puts the week and adherence in a right column. */}
+      <div className="flex flex-col gap-3.5 lg:grid lg:max-w-[1040px] lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-x-6 lg:gap-y-4">
+        <div className="lg:col-start-1 lg:row-start-1">
+          <TodayPlan hasWorkouts={hasWorkouts} />
+        </div>
+        <TodayProgress className="lg:col-start-2 lg:row-span-2 lg:row-start-1" />
+        <LastSessionCard className="lg:col-start-1 lg:row-start-2" />
+      </div>
     </div>
   );
 }

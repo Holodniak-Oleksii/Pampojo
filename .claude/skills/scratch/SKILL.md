@@ -1,6 +1,6 @@
 ---
 name: scratch
-description: Turn a drilled product spec into a technical plan in scratch/<same-name>.md. Step 3 of the spec workflow.
+description: Turn a grilled product spec into a technical plan in scratch/<same-name>.md. Step 3 of the spec workflow.
 argument-hint: <spec name or number, e.g. 00-project-setup or 03>
 disable-model-invocation: true
 ---
@@ -9,12 +9,12 @@ disable-model-invocation: true
 
 Goal: write `scratch/<spec>.md`, a plan `/implement` can follow without ever opening the product spec. You write the plan only, never code.
 
-Talk to the lead in Ukrainian. Write the plan in English.
+Talk to the lead in Ukrainian. Write the plan in English. Follow the `ste` skill for all English text.
 
 ## 1. Check the input
 
 - Resolve `$ARGUMENTS` to one file in `docs/specs/`.
-- If the spec still has open questions or untestable acceptance criteria, stop and tell the lead to run `/drill` first.
+- If the spec still has open questions or untestable acceptance criteria, stop and tell the lead to run `/grilling` first.
 - If the spec has a user-facing surface but no `## Design` section, stop and tell the lead to run `/design` first.
 - If `scratch/<spec>.md` already exists, read it and ask whether to revise it or start over.
 

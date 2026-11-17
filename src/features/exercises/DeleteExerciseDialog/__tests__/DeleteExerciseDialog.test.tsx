@@ -57,8 +57,10 @@ describe('DeleteExerciseDialog', () => {
               status: 'completed',
               startedAt: '2024-03-05T10:00:00.000Z',
               finishedAt: '2024-03-05T11:00:00.000Z',
+              setCount: 3,
             },
           ],
+          nextCursor: null,
         });
       }
       return Response.json({ items: [] });

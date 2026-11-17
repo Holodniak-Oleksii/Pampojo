@@ -19,6 +19,8 @@ export interface SegmentedControlProps<V extends string> {
   invalid?: boolean;
   describedBy?: string;
   className?: string;
+  /** `quiet`: the selected option is a card on the page, for view switches (calendar). */
+  appearance?: 'filled' | 'quiet';
 }
 
 // Native radios inside labels: arrow keys, form semantics and the accessible name come for free.
@@ -34,6 +36,7 @@ export function SegmentedControl<V extends string>({
   invalid,
   describedBy,
   className,
+  appearance = 'filled',
 }: SegmentedControlProps<V>) {
   return (
     <fieldset className={cn('flex flex-col gap-2', className)} aria-describedby={describedBy}>
@@ -42,14 +45,22 @@ export function SegmentedControl<V extends string>({
       </legend>
       <div
         className={cn(
-          'grid auto-cols-fr grid-flow-col gap-1 rounded-md bg-card p-1 ring-1 ring-border ring-inset',
+          'grid auto-cols-fr grid-flow-col gap-1 p-1',
+          appearance === 'quiet'
+            ? 'rounded-sm bg-background'
+            : 'rounded-md bg-card ring-1 ring-border ring-inset',
           invalid && 'ring-2 ring-destructive',
         )}
       >
         {options.map((option, index) => (
           <label
             key={option.value}
-            className="flex min-h-11 cursor-pointer items-center justify-center rounded-sm px-4 text-base font-semibold transition-colors has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring"
+            className={cn(
+              'flex cursor-pointer items-center justify-center rounded-sm px-4 font-semibold transition-colors has-focus-visible:ring-2 has-focus-visible:ring-ring',
+              appearance === 'quiet'
+                ? 'min-h-10 text-sm text-muted-foreground has-checked:bg-card has-checked:font-bold has-checked:text-foreground has-checked:ring-1 has-checked:ring-border-strong'
+                : 'min-h-11 text-base has-checked:bg-primary has-checked:text-primary-foreground',
+            )}
           >
             <input
               ref={index === 0 ? inputRef : undefined}

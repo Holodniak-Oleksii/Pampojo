@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Goal: implement `scratch/<name>.md` exactly, meet every acceptance criterion it maps, and leave the checks green.
 
-Talk to the lead in Ukrainian. Write code, comments and notes in English.
+Talk to the lead in Ukrainian. Write code, comments and notes in English. Follow the `ste` skill for all English text.
 
 ## 1. Check the input
 

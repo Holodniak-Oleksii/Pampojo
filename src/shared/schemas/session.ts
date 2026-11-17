@@ -6,6 +6,7 @@ import {
   SESSION_STATUS,
   SET_RANGE,
 } from '@/constants/session';
+import { HISTORY_PAGE_MAX } from '@/constants/plan';
 import { TARGET_RANGE, WORKOUT_NAME_MAX, WORKOUT_NOTE_MAX } from '@/constants/workout';
 import { lateralitySchema, trackingTypeSchema } from './exercise';
 import { calendarDateSchema, enumOf } from './utils';
@@ -207,6 +208,9 @@ export const sessionListQuerySchema = z
     status: z.enum([SESSION_STATUS.IN_PROGRESS, SESSION_STATUS.COMPLETED]).optional(),
     exerciseId: z.uuid().optional(),
     scheduledFor: calendarDateSchema.optional(),
+    /** Page size; with `limit` or `cursor` the list pages newest first (spec 12). */
+    limit: z.coerce.number().int().min(1).max(HISTORY_PAGE_MAX).optional(),
+    cursor: z.string().min(1).max(200).optional(),
   })
   .strict();
 
@@ -220,11 +224,17 @@ export const sessionListItemSchema = z.object({
   status: sessionStatusSchema,
   startedAt: z.string(),
   finishedAt: z.string().nullable(),
+  /** Live set logs of the session. */
+  setCount: z.number().int().min(0),
 });
 
 export type SessionListItem = z.infer<typeof sessionListItemSchema>;
 
-export const sessionListResponseSchema = z.object({ items: z.array(sessionListItemSchema) });
+export const sessionListResponseSchema = z.object({
+  items: z.array(sessionListItemSchema),
+  /** Null on the last page, and always null without `limit` and `cursor`. */
+  nextCursor: z.string().nullable(),
+});
 
 export type SessionListResponse = z.infer<typeof sessionListResponseSchema>;
 

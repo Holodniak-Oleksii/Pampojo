@@ -6,19 +6,31 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { fetchSession, fetchSessions } from '@/api/sessions';
+import { calendarKeys, fetchCalendar } from '@/api/calendar';
 import { fetchScheduleRules, planKeys } from '@/api/plan';
 import { fetchWorkout, workoutKeys } from '@/api/workouts';
 import { SESSION_STATUS } from '@/constants/session';
 import { useCurrentUserId } from '@/features/auth/CurrentUser';
-import { planTodayForStart, resolveScheduledFor, type ScheduledSession } from '@/features/plan';
+import {
+  planZoneForStart,
+  resolveScheduledFor,
+  toStatusRule,
+  useMakeUpPrompt,
+  type ScheduledSession,
+} from '@/features/plan';
+import { todayIn } from '@/lib/dates';
+import { addDays } from '@/shared/plan/occurrences';
+import { computeCalendar, findMakeUpDate, type StatusSession } from '@/shared/plan/statuses';
+import type { CalendarResponse } from '@/shared/schemas/calendar';
 import { requestPersistentStorage } from '@/features/pwa';
 import {
+  findCompletedSessionsBetween,
   findScheduledSessions,
   prefetchLastPerformance,
   useLocalDb,
   useSessionRepository,
 } from '@/services/local-db';
-import type { ScheduleRuleListResponse } from '@/shared/schemas/plan';
+import type { ScheduleRule, ScheduleRuleListResponse } from '@/shared/schemas/plan';
 import type { Workout } from '@/shared/schemas/workout';
 import { buildSessionFromWorkout } from '../utils';
 
@@ -32,36 +44,107 @@ export function useStartSession() {
   const userId = useCurrentUserId();
   const db = useLocalDb(userId);
   const repository = useSessionRepository(userId);
+  const ask = useMakeUpPrompt();
   const [pending, setPending] = useState(false);
+
+  const loadRules = useCallback(async (): Promise<ScheduleRule[]> => {
+    const cached = queryClient.getQueryData<ScheduleRuleListResponse>(planKeys.list())?.items;
+    if (cached || !navigator.onLine) return cached ?? [];
+    try {
+      return (
+        await queryClient.fetchQuery({ queryKey: planKeys.list(), queryFn: fetchScheduleRules })
+      ).items;
+    } catch {
+      return [];
+    }
+  }, [queryClient]);
 
   /** Today's date when this start fulfils today's plan for the workout, else null (spec 11). */
   const plannedDateFor = useCallback(
-    async (workoutId: string): Promise<string | null> => {
-      const today = await planTodayForStart(queryClient);
-      if (today === null) return null;
-      let rules = queryClient.getQueryData<ScheduleRuleListResponse>(planKeys.list())?.items;
+    async (workoutId: string, today: string): Promise<string | null> => {
       const sessions: ScheduledSession[] = await findScheduledSessions(db, today);
+      const rules = await loadRules();
       if (navigator.onLine) {
         try {
-          rules ??= await queryClient
-            .fetchQuery({
-              queryKey: planKeys.list(),
-              queryFn: fetchScheduleRules,
-            })
-            .then((response) => response.items);
           sessions.push(...(await fetchSessions({ scheduledFor: today })).items);
         } catch {
           // Without the server the local data decides.
         }
       }
-      const live = (rules ?? []).filter((rule) => !rule.workout.deleted);
+      const live = rules.filter((rule) => !rule.workout.deleted);
       return resolveScheduledFor({ workoutId, rules: live, today, sessions });
     },
-    [queryClient, db],
+    [db, loadRules],
+  );
+
+  /** The latest missed date of the workout that this start can still make up, else null (spec 12). */
+  const makeUpDateFor = useCallback(
+    async (workoutId: string, today: string, timeZone: string): Promise<string | null> => {
+      const from = addDays(today, -8);
+      const to = addDays(today, -1);
+      const key = calendarKeys.range(from, to);
+      let remote = queryClient.getQueryData<CalendarResponse>(key);
+      if (navigator.onLine) {
+        try {
+          remote = await queryClient.fetchQuery({
+            queryKey: key,
+            queryFn: () => fetchCalendar({ from, to }),
+          });
+        } catch {
+          // The cached copy, if any, and this device's sessions decide.
+        }
+      }
+      const sessions = new Map<string, StatusSession>();
+      for (const day of remote?.days ?? []) {
+        for (const session of day.sessions) sessions.set(session.id, session);
+      }
+      for (const session of await findCompletedSessionsBetween(db, from, to)) {
+        sessions.set(session.id, session);
+      }
+      const rules = (await loadRules()).filter((rule) => !rule.workout.deleted);
+      const days = computeCalendar({
+        rules: rules.map(toStatusRule),
+        sessions: [...sessions.values()],
+        from,
+        to,
+        today,
+        timeZone,
+      });
+      // Without the server's answer, a day this device knows nothing about may be done elsewhere.
+      for (const day of remote?.days ?? []) {
+        const local = days.find((item) => item.date === day.date);
+        for (const occurrence of local?.occurrences ?? []) {
+          const known = day.occurrences.find((item) => item.ruleId === occurrence.ruleId);
+          if (known?.sessionId) occurrence.status = known.status;
+        }
+      }
+      return remote || navigator.onLine === false
+        ? findMakeUpDate({ days, workoutId, today })
+        : null;
+    },
+    [queryClient, db, loadRules],
+  );
+
+  /** `scheduledFor` for a new session, or `undefined` when the user closed the make-up dialog. */
+  const scheduleFor = useCallback(
+    async (workout: Workout, makeUpFor?: string): Promise<string | null | undefined> => {
+      if (makeUpFor) return makeUpFor;
+      const timeZone = await planZoneForStart(queryClient);
+      if (timeZone === null) return null;
+      const today = todayIn(timeZone);
+      const planned = await plannedDateFor(workout.id, today);
+      if (planned !== null) return planned;
+      const missed = await makeUpDateFor(workout.id, today, timeZone);
+      if (missed === null) return null;
+      const choice = await ask({ workoutName: workout.name, date: missed });
+      if (choice === 'cancel') return undefined;
+      return choice === 'make_up' ? missed : null;
+    },
+    [queryClient, plannedDateFor, makeUpDateFor, ask],
   );
 
   const start = useCallback(
-    async (workoutId: string): Promise<boolean> => {
+    async (workoutId: string, options: { makeUpFor?: string } = {}): Promise<boolean> => {
       if (pending) return false;
       setPending(true);
       try {
@@ -102,9 +185,10 @@ export function useStartSession() {
           return false;
         }
 
+        const scheduledFor = await scheduleFor(workout, options.makeUpFor);
+        if (scheduledFor === undefined) return false;
         const id = crypto.randomUUID();
         const { workoutSnapshot, exercises } = buildSessionFromWorkout(workout);
-        const scheduledFor = await plannedDateFor(workout.id);
         await repository.start({
           id,
           workoutId: workout.id,
@@ -127,7 +211,7 @@ export function useStartSession() {
         setPending(false);
       }
     },
-    [pending, repository, router, queryClient, db, t, plannedDateFor],
+    [pending, repository, router, queryClient, db, t, scheduleFor],
   );
 
   return { start, pending };

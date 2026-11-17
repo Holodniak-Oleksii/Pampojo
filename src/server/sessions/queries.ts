@@ -4,6 +4,7 @@ import { SESSION_LIST_LIMIT, SESSION_STATUS, type SessionStatus } from '@/consta
 import { setLog, workoutSession } from '@/server/db/schema';
 import { touch } from '@/server/db/utils';
 import type { Executor, Tx } from '@/server/exercises/queries';
+import type { HistoryCursor } from './cursor';
 
 export type { Executor, Tx };
 
@@ -50,11 +51,20 @@ export async function findSessionRow(
   return row;
 }
 
+export type SessionListRow = SessionRow & { setCount: number };
+
+/** Live set logs of the session, as a column of the same select. */
+// Raw names: Drizzle leaves columns unqualified inside a select field, where `id` would be set_log's.
+export const setCountColumn = sql<number>`(
+  select count(*)::int from set_log sl
+  where sl.session_id = "workout_session"."id" and sl.deleted_at is null)`;
+
 export async function listSessionRows(
   db: Executor,
   userId: string,
   filters: { status?: SessionStatus; exerciseId?: string; scheduledFor?: string },
-): Promise<SessionRow[]> {
+  page?: { size: number; after: HistoryCursor | null },
+): Promise<SessionListRow[]> {
   const statuses = filters.status
     ? [filters.status]
     : [SESSION_STATUS.IN_PROGRESS, SESSION_STATUS.COMPLETED];
@@ -67,12 +77,23 @@ export async function listSessionRows(
         and ${setLog.exerciseId} = ${filters.exerciseId}
         and ${setLog.deletedAt} is null)`);
   }
-  return db
-    .select()
+  if (page?.after) {
+    conditions.push(
+      sql`(${workoutSession.startedAt}, ${workoutSession.id}) < (${page.after.startedAt.toISOString()}::timestamptz, ${page.after.id}::uuid)`,
+    );
+  }
+  const query = db
+    .select({ row: workoutSession, setCount: setCountColumn })
     .from(workoutSession)
-    .where(and(...conditions))
-    .orderBy(desc(workoutSession.startedAt), workoutSession.id)
-    .limit(SESSION_LIST_LIMIT);
+    .where(and(...conditions));
+  const rows = page
+    ? await query
+        .orderBy(desc(workoutSession.startedAt), desc(workoutSession.id))
+        .limit(page.size + 1)
+    : await query
+        .orderBy(desc(workoutSession.startedAt), workoutSession.id)
+        .limit(SESSION_LIST_LIMIT);
+  return rows.map(({ row, setCount }) => ({ ...row, setCount: Number(setCount) }));
 }
 
 /** The caller has checked that the session belongs to the user. */

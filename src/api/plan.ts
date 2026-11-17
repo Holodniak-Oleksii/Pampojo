@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { addDays } from '@/shared/plan/occurrences';
 import {
   scheduleRuleListResponseSchema,
@@ -7,6 +7,7 @@ import {
   type ScheduleRule,
   type ScheduleRuleListResponse,
 } from '@/shared/schemas/plan';
+import { calendarKeys } from './calendar';
 import { http } from './http';
 
 const RULES_PATH = '/api/v1/schedule-rules';
@@ -46,6 +47,12 @@ export async function deleteScheduleRule(id: string): Promise<void> {
   await http(rulePath(id), { method: 'DELETE' });
 }
 
+// A rule change moves occurrences, so the statuses of the calendar change with it.
+function invalidatePlan(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: planKeys.all });
+  void queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+}
+
 export function useScheduleRulesQuery() {
   return useQuery({ queryKey: planKeys.list(), queryFn: fetchScheduleRules, staleTime: 60_000 });
 }
@@ -55,7 +62,7 @@ export function usePutScheduleRuleMutation() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: PutScheduleRuleInput }) =>
       putScheduleRule(id, input),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: planKeys.all }),
+    onSuccess: () => invalidatePlan(queryClient),
   });
 }
 
@@ -64,7 +71,7 @@ export function usePatchScheduleRuleMutation() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: PatchScheduleRuleInput }) =>
       patchScheduleRule(id, input),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: planKeys.all }),
+    onSuccess: () => invalidatePlan(queryClient),
   });
 }
 
@@ -99,6 +106,6 @@ export function useDeleteScheduleRuleMutation() {
     onError: (_error, _input, context) => {
       if (context?.previous) queryClient.setQueryData(planKeys.list(), context.previous);
     },
-    onSettled: () => void queryClient.invalidateQueries({ queryKey: planKeys.all }),
+    onSettled: () => invalidatePlan(queryClient),
   });
 }

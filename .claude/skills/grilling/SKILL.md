@@ -1,15 +1,15 @@
 ---
-name: drill
+name: grilling
 description: Question a product spec with the lead until it has no gaps, then write the answers into the spec. Step 1 of the spec workflow.
 argument-hint: <spec name or number, e.g. 00-project-setup or 03>
 disable-model-invocation: true
 ---
 
-# /drill — question a spec
+# /grilling — question a spec
 
 Goal: leave `docs/specs/<spec>.md` complete enough that `/scratch` can plan it without guessing. You change docs only, never code.
 
-Talk to the lead in Ukrainian. Write everything in files in English.
+Talk to the lead in Ukrainian. Write everything in files in English. Follow the `ste` skill for all English text.
 
 ## 1. Find the spec
 

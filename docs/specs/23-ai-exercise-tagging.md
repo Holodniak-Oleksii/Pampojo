@@ -14,7 +14,7 @@ Creating a custom exercise is quicker: the user types a name, AI suggests muscle
 
 - [ ] AC1: Suggested values are always from the allowed lists.
 - [ ] AC2: Nothing is saved until the user saves the form.
-- [ ] AC3: Evals meet the thresholds set in drill.
+- [ ] AC3: Evals meet the thresholds set in grilling.
 
 ## Depends on
 

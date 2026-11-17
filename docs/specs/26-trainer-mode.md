@@ -1,12 +1,12 @@
 # 26. Trainer mode (outline)
 
-Outline only. Expand through `/drill` when the milestone starts.
+Outline only. Expand through `/grilling` when the milestone starts.
 
 ## Goal
 
 A trainer manages clients from a laptop: builds workouts, assigns them and schedules them on clients' calendars, and sees their adherence.
 
-## Ideas to drill
+## Ideas to grill
 
 - Trainer–client link by invitation link; the client accepts and can leave any time.
 - What the trainer sees: assigned workouts, plan, adherence, session summaries; never body measurements unless the client allows it.

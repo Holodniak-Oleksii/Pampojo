@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Diamond } from '@/components/Diamond';
 import { SCHEDULE } from '@/constants/plan';
-import { dayMonth, monthTitle, weekdayShort } from '@/features/plan';
+import { dayMonth, monthTitle, StatusMarker, weekdayShort } from '@/features/plan';
 import { useLocale } from '@/i18n/client';
 import { cn } from '@/lib/utils';
 import { addDays } from '@/shared/plan/occurrences';
-import type { ScheduleRule } from '@/shared/schemas/plan';
-import { monthOf } from '../utils';
+import { dayLabel, monthOf, type DayMarker } from '../utils';
 
 export interface MonthGridProps {
   month: string;
@@ -15,7 +13,7 @@ export interface MonthGridProps {
   dates: readonly string[];
   today: string;
   selected: string;
-  byDate: ReadonlyMap<string, ScheduleRule[]>;
+  markers: ReadonlyMap<string, DayMarker[]>;
   variant: 'compact' | 'full';
   onSelect: (date: string) => void;
 }
@@ -32,7 +30,7 @@ export function MonthGrid({
   dates,
   today,
   selected,
-  byDate,
+  markers,
   variant,
   onSelect,
 }: MonthGridProps) {
@@ -88,7 +86,8 @@ export function MonthGrid({
           className={cn('grid grid-cols-7', full ? 'h-[88px] gap-1.5' : 'gap-0.5')}
         >
           {week.map((date) => {
-            const rules = byDate.get(date) ?? [];
+            const all = markers.get(date) ?? [];
+            const rules = all.filter((marker) => !marker.desktopOnly);
             const outside = monthOf(date) !== month;
             const isToday = date === today;
             const isSelected = date === selected;
@@ -99,10 +98,7 @@ export function MonthGrid({
               'data-date': date,
               'aria-selected': isSelected,
               tabIndex: isSelected ? 0 : -1,
-              'aria-label':
-                rules.length > 0
-                  ? t('{{date}}, {{planned}} planned', { date: label, planned: rules.length })
-                  : label,
+              'aria-label': dayLabel(t, date, label, all, isToday),
               onClick: () => onSelect(date),
               onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => onKeyDown(event, date),
             };
@@ -129,13 +125,21 @@ export function MonthGrid({
                       <span className="text-xs font-bold text-muted-foreground">{t('today')}</span>
                     ) : null}
                   </span>
-                  {rules.map((rule) => (
+                  {all.map((marker) => (
                     <span
-                      key={rule.id}
-                      className="flex min-w-0 items-center gap-1.5 text-[13px] font-semibold"
+                      key={marker.key}
+                      className={cn(
+                        'flex min-w-0 items-center gap-1.5 text-[13px] font-semibold',
+                        marker.status === 'missed' && 'text-destructive-text',
+                        marker.status === 'planned' && 'text-muted-foreground',
+                      )}
                     >
-                      <Diamond tone="planned" variant="outline" className="border-[1.5px]" />
-                      <span className="truncate">{rule.workout.name}</span>
+                      <StatusMarker status={marker.status} size="md" />
+                      <span
+                        className={marker.desktopOnly ? 'line-clamp-2 leading-tight' : 'truncate'}
+                      >
+                        {marker.name}
+                      </span>
                     </span>
                   ))}
                 </button>
@@ -167,13 +171,8 @@ export function MonthGrid({
                   />
                 ) : null}
                 <span aria-hidden="true" className="mt-2 flex items-center gap-1">
-                  {shown.map((rule) => (
-                    <Diamond
-                      key={rule.id}
-                      tone="planned"
-                      variant="outline"
-                      className="border-[1.5px]"
-                    />
+                  {shown.map((marker) => (
+                    <StatusMarker key={marker.key} status={marker.status} />
                   ))}
                   {rules.length > shown.length ? (
                     <span className="text-xs leading-none text-muted-foreground">

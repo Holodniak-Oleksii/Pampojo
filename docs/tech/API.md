@@ -40,7 +40,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `PUT/PATCH/DELETE /api/v1/sets/{id}` | Set logs | 10 |
 | `GET /api/v1/exercises/{id}/last-performance` | Previous values in session | 10 |
 | `GET /api/v1/schedule-rules`, `PUT/PATCH/DELETE /api/v1/schedule-rules/{id}` | Plan rules, see below | 11 |
-| `GET /api/v1/calendar?from=&to=` | Occurrences joined with sessions and statuses | 12 |
+| `GET /api/v1/calendar?from=&to=` | Occurrences with statuses and the completed sessions of each date, see below | 12 |
 | `GET /api/v1/progress/exercises/{id}` | Series and records | 13 |
 | `GET/PUT/DELETE /api/v1/measurements[/{id}]` | Body measurements | 14 |
 | `POST /api/v1/sync/push`, `GET /api/v1/sync/pull?since=` | Offline sync | 16 |
@@ -67,9 +67,14 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 
 ## Sessions (spec 10)
 
-- **List.** `GET /api/v1/sessions` returns `{ items: [{ id, workoutId, workoutName, scheduledFor, status, startedAt, finishedAt }] }`, newest `startedAt` first, at most 200, never abandoned. `status` is `in_progress` or `completed`; `exerciseId` keeps sessions with a live set of that exercise; `scheduledFor` keeps sessions linked to that planned date (spec 11).
+- **List.** `GET /api/v1/sessions` returns `{ items: [{ id, workoutId, workoutName, scheduledFor, status, startedAt, finishedAt, setCount }], nextCursor }`, newest `startedAt` first, never abandoned. `status` is `in_progress` or `completed`; `exerciseId` keeps sessions with a live set of that exercise; `scheduledFor` keeps sessions linked to that planned date (spec 11). `setCount` is the number of live set logs.
+  - Without `limit` and `cursor`, the list has at most 200 items and `nextCursor` is null.
+  - With `limit` (1–50, default 20) or `cursor`, the list is paged by `startedAt` and `id`, both descending. `nextCursor` is an opaque string for the next page, or null on the last page. An unknown cursor is 400 (spec 12).
 - **Detail.** `GET /api/v1/sessions/{id}` returns the session with `workoutSnapshot`, `exercises` and its live `setLogs`. Abandoned is 404.
-- **`PUT /api/v1/sessions/{id}`** creates the session with a client id; a repeat returns the existing row. The optional `scheduledFor` (spec 11) must equal the date of `startedAt` in the profile time zone, so a late outbox replay still passes.
+- **`PUT /api/v1/sessions/{id}`** creates the session with a client id; a repeat returns the existing row. The optional `scheduledFor` must be one of these, else 400 with path `scheduledFor`:
+  - the date of `startedAt` in the profile time zone (spec 11);
+  - an earlier date on which the workout occurs in the user's rules, when the start date is in that date's late window (spec 12).
+  - Both checks use the start time, not the request time, so a late outbox replay still passes.
 - **`PATCH /api/v1/sessions/{id}`** writes `exercises`, `notes`, or `status` (`completed` with `finishedAt`, or `abandoned`, which soft deletes its set logs). Plan and note changes need `in_progress`.
 - **`PUT/PATCH/DELETE /api/v1/sets/{id}`**: create or replace (clears `deletedAt`), change values, soft delete (204 on repeat). Values must match the exercise tracking type and the main metric is required.
 - **`GET /api/v1/exercises/{id}/last-performance`** returns `{ item: null | { sessionId, finishedAt, sets } }` from the latest completed session with a live set of the exercise.
@@ -83,6 +88,14 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 - **`DELETE /api/v1/schedule-rules/{id}`**: a started rule ends yesterday, a future one is soft deleted; repeats and ended rules are 204.
 - **Rules:** the start is today or later in the profile time zone; the end is at most 2 years after the start; the workout is the user's, live and not empty; the rule has at least one date. Deleting a workout ends its rules the same way.
 - **Errors:** `SCHEDULE_RULE_NOT_FOUND` (404, also for another user's id), `SCHEDULE_OVERLAP` (422, the same workout twice on one date; `details.workoutName`), `SCHEDULE_LIMIT_REACHED` (422 at 100 active rules; `details.max`), validation 400.
+
+## Calendar (spec 12)
+
+- **`GET /api/v1/calendar?from=&to=`** takes two dates, `from ≤ to`, at most 62 days. Other values are 400. It returns `{ today, days: [{ date, occurrences, sessions }] }`, one item per date.
+  - An occurrence is `{ ruleId, workoutId, workoutName, status, sessionId, lateWindowEnd }`. `status` is `on_time`, `late`, `missed` or `planned`. `sessionId` is the session that fulfils it, or null. `lateWindowEnd` is the last day to make it up, or null when the window is empty.
+  - A session is a completed session that started on that date in the profile time zone: the list item fields plus `kind` (`on_time`, `late` or `extra`).
+  - The late window of an occurrence on date D ends on the earlier of the day before the next occurrence of the same workout and D + 7. The first completed session that fulfils an occurrence counts, and others are extra.
+  - It runs 3 queries for any range.
 
 ## Export file format
 

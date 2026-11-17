@@ -849,9 +849,64 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** `vercel.json` sets `"regions": ["lhr1"]`, next to the database.
 **Why:** Lead's approval. Several sequential queries per request make the round trip the main cost.
 
+## 2026-11-17 — Simplified Technical English
+
+**Context:** The lead asked for a permanent rule that keeps all English text simple, like ASD-STE100.
+**Decision:**
+- The `ste` skill holds the rules: words, noun clusters, verbs, sentence length, instructions, descriptions and a list of words to replace.
+- `CLAUDE.md` has a short "Writing style" section, and every workflow skill links to `ste`.
+- The rules apply to new English text only. Old text changes only when someone edits it.
+**Why:** `CLAUDE.md` is always in context, so the core rules are always active. The skill gives the details when an agent writes text.
+
+## 2026-11-17 — History and adherence rules (spec 12)
+
+**Context:** `/drill 12`.
+**Decision:**
+- Adherence counts only planned occurrences. Extra sessions show in the calendar but do not change the score.
+- Due occurrences are the ones before today plus today's done ones.
+- The late window of an occurrence ends the day before the next occurrence of the same workout, at most 7 days after it.
+- A late session stores the missed date in `scheduledFor`. The server accepts a past date in the late window, so there is no migration.
+- The user makes up a missed workout from a dialog on start or with "Відпрацювати" in the day panel.
+- There is no skip of a single occurrence.
+- A past day lists session rows that open the spec 10 summary.
+- The history list shows completed sessions only, 20 per page with a cursor.
+- `GET /api/v1/calendar` returns statuses from a shared pure function. The client applies the same function to unsynced local sessions.
+- Today shows adherence as a diamond row and numbers, not `SegmentedGauge` (`DESIGN_SYSTEM.md`).
+**Why:** Lead's answers. The score must stay honest and must not drop before today's workout.
+
+## 2026-11-17 — The drill skill is now grilling
+
+**Context:** The lead asked to rename the first workflow skill.
+**Decision:** `/drill` is now `/grilling` (`.claude/skills/grilling/`). Workflow docs, skills and future specs use the new name. Older log entries and finished specs and plans keep "drill".
+**Why:** Lead's request. The old entries are history.
+
+## 2026-11-17 — History and adherence design (spec 12)
+
+**Context:** `/design 12` on the spec 11 canvas `KE2i97nBoPYQjQjF6b6RMB`, new rows.
+**Decision:**
+- An extra session has a filled muted diamond. `DESIGN_SYSTEM.md` lists it.
+- The month summary is also the legend: the adherence percent, one diamond per due occurrence, and the counts with their markers.
+- A missed occurrence in its late window shows "Можна відпрацювати до …" and a primary "Відпрацювати".
+- The "Місяць / Список" toggle is a full-width segmented control above the month on mobile, and next to the title on desktop.
+- The desktop history list is a table.
+- Today adds "Цей тиждень", "Дотримання плану" and "Останнє тренування" cards under the spec 11 cards.
+- The new copy is as on the canvas and in the spec's Copy section.
+**Why:** The lead approved the canvas.
+
+## 2026-11-17 — History plan choices (spec 12)
+
+**Context:** `/scratch 12`.
+**Decision:**
+- The client always computes the statuses with the shared `computeCalendar()`, from the cached rules, the calendar response sessions and the local Dexie sessions. The server statuses serve API callers and tests.
+- Calendar response sessions carry `setCount` and `kind` (`on_time`, `late`, `extra`), an addition to the spec shape.
+- Without loaded calendar data (offline, cold), past occurrences show as planned and the summary is hidden, never a false "missed".
+- The make-up dialog is a React context provider in the app shell, because the repo has no Zustand. No new dependency.
+- The history cursor is base64url of `{ startedAt, id }`, ordered `started_at desc, id desc`.
+**Why:** Unsynced sessions must count at once (AC11), and the plan must not add a dependency.
+
 ## Open questions
 
-Raise these during `/drill` of the listed spec.
+Raise these during `/grilling` of the listed spec.
 
 
 - Speech-to-text and image generation providers. (specs 20, 24)

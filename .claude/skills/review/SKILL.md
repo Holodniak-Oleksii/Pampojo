@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Goal: tell the lead whether the feature meets its spec, with evidence. You report; you do not fix unless the lead asks.
 
-Talk to the lead in Ukrainian. Write the report in English.
+Talk to the lead in Ukrainian. Write the report in English. Follow the `ste` skill for all English text.
 
 ## 1. Check the input
 

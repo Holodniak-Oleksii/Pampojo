@@ -1,4 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { HISTORY_PAGE_SIZE } from '@/constants/plan';
+import { SESSION_STATUS } from '@/constants/session';
 import {
   lastPerformanceResponseSchema,
   sessionListResponseSchema,
@@ -17,6 +19,7 @@ export const sessionKeys = {
   all: ['sessions'] as const,
   list: (filters: SessionListQuery) => [...sessionKeys.all, 'list', filters] as const,
   detail: (id: string) => [...sessionKeys.all, 'detail', id] as const,
+  history: () => [...sessionKeys.all, 'history'] as const,
   lastPerformance: (exerciseId: string) =>
     [...sessionKeys.all, 'last-performance', exerciseId] as const,
 };
@@ -29,6 +32,8 @@ function listQuery(filters: SessionListQuery): string {
   if (filters.status) params.set('status', filters.status);
   if (filters.exerciseId) params.set('exerciseId', filters.exerciseId);
   if (filters.scheduledFor) params.set('scheduledFor', filters.scheduledFor);
+  if (filters.limit !== undefined) params.set('limit', String(filters.limit));
+  if (filters.cursor) params.set('cursor', filters.cursor);
   const query = params.toString();
   return query ? `?${query}` : '';
 }
@@ -61,6 +66,22 @@ export function useSessionsQuery(
   return useQuery({
     queryKey: sessionKeys.list(filters),
     queryFn: () => fetchSessions(filters),
+    enabled,
+  });
+}
+
+/** Completed sessions, newest first, a page at a time (spec 12). */
+export function useSessionHistoryQuery({ enabled = true }: { enabled?: boolean } = {}) {
+  return useInfiniteQuery({
+    queryKey: sessionKeys.history(),
+    queryFn: ({ pageParam }) =>
+      fetchSessions({
+        status: SESSION_STATUS.COMPLETED,
+        limit: HISTORY_PAGE_SIZE,
+        cursor: pageParam ?? undefined,
+      }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor,
     enabled,
   });
 }

@@ -20,6 +20,8 @@ export interface ConfirmDialogProps {
   confirmLabel: string;
   cancelLabel: string;
   onConfirm: () => void;
+  /** The cancel button; defaults to closing. Escape and the scrim still call `onOpenChange`. */
+  onCancel?: () => void;
   pending?: boolean;
   /** Extra content under the description, such as a list of affected items. */
   children?: ReactNode;
@@ -28,6 +30,8 @@ export interface ConfirmDialogProps {
   destructive?: boolean;
   /** One column with the confirm button on top, for screens where a thumb reaches the top first. */
   stacked?: boolean;
+  /** The cancel button style; stacked dialogs default to secondary. */
+  cancelVariant?: 'secondary' | 'ghost';
 }
 
 /** A yes/no dialog whose buttons share the width and wrap long labels instead of overflowing. */
@@ -39,18 +43,20 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   onConfirm,
+  onCancel,
   pending,
   children,
   className,
   destructive,
   stacked,
+  cancelVariant = 'secondary',
 }: ConfirmDialogProps) {
   const cancel = (
     <Button
       key="cancel"
-      variant="secondary"
+      variant={cancelVariant}
       className="h-auto min-h-12 w-full py-2 whitespace-normal"
-      onClick={() => onOpenChange(false)}
+      onClick={onCancel ?? (() => onOpenChange(false))}
     >
       {cancelLabel}
     </Button>

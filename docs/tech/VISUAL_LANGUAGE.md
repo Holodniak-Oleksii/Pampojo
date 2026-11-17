@@ -210,7 +210,7 @@ The structure is unchanged: Calendar, Library, Play, Progress, Profile.
 
 ### Draft strings
 
-These are drafts from the mockups. Each is confirmed in the `/drill` of the spec that owns the screen.
+These are drafts from the mockups. Each is confirmed in the `/grilling` of the spec that owns the screen.
 
 | Where | uk | Spec |
 | --- | --- | --- |

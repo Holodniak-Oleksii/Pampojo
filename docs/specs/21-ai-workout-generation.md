@@ -21,7 +21,7 @@ Generating a whole calendar plan (later), multi-week programs.
 - [ ] AC1: Every generated exercise exists in the user's available catalog; equipment checks pass.
 - [ ] AC2: Estimated duration is within the tolerance or the response is repaired or rejected with a message.
 - [ ] AC3: The draft is not saved until the user saves it in the builder.
-- [ ] AC4: Evals pass rate ≥ the threshold set in drill (suggested 90%).
+- [ ] AC4: Evals pass rate ≥ the threshold set in grilling (suggested 90%).
 - [ ] AC5: Errors (timeout, limit, invalid output twice) show a clear message and keep the form.
 
 ## Depends on
