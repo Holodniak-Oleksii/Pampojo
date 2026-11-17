@@ -497,6 +497,7 @@ No open question blocks the implementation.
   - `e2e/05-app-shell.spec.ts` expects the new progress empty state, not the old placeholder text.
   - The Start test in `05` targets the button of the app shell. The progress empty state has a second "Start workout" button.
   - The discard test in `10` and the duplicate test in `07` use `test.slow()`. On that CI run, each API call took up to 5 s, and both tests hit the 30 s limit.
+- Calendar fix outside the plan scope (lead's request): "Schedule workout" waits for the profile time zone (`planZoneForStart`) before it opens the form. Before this, a click while the profile loaded used the device zone. Then the start date could be one day off, for example between 00:00 and 02:00 in Kyiv. `PlanCalendar.test.tsx` covers it.
 
 ## 12. Review — 2026-11-17
 
