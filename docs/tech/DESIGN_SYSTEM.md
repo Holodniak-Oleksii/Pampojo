@@ -45,6 +45,9 @@ Manrope through `next/font`, subsets `latin` and `cyrillic`, weights 400, 600, 7
 | Today | `--foreground` outline diamond, the day label in bold |
 | Planned | `--planned` outline diamond |
 | Missed | `--destructive` outline diamond plus a label in the day details |
+| Extra (no plan, spec 12) | Filled `--muted-foreground` diamond |
+
+The calendar month summary is also the legend: each status count sits next to its marker (spec 12). The adherence row shows one diamond per due occurrence.
 
 ## Brand
 

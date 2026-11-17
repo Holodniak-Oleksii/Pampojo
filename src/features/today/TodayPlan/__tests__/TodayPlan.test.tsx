@@ -22,7 +22,7 @@ function respond(rules: ScheduleRule[]) {
         ],
       });
     }
-    if (url.pathname === '/api/v1/sessions') return Response.json({ items: [] });
+    if (url.pathname === '/api/v1/sessions') return Response.json({ items: [], nextCursor: null });
     return Response.json({ error: { code: 'NOT_FOUND' } }, { status: 404 });
   });
 }

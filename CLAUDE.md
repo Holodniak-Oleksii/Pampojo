@@ -27,7 +27,7 @@ Talk to the lead (the repo owner) in Ukrainian. Write code, comments, commits an
 
 Every feature goes through five skills, run by the lead one at a time:
 
-1. `/drill <spec>` — question the spec with the lead, write the answers into the spec.
+1. `/grilling <spec>` — question the spec with the lead, write the answers into the spec.
 2. `/design <spec>` — design the spec's screens and states as mockups with the lead (the `frontend-design` skill inside `docs/tech/VISUAL_LANGUAGE.md`), write the result into the spec's Design section.
 3. `/scratch <spec>` — turn the spec into a technical plan in `scratch/<same-name>.md`.
 4. `/implement <scratch>` — build exactly the plan. Product specs are out of context here.
@@ -85,6 +85,18 @@ Run the cheap checks (`lint`, `typecheck`, the test files you touched) before fi
 - One subject line, nothing else. It says what changed.
 - Explanations belong in the PR description.
 - No tool or session attribution trailers.
+
+## Writing style
+
+All English text in the repo uses Simplified Technical English, adapted from ASD-STE100. The full rules are in the `ste` skill (`.claude/skills/ste/SKILL.md`). Load it before you write docs, specs, plans, comments, commits or PR descriptions. The core rules:
+
+- Use common words. One word has one meaning, and one thing has one name.
+- Use the active voice and simple tenses.
+- One sentence has one idea: a maximum of 20 words in an instruction, 25 in a description.
+- Write an instruction as an imperative. Put a condition first.
+- No idioms, no slang, and no more than three nouns in a row.
+
+Apply the rules to new text. Do not rewrite old text that you do not change.
 
 ## Code comments
 

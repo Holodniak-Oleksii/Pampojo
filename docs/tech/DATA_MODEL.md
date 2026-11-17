@@ -1,6 +1,6 @@
 # Data model
 
-Draft. Specs refine it during `/drill`; any change here needs the lead's approval. Drizzle schema files live in `src/server/db/schema/<domain>.ts`.
+Draft. Specs refine it during `/grilling`; any change here needs the lead's approval. Drizzle schema files live in `src/server/db/schema/<domain>.ts`.
 
 Conventions:
 
@@ -132,7 +132,7 @@ Occurrences are computed, not stored (`src/shared/plan/occurrences.ts`). A rule 
 | id | uuid PK | Client-generated |
 | userId | uuid → user | |
 | workoutId | uuid null → workout | Always set from spec 10; `set null` if the workout row is removed |
-| scheduledFor | date null | The planned date this session fulfils (spec 11); equals the start date in the profile time zone |
+| scheduledFor | date null | The occurrence date this session fulfils: the start date in the profile time zone (spec 11), or a missed date whose late window holds the start date (spec 12) |
 | workoutSnapshot | jsonb | Workout as it was at start, never changed afterwards |
 | exercises | jsonb | The session plan in session order: `[{ id, exerciseId, plannedSets, target…, notes, exercise: { id, name, trackingType, laterality, thumbnailUrl } }]` (spec 10) |
 | status | text | `in_progress`, `completed`, `abandoned`; one `in_progress` per user is enforced by the client |
@@ -176,4 +176,5 @@ Occurrences are computed, not stored (`src/shared/plan/occurrences.ts`). A rule 
 - **Estimated 1RM:** Epley `weight × (1 + reps / 30)` for sets with 1–12 reps.
 - **Volume:** `Σ weight × reps` per exercise, session, week.
 - **BMI:** `weightKg / (heightCm / 100)²`, WHO adult categories.
-- **Adherence:** completed occurrences ÷ due occurrences for the period (rules in spec 12).
+- **Adherence:** (done on time + done late) ÷ due occurrences, as a whole percent. Due occurrences are the ones before today plus today's done ones. Extra sessions do not count (spec 12).
+- **Late window:** a missed occurrence on date D can be made up until the earlier of the day before the next occurrence of the same workout and D + 7.

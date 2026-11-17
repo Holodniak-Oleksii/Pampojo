@@ -20,7 +20,7 @@ function respond(
     const url = new URL(String(input), 'http://localhost');
     if (url.pathname === '/api/v1/workouts') return Response.json({ items: workouts });
     if (url.pathname === '/api/v1/schedule-rules') return Response.json({ items: rules });
-    if (url.pathname === '/api/v1/sessions') return Response.json({ items: [] });
+    if (url.pathname === '/api/v1/sessions') return Response.json({ items: [], nextCursor: null });
     return Response.json({ error: { code: 'NOT_FOUND' } }, { status: 404 });
   });
 }

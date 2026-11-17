@@ -36,7 +36,7 @@ AI features come last (specs 20–25), but the data model is built for them from
 - Tagging: labelled set of exercises. Metric = precision of primary muscles and pattern.
 - Store cases as JSON in `evals/<feature>/cases.json`; the runner prints a table and exits non-zero under the threshold set in the spec.
 
-## Open questions (decide in `/drill`)
+## Open questions (decide in `/grilling`)
 
 - LLM provider and default model.
 - Speech-to-text provider for spec 24.

@@ -1,3 +1,5 @@
+'use client';
+
 import { AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -26,7 +28,7 @@ export function CalendarSkeleton() {
   );
 }
 
-export function CalendarError({ onRetry }: { onRetry: () => void }) {
+export function CalendarError({ onRetry, message }: { onRetry: () => void; message?: string }) {
   const { t } = useTranslation();
   return (
     <div
@@ -34,7 +36,7 @@ export function CalendarError({ onRetry }: { onRetry: () => void }) {
       className="mt-6 flex flex-col items-center gap-3.5 rounded-lg bg-card px-4 py-6 text-center"
     >
       <AlertCircle aria-hidden="true" className="size-7 text-destructive" />
-      <p className="text-base font-bold">{t("Couldn't load the calendar.")}</p>
+      <p className="text-base font-bold">{message ?? t("Couldn't load the calendar.")}</p>
       <Button onClick={onRetry}>{t('Try again')}</Button>
     </div>
   );

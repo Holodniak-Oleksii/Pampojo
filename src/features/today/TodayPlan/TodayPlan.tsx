@@ -41,11 +41,7 @@ export function TodayPlan({ hasWorkouts }: TodayPlanProps) {
     );
   }
   if (plan.next) {
-    return (
-      <div className="max-w-[560px]">
-        <NextWorkoutCard next={plan.next} />
-      </div>
-    );
+    return <NextWorkoutCard next={plan.next} />;
   }
   return <TodayEmpty hasWorkouts={hasWorkouts} />;
 }

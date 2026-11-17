@@ -7,6 +7,7 @@ const TONE = {
   planned: { fill: 'bg-planned', outline: 'border-planned' },
   success: { fill: 'bg-success', outline: 'border-success' },
   destructive: { fill: 'bg-destructive', outline: 'border-destructive' },
+  muted: { fill: 'bg-muted-foreground', outline: 'border-muted-foreground' },
 } as const;
 
 // Static class names, so Tailwind sees every muscle colour it has to generate.
@@ -19,7 +20,7 @@ const MUSCLE: Record<MuscleFamily, string> = {
   core: 'bg-muscle-core',
 };
 
-const SIZE = { sm: 'size-[7px]', md: 'size-2.5' } as const;
+const SIZE = { sm: 'size-[7px]', xs: 'size-2', md: 'size-2.5' } as const;
 
 export type DiamondProps = {
   size?: keyof typeof SIZE;

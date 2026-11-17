@@ -12,7 +12,8 @@ import {
   type PampojoDb,
 } from './db';
 import { lastPerformanceFor } from './last-performance';
-import { findScheduledSessions } from './scheduled';
+import { findCompletedSessionsBetween, findScheduledSessions } from './scheduled';
+import type { StatusSession } from '@/shared/plan/statuses';
 import { createSessionRepository, type SessionRepository } from './session-repository';
 import type { LastPerformance } from '@/shared/schemas/session';
 
@@ -90,4 +91,14 @@ export function useLocalScheduledSessions(
 ): LocalSession[] | undefined {
   const db = useLocalDb(userId);
   return useLiveQuery(() => findScheduledSessions(db, date), [db, date]);
+}
+
+/** Completed local sessions around `[from, to]`, for statuses before sync; `undefined` while loading. */
+export function useLocalCompletedSessions(
+  userId: string,
+  from: string,
+  to: string,
+): StatusSession[] | undefined {
+  const db = useLocalDb(userId);
+  return useLiveQuery(() => findCompletedSessionsBetween(db, from, to), [db, from, to]);
 }

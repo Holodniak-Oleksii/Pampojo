@@ -1,6 +1,6 @@
 ---
 name: design
-description: Design the screens and states of a drilled spec as mockups with the lead, using the frontend-design skill inside the project's visual language, then record the result in the spec. Step 2 of the spec workflow.
+description: Design the screens and states of a grilled spec as mockups with the lead, using the frontend-design skill inside the project's visual language, then record the result in the spec. Step 2 of the spec workflow.
 argument-hint: <spec name or number, e.g. 09-workout-builder or 09>
 disable-model-invocation: true
 ---
@@ -9,12 +9,12 @@ disable-model-invocation: true
 
 Goal: every screen and state the spec touches has an agreed mockup, and the spec's "Design" section says enough that `/scratch` can plan the UI without guessing. You design and write docs only, never product code.
 
-Talk to the lead in Ukrainian. Write everything in files in English; mockup copy uses the real uk/en strings.
+Talk to the lead in Ukrainian. Write everything in files in English; mockup copy uses the real uk/en strings. Follow the `ste` skill for all English text.
 
 ## 1. Check the input
 
 - Resolve `$ARGUMENTS` to one file in `docs/specs/`.
-- If the spec still has open questions, stop and tell the lead to run `/drill` first.
+- If the spec still has open questions, stop and tell the lead to run `/grilling` first.
 - If the spec has no user-facing surface, write `## Design` with "No UI." and tell the lead the next step is `/scratch`.
 - If the spec already has a `## Design` section, read it and ask whether to revise it or start over.
 

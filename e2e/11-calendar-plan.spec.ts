@@ -99,9 +99,9 @@ test.describe('calendar plan', () => {
     // One weekday, three times: the end is two weeks after the start.
     expect(rule).toMatchObject({ startDate: today(), endDate: shift(today(), 14) });
     // Markers on today's weekday only, up to the end date.
-    await expect(page.getByRole('gridcell', { name: /1 planned/ }).first()).toBeVisible();
+    await expect(page.getByRole('gridcell', { name: /, planned/ }).first()).toBeVisible();
     const marked = await page
-      .getByRole('gridcell', { name: /1 planned/ })
+      .getByRole('gridcell', { name: /, planned/ })
       .evaluateAll((cells) => cells.map((cell) => cell.getAttribute('data-date')));
     const expected = [today(), shift(today(), 7), shift(today(), 14)];
     expect(marked.every((date) => expected.includes(date ?? ''))).toBe(true);

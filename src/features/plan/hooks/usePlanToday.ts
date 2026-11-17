@@ -17,6 +17,12 @@ export async function planTodayForStart(
   queryClient: QueryClient,
   at: Date = new Date(),
 ): Promise<string | null> {
+  const zone = await planZoneForStart(queryClient);
+  return zone ? todayIn(zone, at) : null;
+}
+
+/** The profile time zone, loading the profile when it is not cached; null when unknown. */
+export async function planZoneForStart(queryClient: QueryClient): Promise<string | null> {
   let zone = queryClient.getQueryData<Profile>(profileKeys.me())?.timeZone;
   if (!zone && navigator.onLine) {
     try {
@@ -26,7 +32,7 @@ export async function planTodayForStart(
       // Unknown zone: start without a planned date.
     }
   }
-  return zone ? todayIn(zone, at) : null;
+  return zone ?? null;
 }
 
 /** Today in the profile time zone; re-renders each minute so the day flips at midnight. */
@@ -34,4 +40,10 @@ export function usePlanToday(): string {
   const profile = useProfileQuery();
   const now = useNow(60_000);
   return todayIn(profile.data?.timeZone ?? deviceZone(), new Date(now));
+}
+
+/** The profile time zone, or the device zone while the profile loads. */
+export function usePlanTimeZone(): string {
+  const profile = useProfileQuery();
+  return profile.data?.timeZone ?? deviceZone();
 }

@@ -27,7 +27,7 @@ See `docs/tech/AI.md`: catalog-constrained generation, structured output, valida
 
 ## How it was built
 
-Spec-driven development with an AI agent: `docs/specs` → `/drill` → `/scratch` → `/implement` → `/review`. See `CLAUDE.md`.
+Spec-driven development with an AI agent: `docs/specs` → `/grilling` → `/scratch` → `/implement` → `/review`. See `CLAUDE.md`.
 
 ## Running locally
 

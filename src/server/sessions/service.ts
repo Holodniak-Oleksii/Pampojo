@@ -11,7 +11,11 @@ import {
 import type { TrackingType } from '@/constants/exercise';
 import { getDb } from '@/server/db/client';
 import { DomainError } from '@/server/http/errors';
+import { HISTORY_PAGE_SIZE } from '@/constants/plan';
+import { listWorkoutRules } from '@/server/plan/queries';
 import { userToday } from '@/server/plan/today';
+import { occursOn } from '@/shared/plan/occurrences';
+import { lateWindowEnd } from '@/shared/plan/statuses';
 import { findVisibleExercises, findWorkoutOwner } from '@/server/workouts/queries';
 import type {
   LastPerformanceResponse,
@@ -26,6 +30,7 @@ import type {
   SetLog,
   SetValues,
 } from '@/shared/schemas/session';
+import { decodeHistoryCursor, encodeHistoryCursor, type HistoryCursor } from './cursor';
 import { SESSION_ERROR } from './errors';
 import {
   findLastPerformanceRows,
@@ -204,9 +209,19 @@ export async function listSessions(
   query: SessionListQuery,
   db: Executor = getDb(),
 ): Promise<SessionListResponse> {
-  const rows = await listSessionRows(db, userId, query);
+  const { limit, cursor, ...filters } = query;
+  let page: { size: number; after: HistoryCursor | null } | undefined;
+  if (limit !== undefined || cursor !== undefined) {
+    const after = cursor === undefined ? null : decodeHistoryCursor(cursor);
+    if (cursor !== undefined && after === null) throw invalid(['cursor'], 'Unknown cursor');
+    page = { size: limit ?? HISTORY_PAGE_SIZE, after };
+  }
+  const rows = await listSessionRows(db, userId, filters, page);
+  const more = page !== undefined && rows.length > page.size;
+  const items = more ? rows.slice(0, page?.size) : rows;
+  const last = items.at(-1);
   return {
-    items: rows.map((row) => ({
+    items: items.map((row) => ({
       id: row.id,
       workoutId: row.workoutId,
       workoutName: row.workoutSnapshot.name,
@@ -214,8 +229,32 @@ export async function listSessions(
       status: row.status as SessionStatus,
       startedAt: row.startedAt.toISOString(),
       finishedAt: row.finishedAt ? row.finishedAt.toISOString() : null,
+      setCount: row.setCount,
     })),
+    nextCursor:
+      more && last ? encodeHistoryCursor({ startedAt: last.startedAt, id: last.id }) : null,
   };
+}
+
+/**
+ * A session fulfils either the day it started, or a missed occurrence of its workout whose late
+ * window still includes that day (spec 12).
+ */
+async function assertFulfillableDate(
+  tx: Tx,
+  userId: string,
+  workoutId: string,
+  scheduledFor: string,
+  startedAt: string,
+): Promise<void> {
+  const start = await userToday(tx, userId, new Date(startedAt));
+  if (scheduledFor === start) return;
+  if (scheduledFor < start) {
+    const rules = await listWorkoutRules(tx, userId, workoutId, scheduledFor);
+    const end = lateWindowEnd(rules, workoutId, scheduledFor);
+    if (rules.some((rule) => occursOn(rule, scheduledFor)) && end !== null && start <= end) return;
+  }
+  throw invalid(['scheduledFor'], 'Not a day this session can fulfil');
 }
 
 export async function getSession(
@@ -253,11 +292,8 @@ export async function putSession(
     await assertVisibleExercises(tx, userId, input);
     const scheduledFor = input.scheduledFor ?? null;
     // The day of the start, not of the request: an offline start may be replayed after midnight.
-    if (
-      scheduledFor !== null &&
-      scheduledFor !== (await userToday(tx, userId, new Date(input.startedAt)))
-    ) {
-      throw invalid(['scheduledFor'], 'Not the day the session started');
+    if (scheduledFor !== null) {
+      await assertFulfillableDate(tx, userId, input.workoutId, scheduledFor, input.startedAt);
     }
     await insertSession(tx, {
       id,

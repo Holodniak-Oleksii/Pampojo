@@ -11,6 +11,7 @@ export {
 export {
   useLastPerformance,
   useLocalDb,
+  useLocalCompletedSessions,
   useLocalInProgress,
   useLocalScheduledSessions,
   useLocalSession,
@@ -19,7 +20,7 @@ export {
   type LocalSessionData,
 } from './hooks';
 export { lastPerformanceFor, prefetchLastPerformance } from './last-performance';
-export { findScheduledSessions } from './scheduled';
+export { findCompletedSessionsBetween, findScheduledSessions } from './scheduled';
 export { deleteAllLocalDbs, flushAllLocalDbs } from './logout';
 export { flushOutbox, pendingCount } from './outbox';
 export {
