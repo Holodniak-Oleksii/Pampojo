@@ -16,6 +16,7 @@ import { listWorkoutRules } from '@/server/plan/queries';
 import { userToday } from '@/server/plan/today';
 import { occursOn } from '@/shared/plan/occurrences';
 import { lateWindowEnd } from '@/shared/plan/statuses';
+import { findBests } from '@/server/progress/service';
 import { findVisibleExercises, findWorkoutOwner } from '@/server/workouts/queries';
 import type {
   LastPerformanceResponse,
@@ -468,8 +469,9 @@ export async function getLastPerformance(
 ): Promise<LastPerformanceResponse> {
   const rows = await findLastPerformanceRows(db, userId, exerciseId);
   const [first] = rows;
-  if (!first) return { item: null };
+  if (!first) return { item: null, bests: null };
   return {
+    bests: await findBests(db, userId, exerciseId),
     item: {
       sessionId: first.session_id,
       finishedAt: iso(first.finished_at),

@@ -1,9 +1,11 @@
 'use client';
 
-import { ArrowLeft, Copy, Pencil } from 'lucide-react';
+import { ArrowLeft, Copy, Pencil, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useProgressExercisesQuery } from '@/api/progress';
+import { buttonVariants } from '@/components/ui/button';
 import { useGymEquipmentLabels } from '@/features/gym/hooks/useGymEquipmentLabels';
 import { formatRequirementGroup } from '@/features/gym/utils';
 import type { Exercise } from '@/shared/schemas/exercise';
@@ -33,6 +35,8 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
   const gymLabels = useGymEquipmentLabels();
   const backHref = useCatalogBackHref();
   const online = useIsOnline();
+  const progress = useProgressExercisesQuery({ enabled: online });
+  const trained = progress.data?.items.some((item) => item.exerciseId === exercise.id) ?? false;
   const join = <T extends string>(values: T[], map: Record<T, string>) =>
     values.map((value) => map[value]).join(', ');
 
@@ -61,6 +65,15 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
             {t('Duplicate as my own')}
           </OnlineLinkButton>
         )}
+        {trained ? (
+          <Link
+            href={`/progress?exercise=${exercise.id}`}
+            className={buttonVariants({ variant: 'secondary' })}
+          >
+            <TrendingUp aria-hidden="true" />
+            {t('View progress')}
+          </Link>
+        ) : null}
       </div>
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
         <div className="lg:sticky lg:top-20">

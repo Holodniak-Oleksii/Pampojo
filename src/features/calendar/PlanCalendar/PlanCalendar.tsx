@@ -1,15 +1,23 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/PageHeader';
 import { useWorkoutsQuery } from '@/api/workouts';
 import { HistoryList } from '@/features/history/HistoryList';
-import { MonthSummary, useCalendarDays, usePlanToday, useTodaySessions } from '@/features/plan';
+import {
+  MonthSummary,
+  planZoneForStart,
+  useCalendarDays,
+  usePlanToday,
+  useTodaySessions,
+} from '@/features/plan';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { useLocale } from '@/i18n/client';
+import { todayIn } from '@/lib/dates';
 import { cn } from '@/lib/utils';
 import { addDays, maxDate } from '@/shared/plan/occurrences';
 import { summarize, type CalendarSession } from '@/shared/plan/statuses';
@@ -40,6 +48,7 @@ export function PlanCalendar() {
   const online = useIsOnline();
   const desktop = useIsDesktop();
   const workoutsQuery = useWorkoutsQuery();
+  const queryClient = useQueryClient();
 
   const view: CalendarView = params.get('view') === 'list' ? 'list' : 'month';
   const linked = calendarDateSchema.safeParse(params.get('date') ?? '');
@@ -60,6 +69,14 @@ export function PlanCalendar() {
   const calendar = useCalendarDays(from, to);
   const { timeZone, rules, days } = calendar;
   const sessions = useTodaySessions(today);
+
+  // Until the profile loads, `today` uses the device zone, which can be a day off.
+  // The form must start on the profile day, so a new rule waits for the zone.
+  const scheduleNew = async () => {
+    const zone = await planZoneForStart(queryClient);
+    const day = zone ? todayIn(zone) : today;
+    setForm({ kind: 'new', date: maxDate(selected ?? day, day) });
+  };
 
   const byDate = useMemo(() => occurrencesByDate(rules, from, to), [rules, from, to]);
   const markers = useMemo(() => {
@@ -133,7 +150,7 @@ export function PlanCalendar() {
               setSelected(null);
               setMonth(null);
             }}
-            onSchedule={() => setForm({ kind: 'new', date: maxDate(currentSelected, today) })}
+            onSchedule={() => void scheduleNew()}
           />
           <MonthGrid
             month={currentMonth}
@@ -159,7 +176,7 @@ export function PlanCalendar() {
             day={days.get(currentSelected)}
             sessionsById={sessionsById}
             timeZone={timeZone}
-            onSchedule={() => setForm({ kind: 'new', date: maxDate(currentSelected, today) })}
+            onSchedule={() => void scheduleNew()}
             onEdit={(rule) => setForm({ kind: 'edit', rule })}
             onDelete={setDeleting}
           />

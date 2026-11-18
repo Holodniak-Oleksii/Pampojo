@@ -14,9 +14,11 @@ import {
   type PutScheduleRuleInput,
 } from '@/shared/schemas/plan';
 import { putWorkoutInputSchema } from '@/shared/schemas/workout';
-import { deleteUsersByEmail, withRollback } from '@/test/db';
+import { deleteUsersByEmail, withRollback, testPrefix } from '@/test/db';
 import type { Tx } from '../queries';
 import { deleteRule, listRules, patchRule, putRule } from '../service';
+
+const PREFIX = testPrefix('plan-service');
 
 vi.setConfig({ testTimeout: 60_000 });
 
@@ -33,7 +35,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-plan-service-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 const today = () => todayIn(ZONE);
@@ -41,7 +43,7 @@ const today = () => todayIn(ZONE);
 async function newUser(tx: Tx): Promise<string> {
   const [row] = await tx
     .insert(user)
-    .values({ name: 'test', email: `test-plan-service-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning({ id: user.id });
   if (!row) throw new Error('No user');
   await tx.insert(profile).values({

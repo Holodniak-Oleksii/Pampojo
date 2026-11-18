@@ -88,6 +88,7 @@ describe('ActiveSession', () => {
       finishedAt: '2026-11-10T10:00:00.000Z',
       fetchedAt: '2026-11-10T10:00:00.000Z',
       sets: [{ setIndex: 0, weightKg: 80, reps: 6, durationSec: null, distanceM: null }],
+      bests: null,
     });
     const screen = await render(<ActiveSession sessionId={SESSION} />);
     await expect.element(screen.getByText('Last time: 80 kg × 6')).toBeVisible();
@@ -208,6 +209,37 @@ describe('ActiveSession', () => {
       .click();
     await expect.element(screen.getByRole('heading', { name: 'Workout finished' })).toBeVisible();
     expect((await db().sessions.get(SESSION))?.finishedAt).toBe(set.completedAt);
+  });
+
+  it('lists the new records in the summary, and hides the row without them (spec 13 AC2)', async () => {
+    const finishedAt = new Date().toISOString();
+    await seedLocal(
+      localSession({
+        status: 'completed',
+        finishedAt,
+        newRecords: [
+          { exerciseId: BENCH_ID, type: 'heaviest_weight', value: 90, weightKg: null, reps: null },
+          { exerciseId: BENCH_ID, type: 'most_reps', value: 12, weightKg: 80, reps: null },
+        ],
+      }),
+      [localSet({ completedAt: finishedAt })],
+    );
+    const screen = await render(<ActiveSession sessionId={SESSION} />);
+    const records = () => screen.getByRole('region', { name: 'New records' });
+    await expect.element(records()).toBeVisible();
+    await expect.element(records().getByText('Heaviest weight')).toBeVisible();
+    await expect.element(records().getByText('90 kg')).toBeVisible();
+    await expect.element(records().getByText('12 × 80 kg')).toBeVisible();
+  });
+
+  it('hides the records row when the session has none', async () => {
+    const finishedAt = new Date().toISOString();
+    await seedLocal(localSession({ status: 'completed', finishedAt, newRecords: [] }), [
+      localSet({ completedAt: finishedAt }),
+    ]);
+    const screen = await render(<ActiveSession sessionId={SESSION} />);
+    await expect.element(screen.getByRole('heading', { name: 'Workout finished' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'New records' }).elements()).toHaveLength(0);
   });
 
   it('shows not found for a session the device and the server do not have', async () => {

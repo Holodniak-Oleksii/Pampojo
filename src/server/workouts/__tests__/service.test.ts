@@ -9,9 +9,11 @@ import { getDb } from '@/server/db/client';
 import { getEnv } from '@/server/env';
 import { deleteOwnExercise } from '@/server/exercises/write-service';
 import { putWorkoutInputSchema } from '@/shared/schemas/workout';
-import { deleteUsersByEmail, withRollback } from '@/test/db';
+import { deleteUsersByEmail, withRollback, testPrefix } from '@/test/db';
 import type { Tx } from '../queries';
 import { getWorkout, hasWorkouts, listWorkouts, putWorkout } from '../service';
+
+const PREFIX = testPrefix('workouts-service');
 
 vi.mock('@/server/storage', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/server/storage')>()),
@@ -32,7 +34,7 @@ const ex: Record<string, string> = {};
 async function newUser(tx: Tx | ReturnType<typeof getDb>): Promise<string> {
   const [row] = await tx
     .insert(user)
-    .values({ name: 'test', email: `test-workouts-service-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning({ id: user.id });
   if (!row) throw new Error('No user');
   return row.id;
@@ -54,7 +56,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-workouts-service-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('listWorkouts', () => {

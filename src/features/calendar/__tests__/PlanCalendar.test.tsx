@@ -202,4 +202,31 @@ describe('PlanCalendar', () => {
       .element(screen.getByRole('heading', { name: new RegExp(`^Today, .*${label}$`) }))
       .toBeVisible();
   });
+
+  it('starts a new rule on today in the profile zone, also when the profile is still loading', async () => {
+    // At any time, one of these zones has a date other than the device date.
+    const zone =
+      todayIn('Pacific/Kiritimati') !== deviceToday() ? 'Pacific/Kiritimati' : 'Etc/GMT+12';
+    respond([], zone);
+    let releaseProfile: () => void = () => {};
+    const profileHeld = new Promise<void>((resolve) => (releaseProfile = resolve));
+    const respondFully = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      if (new URL(String(input), 'http://localhost').pathname === '/api/v1/me/profile') {
+        await profileHeld;
+      }
+      return respondFully(input, init);
+    });
+    const screen = await render(<PlanCalendar />);
+    await expect.element(screen.getByText('Nothing planned on this day.')).toBeVisible();
+
+    await screen.getByRole('button', { name: 'Schedule workout' }).first().click();
+    releaseProfile();
+
+    await expect
+      .element(
+        screen.getByRole('dialog', { name: 'Schedule workout' }).getByLabelText('Start date'),
+      )
+      .toHaveValue(todayIn(zone));
+  });
 });

@@ -13,9 +13,11 @@ import {
   workoutExercise,
 } from '@/server/db/schema';
 import { addDays } from '@/shared/plan/occurrences';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { DELETE, PATCH, PUT } from '../[id]/route';
 import { GET } from '../route';
+
+const PREFIX = testPrefix('plan-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
@@ -39,7 +41,7 @@ const list = () => GET(new Request(BASE), { params: Promise.resolve({}) });
 async function createUser() {
   const [row] = await getDb()
     .insert(user)
-    .values({ name: 'test', email: `test-plan-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   await getDb().insert(profile).values({
@@ -100,7 +102,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-plan-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('PUT /schedule-rules/{id}', () => {

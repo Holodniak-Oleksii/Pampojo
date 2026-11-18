@@ -24,7 +24,8 @@ describe('LogOutButton', () => {
     await screen.getByRole('button', { name: 'Log out' }).click();
 
     await expect.element(screen.getByRole('button', { name: 'Log out' })).toBeDisabled();
-    expect(authClient.signOut).toHaveBeenCalledTimes(1);
+    // The button turns off at once, but `signOut` runs only after the async outbox flush.
+    await expect.poll(() => vi.mocked(authClient.signOut).mock.calls.length).toBe(1);
   });
 
   it('stays on the page and can retry after a network failure', async () => {
@@ -37,6 +38,8 @@ describe('LogOutButton', () => {
 
     await button.click();
     await expect.element(button).toBeDisabled();
+    // `fail` is set only when `signOut` starts, after the async outbox flush.
+    await expect.poll(() => vi.mocked(authClient.signOut).mock.calls.length).toBe(1);
     fail(new TypeError('Failed to fetch'));
 
     await expect.element(button).toBeEnabled();

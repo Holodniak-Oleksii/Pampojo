@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { getDb } from '@/server/db/client';
 
@@ -17,6 +18,15 @@ export async function withRollback<T>(
     if (!(error instanceof Rollback)) throw error;
   }
   return result;
+}
+
+// Module state is per test file, and CI runs share the database. Thus a cleanup pattern with this id
+// deletes only the users of this file run, not the users of a parallel file or run.
+const RUN_ID = randomUUID().slice(0, 8);
+
+/** The email prefix of test users: `test-<scope>-<run id>`. Emails are `${prefix}-<uuid>@example.com`. */
+export function testPrefix(scope: string): string {
+  return `test-${scope}-${RUN_ID}`;
 }
 
 /** Deletes test-created users (sessions and accounts cascade). Patterns must target example.com. */

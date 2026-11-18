@@ -119,6 +119,8 @@ test.describe('custom exercises', () => {
 
   test('duplicates a system exercise as my own', async ({ page }) => {
     test.skip(!STORAGE_READY, STORAGE_SKIP);
+    // The duplicate copies the media in storage, and the delete removes it again: both are slow on CI.
+    test.slow();
     await signUp(page);
     await page.goto('/library/exercises?q=bench');
     await page

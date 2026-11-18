@@ -4,9 +4,11 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 import { getDb } from '@/server/db/client';
 import { session, user } from '@/server/db/schema';
 import { getEnv } from '@/server/env';
-import { deleteRateLimitsByKey, deleteUsersByEmail } from '@/test/db';
+import { deleteRateLimitsByKey, deleteUsersByEmail, testPrefix } from '@/test/db';
 import { createAuth, getAuth } from '../auth';
 import { getSession } from '../session';
+
+const PREFIX = testPrefix('auth');
 
 // Every request hashes a password and talks to the remote database; on CI one sign-in takes ~1 s,
 // so the 11-request rate-limit test alone exceeds the 5 s default.
@@ -17,7 +19,7 @@ const PASSWORD = 'Password123!';
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Each test file owns an email prefix, because files run in parallel and clean up by pattern.
-const testEmail = () => `test-auth-${randomUUID()}@example.com`;
+const testEmail = () => `${PREFIX}-${randomUUID()}@example.com`;
 // The rate limit lives in the shared database, so each request gets its own address from the IPv6
 // documentation range: 250 IPv4 addresses collided with other tests and parallel CI runs.
 // Better Auth keys IPv6 by its /64, so the random part is the /64 itself.
@@ -46,7 +48,7 @@ async function signUp(email = testEmail()) {
 }
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-auth-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
   await deleteRateLimitsByKey('%2001:db8:%');
 });
 

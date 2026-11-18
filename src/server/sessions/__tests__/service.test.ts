@@ -13,7 +13,7 @@ import {
   type PutSetInput,
 } from '@/shared/schemas/session';
 import { putWorkoutInputSchema } from '@/shared/schemas/workout';
-import { deleteUsersByEmail, withRollback } from '@/test/db';
+import { deleteUsersByEmail, withRollback, testPrefix } from '@/test/db';
 import type { Tx } from '../queries';
 import {
   deleteSet,
@@ -25,6 +25,8 @@ import {
   putSession,
   putSet,
 } from '../service';
+
+const PREFIX = testPrefix('sessions-service');
 
 vi.mock('@/server/storage', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/server/storage')>()),
@@ -46,13 +48,13 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-sessions-service-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 async function newUser(tx: Tx): Promise<string> {
   const [row] = await tx
     .insert(user)
-    .values({ name: 'test', email: `test-sessions-service-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning({ id: user.id });
   if (!row) throw new Error('No user');
   return row.id;

@@ -62,3 +62,41 @@ export async function insertCompletedSessions(
     await sql.end();
   }
 }
+
+/** A completed session with explicit sets of one exercise, in two statements. */
+export async function insertCompletedSessionWithSets(
+  email: string,
+  workoutId: string,
+  session: {
+    startedAt: Date;
+    sets: { exerciseId: string; weightKg?: number | null; reps?: number | null }[];
+  },
+): Promise<string> {
+  const sql = connect();
+  try {
+    const userId = await userIdOf(sql, email);
+    const id = randomUUID();
+    const entry = randomUUID();
+    await sql`
+      insert into workout_session
+        (id, user_id, workout_id, workout_snapshot, exercises, status, started_at, finished_at)
+      values (${id}, ${userId}, ${workoutId},
+        ${sql.json({ workoutId, name: 'Push Day', description: null, exercises: [] })},
+        ${sql.json([])}, 'completed', ${session.startedAt},
+        ${new Date(session.startedAt.getTime() + 50 * 60_000)})`;
+    const rows = session.sets.map((set, index) => ({
+      id: randomUUID(),
+      session_id: id,
+      session_exercise_id: entry,
+      exercise_id: set.exerciseId,
+      set_index: index,
+      weight_kg: set.weightKg ?? null,
+      reps: set.reps ?? null,
+      completed_at: new Date(session.startedAt.getTime() + index * 60_000),
+    }));
+    await sql`insert into set_log ${sql(rows)}`;
+    return id;
+  } finally {
+    await sql.end();
+  }
+}

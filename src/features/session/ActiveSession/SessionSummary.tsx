@@ -9,6 +9,7 @@ import { useLocale } from '@/i18n/client';
 import { cn } from '@/lib/utils';
 import type { LocalSession, LocalSetLog } from '@/services/local-db';
 import { formatElapsed, summaryOf, type SummaryResult } from '../utils';
+import { NewRecords } from './NewRecords';
 
 function useResultText() {
   const { t } = useTranslation();
@@ -96,6 +97,8 @@ export function SessionSummary({
           </div>
         ))}
       </dl>
+
+      <NewRecords session={session} />
 
       <ul className="-mt-2 tabular-nums">
         {summary.rows.map((row) => (

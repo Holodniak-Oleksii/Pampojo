@@ -76,6 +76,7 @@ export function localSession(override: Partial<LocalSession> = {}): LocalSession
     restSetId: null,
     currentEntryId: exercises[0]!.id,
     drafts: {},
+    newRecords: null,
     ...override,
   };
 }

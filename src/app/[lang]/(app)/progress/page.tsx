@@ -1,7 +1,7 @@
-import { TrendingUp } from 'lucide-react';
 import type { Metadata } from 'next';
-import { EmptyState } from '@/components/EmptyState';
+import { Suspense } from 'react';
 import { PageHeader } from '@/components/PageHeader';
+import { ProgressScreen } from '@/features/progress';
 import { getI18n } from '@/i18n/server';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,13 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ProgressPage() {
   const { t } = await getI18n();
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3.5 lg:gap-6">
       <PageHeader sectionTitle title={t('Progress')} />
-      <EmptyState
-        icon={TrendingUp}
-        title={t('No progress yet')}
-        description={t('Finish a workout to see your strength charts.')}
-      />
+      <Suspense>
+        <ProgressScreen />
+      </Suspense>
     </div>
   );
 }

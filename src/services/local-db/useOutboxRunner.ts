@@ -1,18 +1,26 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { openLocalDb } from './db';
+import { progressKeys } from '@/api/progress';
+import { SESSION_STATUS } from '@/constants/session';
+import { openLocalDb, type OutboxEntry } from './db';
 import { flushOutbox, onOutboxEnqueued } from './outbox';
 
 const BACKOFF_START_MS = 2000;
 const BACKOFF_MAX_MS = 60_000;
 const BUSY_RETRY_MS = 1000;
 
+const finishesSession = (entry: OutboxEntry) =>
+  entry.method === 'PATCH' &&
+  (entry.body as { status?: unknown } | undefined)?.status === SESSION_STATUS.COMPLETED;
+
 /** Keeps the outbox draining while a signed-in screen is open (iOS has no Background Sync). */
 export function useOutboxRunner(userId: string): void {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const db = openLocalDb(userId);
@@ -25,6 +33,11 @@ export function useOutboxRunner(userId: string): void {
       clearTimeout(timer);
       const result = await flushOutbox(db, {
         onDropped: () => toast(t("Couldn't save a change to the server.")),
+        // Progress is computed on the server, so it changes only once the finish reaches it.
+        onSent: (entry) => {
+          if (finishesSession(entry))
+            void queryClient.invalidateQueries({ queryKey: progressKeys.all });
+        },
       });
       if (stopped) return;
       if (result === 'failed') {
@@ -57,5 +70,5 @@ export function useOutboxRunner(userId: string): void {
       window.removeEventListener('online', onOnline);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [userId, t]);
+  }, [userId, t, queryClient]);
 }

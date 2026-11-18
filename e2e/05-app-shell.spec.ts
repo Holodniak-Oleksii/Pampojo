@@ -169,7 +169,14 @@ test.describe('app shell in English', () => {
     await signUp(page);
     await page.goto('/progress');
 
-    const start = page.getByRole('button', { name: 'Start workout' }).locator('visible=true');
+    // The progress empty state (spec 13) has its own Start button, so target the shell button.
+    const start =
+      testInfo.project.name === 'mobile'
+        ? page
+            .getByRole('navigation', { name: 'Main navigation' })
+            .last()
+            .getByRole('button', { name: 'Start workout' })
+        : page.getByRole('complementary').getByRole('button', { name: 'Start workout' });
     await start.click();
     const dialog = page.getByRole('dialog', { name: 'Choose workout' });
     await expect(dialog).toBeVisible();
@@ -226,8 +233,11 @@ test.describe('app shell in English', () => {
     await page.goto('/calendar');
     await expect(page.getByRole('heading', { level: 1, name: 'Calendar' })).toBeAttached();
     await expect(page.getByText('Nothing planned on this day.')).toBeVisible();
+    // Spec 13 replaced the progress placeholder with the empty state of the real screen.
     await page.goto('/progress');
-    await expect(page.getByText('Finish a workout to see your strength charts.')).toBeVisible();
+    await expect(
+      page.getByText('Finish your first workout to see your strength charts here.'),
+    ).toBeVisible();
 
     await page.goto('/library');
     await page.waitForURL('**/library/workouts');

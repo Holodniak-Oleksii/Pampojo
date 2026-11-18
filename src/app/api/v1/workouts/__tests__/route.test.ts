@@ -4,9 +4,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { exercise, user, workout, workoutExercise } from '@/server/db/schema';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { DELETE, GET, PUT } from '../[id]/route';
 import { GET as LIST } from '../route';
+
+const PREFIX = testPrefix('workouts-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
@@ -41,7 +43,7 @@ const body = (exerciseId = bench, override: Record<string, unknown> = {}) => ({
 async function createUser() {
   const [row] = await getDb()
     .insert(user)
-    .values({ name: 'test', email: `test-workouts-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   if (!row) throw new Error('No user');
   return row.id;
@@ -82,7 +84,7 @@ beforeEach(() => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-workouts-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('/api/v1/workouts', () => {

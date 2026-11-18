@@ -29,6 +29,7 @@ export type FlushResult = 'done' | 'failed' | 'busy';
 
 export interface FlushOptions {
   onDropped?: (entry: OutboxEntry, error: ApiError) => void;
+  onSent?: (entry: OutboxEntry) => void;
 }
 
 /** 4xx means the server will never accept the entry; 401 waits for the user to sign in again. */
@@ -38,13 +39,14 @@ function isPermanent(error: unknown): error is ApiError {
   );
 }
 
-async function drain(db: PampojoDb, { onDropped }: FlushOptions): Promise<FlushResult> {
+async function drain(db: PampojoDb, { onDropped, onSent }: FlushOptions): Promise<FlushResult> {
   for (;;) {
     const entry = await db.outbox.orderBy('seq').first();
     if (!entry || entry.seq === undefined) return 'done';
     try {
       await http(entry.path, { method: entry.method, body: entry.body });
       await db.outbox.delete(entry.seq);
+      onSent?.(entry);
     } catch (error) {
       if (isPermanent(error)) {
         await db.outbox.delete(entry.seq);

@@ -4,8 +4,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { getSession } from '@/server/auth/session';
 import { getDb } from '@/server/db/client';
 import { exercise, setLog, user, workout, workoutSession } from '@/server/db/schema';
-import { deleteUsersByEmail } from '@/test/db';
+import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { DELETE, PATCH, PUT } from '../[id]/route';
+
+const PREFIX = testPrefix('sets-route');
 
 vi.mock('@/server/auth/session', () => ({ getSession: vi.fn() }));
 vi.setConfig({ testTimeout: 30_000 });
@@ -33,7 +35,7 @@ async function createSession() {
   const db = getDb();
   const [owner] = await db
     .insert(user)
-    .values({ name: 'test', email: `test-sets-route-${randomUUID()}@example.com` })
+    .values({ name: 'test', email: `${PREFIX}-${randomUUID()}@example.com` })
     .returning();
   const workoutId = randomUUID();
   await db.insert(workout).values({ id: workoutId, ownerId: owner!.id, name: 'Push Day' });
@@ -94,7 +96,7 @@ beforeEach(() => {
 });
 
 afterAll(async () => {
-  await deleteUsersByEmail('test-sets-route-%@example.com');
+  await deleteUsersByEmail(`${PREFIX}-%@example.com`);
 });
 
 describe('/api/v1/sets/{id}', () => {

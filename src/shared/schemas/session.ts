@@ -9,6 +9,7 @@ import {
 import { HISTORY_PAGE_MAX } from '@/constants/plan';
 import { TARGET_RANGE, WORKOUT_NAME_MAX, WORKOUT_NOTE_MAX } from '@/constants/workout';
 import { lateralitySchema, trackingTypeSchema } from './exercise';
+import { bestsSchema } from './progress';
 import { calendarDateSchema, enumOf } from './utils';
 
 export const sessionIdParamsSchema = z.object({ id: z.uuid() });
@@ -256,6 +257,10 @@ export const lastPerformanceSchema = z.object({
 
 export type LastPerformance = z.infer<typeof lastPerformanceSchema>;
 
-export const lastPerformanceResponseSchema = z.object({ item: lastPerformanceSchema.nullable() });
+export const lastPerformanceResponseSchema = z.object({
+  item: lastPerformanceSchema.nullable(),
+  /** All-time bests of the exercise (spec 13); null exactly when `item` is null. */
+  bests: bestsSchema.nullable().default(null),
+});
 
 export type LastPerformanceResponse = z.infer<typeof lastPerformanceResponseSchema>;

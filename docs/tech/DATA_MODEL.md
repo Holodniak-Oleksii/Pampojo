@@ -173,7 +173,8 @@ Occurrences are computed, not stored (`src/shared/plan/occurrences.ts`). A rule 
 
 ## Derived values
 
-- **Estimated 1RM:** Epley `weight × (1 + reps / 30)` for sets with 1–12 reps.
+- **Estimated 1RM:** Epley `weight × (1 + reps / 30)` for sets with 1–12 reps and a weight above 0, to 0.01 kg.
+- **Records (spec 13):** all-time bests per exercise over completed sessions and live sets. A later session takes a record only with a strictly better value, so the earlier session keeps a tie. "Most reps" compares reps, then the weight. The first session of an exercise sets a baseline and gives no new records in the summary.
 - **Volume:** `Σ weight × reps` per exercise, session, week.
 - **BMI:** `weightKg / (heightCm / 100)²`, WHO adult categories.
 - **Adherence:** (done on time + done late) ÷ due occurrences, as a whole percent. Due occurrences are the ones before today plus today's done ones. Extra sessions do not count (spec 12).
