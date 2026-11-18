@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Diamond } from '@/components/Diamond';
 import { PlayDiamond } from '@/components/PlayDiamond';
@@ -7,21 +8,70 @@ import { Button } from '@/components/ui/button';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import type { PlannedWorkout } from '@/features/plan';
 import { sessionHref } from '@/features/session/hooks/useStartSession';
+import { thumbnailSlots, tilesThatFit } from './thumbnails';
 
-export function Thumbnails({ urls, name }: { urls: readonly string[]; name: string }) {
+/** As many 52px tiles as fit in one row, with "+N" for the exercises left over. */
+export function Thumbnails({
+  urls,
+  name,
+  count,
+}: {
+  urls: readonly string[];
+  name: string;
+  count: number;
+}) {
+  const { t } = useTranslation();
+  const ref = useRef<HTMLSpanElement>(null);
+  const [fit, setFit] = useState(4);
+
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const measure = () => setFit(tilesThatFit(node.clientWidth));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   if (urls.length === 0) return null;
+  const { shown, more, covers } = thumbnailSlots(urls.length, count, fit);
+  const extra = more > 0;
+  const covered = covers ? urls[shown] : undefined;
+
   return (
-    <span aria-hidden="true" className="flex gap-1.5">
-      {urls.slice(0, 4).map((url) => (
-        <ExerciseImage
-          key={url}
-          src={url}
-          name={name}
-          alt=""
-          compact
-          className="size-[52px] rounded-sm"
-        />
-      ))}
+    <span ref={ref} className="flex gap-1.5 overflow-hidden" data-testid="thumbnails">
+      <span aria-hidden="true" className="flex gap-1.5">
+        {urls.slice(0, shown).map((url) => (
+          <ExerciseImage
+            key={url}
+            src={url}
+            name={name}
+            alt=""
+            compact
+            className="size-[52px] shrink-0 rounded-sm"
+          />
+        ))}
+        {extra ? (
+          <span className="relative size-[52px] shrink-0 overflow-hidden rounded-sm bg-muted">
+            {covered ? (
+              <ExerciseImage
+                src={covered}
+                name={name}
+                alt=""
+                compact
+                className="size-[52px] rounded-sm"
+              />
+            ) : null}
+            <span className="absolute inset-0 flex items-center justify-center bg-[rgba(30,28,26,0.62)] text-base font-extrabold text-primary-foreground">
+              {t('+{{value}}', { value: more })}
+            </span>
+          </span>
+        ) : null}
+      </span>
+      {extra ? (
+        <span className="sr-only">{t('{{count}} more exercises', { count: more })}</span>
+      ) : null}
     </span>
   );
 }
@@ -65,7 +115,7 @@ export function PlannedCard({ item, starting, onStart }: PlannedCardProps) {
         <h2 className="text-[28px] leading-tight font-extrabold">{name}</h2>
         <p className="mt-0.5 text-muted-foreground">{t('{{count}} exercises', { count })}</p>
       </div>
-      <Thumbnails urls={item.workout?.thumbnailUrls ?? []} name={name} />
+      <Thumbnails urls={item.workout?.thumbnailUrls ?? []} name={name} count={count} />
       <Button className="w-full" disabled={starting} onClick={onStart}>
         <PlayDiamond />
         {t('Start')}

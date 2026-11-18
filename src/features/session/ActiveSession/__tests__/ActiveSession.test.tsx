@@ -136,6 +136,29 @@ describe('ActiveSession', () => {
     expect(await outboxMethods()).toEqual(['PATCH sessions', 'PATCH sessions']);
   });
 
+  it('links the current exercise to its details page (spec 14 AC14)', async () => {
+    await seedLocal(localSession());
+    const screen = await render(<ActiveSession sessionId={SESSION} />);
+    await expect
+      .element(screen.getByRole('link', { name: 'How to do Bench Press' }))
+      .toHaveAttribute('href', `/library/exercises/${BENCH_ID}`);
+  });
+
+  it('makes a list row current without leaving the session (spec 14 AC15)', async () => {
+    await seedLocal(localSession());
+    const screen = await render(<ActiveSession sessionId={SESSION} />);
+    await screen.getByRole('button', { name: 'All exercises, exercise 1 of 2' }).click();
+    await screen
+      .getByRole('button', { name: /^Plank/ })
+      .first()
+      .click();
+    await expect.element(screen.getByRole('heading', { name: 'Plank', level: 1 })).toBeVisible();
+    await expect
+      .element(screen.getByRole('link', { name: 'How to do Plank' }))
+      .toHaveAttribute('href', expect.stringContaining('/library/exercises/'));
+    expect(push).not.toHaveBeenCalled();
+  });
+
   it('removes only exercises without logged sets (AC12)', async () => {
     await seedLocal(localSession(), [localSet()]);
     const screen = await render(<ActiveSession sessionId={SESSION} />);

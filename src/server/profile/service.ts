@@ -20,7 +20,6 @@ import {
   findProfileRow,
   hasGoogleAccount,
   insertProfileIfAbsent,
-  insertWeight,
   lockProfileRow,
   profileExists,
   setUserName,
@@ -101,7 +100,7 @@ export async function completeOnboarding(
       onboardingCompletedAt: new Date(),
     });
     if (!inserted) return;
-    await insertWeight(tx, userId, weightKg, todayIn(input.timeZone));
+    await upsertDayWeight(tx, userId, weightKg, todayIn(input.timeZone));
     await setUserName(tx, userId, input.displayName);
   });
   return getProfile(userId);

@@ -76,4 +76,18 @@ describe('ExercisePicker', () => {
     await expect.element(screen.getByRole('button', { name: /^Push-up/ })).toBeDisabled();
     await expect.element(screen.getByText('Up to 30 exercises in a workout.')).toBeVisible();
   });
+
+  it('keeps the sheet in the visible viewport above the keyboard (spec 14 AC18)', async () => {
+    const viewport = Object.assign(new EventTarget(), { height: 534, offsetTop: 0 });
+    vi.stubGlobal('visualViewport', viewport);
+    const screen = await render(
+      <ExercisePicker open onOpenChange={vi.fn()} room={30} onAdd={vi.fn()} />,
+    );
+    const sheet = screen.getByRole('dialog', { name: 'Add exercises' });
+    await expect.element(sheet).toHaveStyle({ height: '534px', top: '0px' });
+    viewport.height = 420;
+    viewport.offsetTop = 40;
+    viewport.dispatchEvent(new Event('resize'));
+    await expect.element(sheet).toHaveStyle({ height: '420px', top: '40px' });
+  });
 });

@@ -1,0 +1,1 @@
+export { ChangeText } from './ChangeText';

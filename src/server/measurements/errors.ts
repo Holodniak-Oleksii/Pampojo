@@ -1,0 +1,3 @@
+export const MEASUREMENT_ERROR = {
+  NOT_FOUND: 'MEASUREMENT_NOT_FOUND',
+} as const;

@@ -1,5 +1,7 @@
 'use client';
 
+import { ChevronRight, Info } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import { useLocale } from '@/i18n/client';
@@ -47,27 +49,40 @@ export function ExerciseHeader({
   const first = last?.sets[0];
   const lastText = first ? setText(entry, first) : '';
   return (
-    <div className="flex items-start gap-3.5 lg:items-center lg:gap-[18px]">
-      <ExerciseImage
-        src={entry.exercise.thumbnailUrl}
-        name={entry.exercise.name}
-        alt=""
-        compact
-        className="size-16 shrink-0 rounded-sm lg:size-20"
-      />
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h1 className="text-2xl leading-tight font-extrabold lg:text-4xl">{entry.exercise.name}</h1>
-        {entry.exercise.laterality === 'unilateral' ? (
-          <span className="text-sm text-muted-foreground">{t('per side')}</span>
-        ) : null}
-        {lastText ? (
-          <span className="text-[15px] font-semibold text-muted-foreground tabular-nums">
-            {t('Last time: {{value}}', { value: lastText })}
+    <div className="flex flex-col gap-1">
+      <Link
+        href={`/library/exercises/${entry.exerciseId}`}
+        aria-label={t('How to do {{name}}', { name: entry.exercise.name })}
+        className="-mx-1.5 flex items-center gap-3.5 rounded-lg bg-card p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring lg:gap-[18px]"
+      >
+        <ExerciseImage
+          src={entry.exercise.thumbnailUrl}
+          name={entry.exercise.name}
+          alt=""
+          compact
+          className="size-16 shrink-0 rounded-sm lg:size-20"
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h1 className="text-[22px] leading-tight font-extrabold lg:text-4xl">
+            {entry.exercise.name}
+          </h1>
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Info aria-hidden="true" className="size-[15px]" />
+            {t('How to do it')}
           </span>
-        ) : entry.notes ? (
-          <span className="text-sm text-muted-foreground">{entry.notes}</span>
-        ) : null}
-      </div>
+        </div>
+        <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-planned" />
+      </Link>
+      {entry.exercise.laterality === 'unilateral' ? (
+        <span className="text-sm text-muted-foreground">{t('per side')}</span>
+      ) : null}
+      {lastText ? (
+        <span className="text-[15px] font-semibold text-muted-foreground tabular-nums">
+          {t('Last time: {{value}}', { value: lastText })}
+        </span>
+      ) : entry.notes ? (
+        <span className="text-sm text-muted-foreground">{entry.notes}</span>
+      ) : null}
     </div>
   );
 }

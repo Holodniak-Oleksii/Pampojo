@@ -18,6 +18,9 @@
   --color-avatar-8: var(--avatar-8);
   --color-success: var(--success);
   --color-planned: var(--planned);
+  --color-figure: var(--figure);
+  --color-tape: var(--tape);
+  --color-tape-back: var(--tape-back);
   --color-border-strong: var(--border-strong);
   --color-band-surface: var(--band-surface);
   --color-muscle-chest: var(--muscle-chest);
@@ -99,6 +102,9 @@
   --accent-foreground: #24221f;
   --accent-soft: #fbd9c3;
   --planned: #aea79f;
+  --figure: #d9d3cb;
+  --tape: #6e6862;
+  --tape-back: #aea79f;
   --success: #5baa6a;
   --destructive: #e5534b;
   /* #24221f on the destructive red is 4.28:1; the slightly darker charcoal passes AA. */
@@ -174,6 +180,9 @@
   --muted-foreground: #b3aca3;
   --accent-foreground: #1e1c1a;
   --planned: #8c857d;
+  --figure: #45403c;
+  --tape: #b3aca3;
+  --tape-back: #6e6862;
   --success: #6fbf7d;
   --destructive-foreground: #1e1c1a;
   --destructive-text: #f28a84;

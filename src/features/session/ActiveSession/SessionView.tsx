@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { MAIN_METRIC, SESSION_EXERCISES_MAX, type SetValueField } from '@/constants/session';
 import { useCurrentUserId } from '@/features/auth/CurrentUser';
+import { exerciseDetailPaths, warmPages } from '@/features/pwa';
 import { ExercisePicker } from '@/features/workouts/ExercisePicker';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import {
@@ -337,6 +338,7 @@ export function SessionView({
             db,
             added.map((item) => item.exerciseId),
           );
+          void warmPages(exerciseDetailPaths(added.map((item) => item.exerciseId)));
           setPickerOpen(false);
         }}
       />

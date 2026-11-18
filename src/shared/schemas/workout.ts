@@ -112,7 +112,7 @@ export const workoutListItemSchema = z.object({
   exerciseCount: z.number().int(),
   exerciseIds: z.array(z.uuid()),
   primaryMuscles: z.array(muscleGroupSchema).max(3),
-  thumbnailUrls: z.array(z.string()).max(4),
+  thumbnailUrls: z.array(z.string()).max(12),
 });
 
 export type WorkoutListItem = z.infer<typeof workoutListItemSchema>;

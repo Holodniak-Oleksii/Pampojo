@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { EXERCISE_SEARCH_MAX } from '@/constants/exercise';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { cn } from '@/lib/utils';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import { FilterSheet } from '@/features/exercises/FilterSheet';
@@ -34,9 +35,16 @@ export function ExercisePicker({
   className,
 }: ExercisePickerProps) {
   const { t } = useTranslation();
+  const viewport = useVisualViewport();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
+        // The keyboard shrinks only the visual viewport, so the sheet follows the visible part.
+        style={
+          viewport
+            ? { height: viewport.height, top: viewport.offsetTop, bottom: 'auto' }
+            : undefined
+        }
         side="bottom"
         closeLabel={t('Close')}
         aria-describedby={undefined}

@@ -1,2 +1,2 @@
 export { ProgressScreen } from './ProgressScreen';
-export { formatRecordValue, recordName } from './utils';
+export { formatRecordValue, rangeLabel, rangeSpan, recordName } from './utils';
