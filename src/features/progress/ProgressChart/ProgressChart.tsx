@@ -22,7 +22,7 @@ import {
 const PLOT = 'h-[196px]';
 
 // Recharts is large, so only this screen loads it.
-const LineChartView = dynamic(() => import('./LineChartView'), {
+const LineChartView = dynamic(() => import('@/components/TrendChart/TrendChart'), {
   ssr: false,
   loading: () => <Skeleton className={`${PLOT} w-full rounded-sm`} />,
 });

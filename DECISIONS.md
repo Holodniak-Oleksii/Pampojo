@@ -959,6 +959,98 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** Keep the current rule. The first value of a record type counts as a new record when the exercise already has history. Only the first session of an exercise is a baseline.
 **Why:** Lead's choice.
 
+## 2026-11-18 — Measurement rules (spec 14)
+
+**Context:** `/grilling 14`.
+**Decision:**
+- The list shows all 9 types, with "—" for a type with no measurement. One measurement per type per day: a second save replaces the value.
+- Limits: weight 30–300 kg / 67–661 lb, girths 10–250 cm / 4–98 in, body fat 2–75 %, step 0.1. No future dates.
+- Any measurement can be deleted, also the last weight. The change arrow and sign use a neutral colour.
+- The add sheet has one date and one field per type, and saves only the filled fields.
+- The weight mini chart shows 90 days, hidden with fewer than 2 points. The history chart uses the spec 13 range control, default 3M.
+**Why:** Lead's choices.
+
+## 2026-11-18 — BMI categories (spec 14)
+
+**Context:** `/grilling 14`; onboarding allows users from 16.
+**Decision:** 4 WHO adult categories for every age, on a 15–40 scale. The "rough indicator for adults" note covers users under 18.
+**Why:** Lead's choice.
+
+## 2026-11-18 — Measurement API and unique day (spec 14)
+
+**Context:** `/grilling 14`.
+**Decision:**
+- `GET /api/v1/measurements` returns all of the user's measurements. The client computes the latest values, the changes, the BMI and the charts.
+- `PUT /{id}` with a client id. If the type already has a measurement on that day, the server updates that row and returns it.
+- A partial unique index on `(userId, type, measuredOn) WHERE deletedAt IS NULL`. The migration first soft deletes older duplicates.
+- Offline before spec 16: cached views only. Add, edit and delete are disabled with "Потрібен інтернет".
+**Why:** Lead's choices. The data is small, and one list suits spec 16 sync.
+
+## 2026-11-18 — Body diagram for measurements (spec 14)
+
+**Context:** `/grilling 14`; the lead asked to show the measurements on a body figure by sex.
+**Decision:** A front SVG silhouette, male or female from `profile.sex`, shows the girths. `/design 14` replaced the numbered lines and the list with value labels on the figure (see "Measurements design (spec 14)").
+**Why:** Lead's choice.
+
+## 2026-11-18 — Exercise details from a session (spec 14)
+
+**Context:** `/grilling 14`; the lead added this to spec 14.
+**Decision:**
+- A tap on the current exercise's thumbnail or name in the session opens `/library/exercises/[id]`. A tap on a list sheet row still makes it current.
+- The details page does not change. The session bar is the way back.
+- The client prefetches the details of the session exercises at start and on add, for offline use.
+**Why:** Lead's choices.
+
+## 2026-11-18 — Mobile fixes in spec 14
+
+**Context:** The lead reported two bugs and asked to fix them in spec 14.
+**Decision:**
+- The Today planned card shows as many thumbnails as fit in one row. The last tile shows "+N" for the rest.
+- On mobile, the exercise picker sheet has a fixed full-viewport height. With the keyboard open, the search field and the results stay above the keyboard.
+**Why:** Lead's request.
+
+## 2026-11-18 — Measurements design (spec 14)
+
+**Context:** `/design 14` on the canvas `6m4uBWRvjVfxt8DptQ8Pzc`.
+**Decision:**
+- The figures come from source images that the lead supplied. The agent traced them into `docs/wireframes/14-body-male.svg` and `14-body-female.svg`.
+- Each girth is a ring on the figure: a solid front half, a dashed back half, and a pale colour. A chip with the short name and the latest value connects to it with a leader line. "Права сторона" and "Ліва сторона" head the columns.
+- Chips show only the current value. The change shows in the weight and body fat rows and in the history list.
+- The "Weight" settings row goes away, because the BMI card and the weight row show it.
+- The session exercise header becomes one link with "Як виконувати". Today shows "+N" on the last thumbnail that fits.
+- The lead approved the new copy in the spec's Copy section.
+**Why:** Lead's choices on the mockups.
+
+## 2026-11-18 — More measurement types and precision (spec 14)
+
+**Context:** `/design 14`; the lead asked for neck, shoulders, forearms and calves, and for two decimals.
+**Decision:**
+- `MEASUREMENT_TYPE` gets `neck`, `shoulders`, `forearm_left`, `forearm_right`, `calf_left` and `calf_right`. A migration updates the check constraint.
+- Girths and body fat use a step of 0.01. Weight keeps 0.1, as in spec 04.
+- Forearms and calves have a left and a right type, the same as biceps and thighs. The lead confirmed this in `/scratch 14`.
+**Why:** Lead's request. `numeric(7,2)` already holds two decimals.
+
+## 2026-11-18 — Measurement plan choices (spec 14)
+
+**Context:** `/scratch 14`.
+**Decision:**
+- `DELETE /api/v1/measurements/{id}` follows `api-handlers.md`: an unknown or foreign id is 404, and a repeat on an own deleted row is 204.
+- The workout list allows up to 12 `thumbnailUrls`. The library list and other screens keep the first 4.
+- Forearms and calves stay as left and right types.
+**Why:** Lead's choices.
+
+## 2026-11-18 — Measurement review fixes (spec 14)
+
+**Context:** `/review 14`; the lead asked to fix every finding and the theme switch.
+**Decision:**
+- On desktop the Profile settings rows are one column in the left column.
+- The picker follows `visualViewport` only; no `interactive-widget` in the viewport meta.
+- The measurement date shows in the app language over an invisible native date input.
+- The edit sheet stacks the date and the value.
+- The theme switch keeps each label on one line.
+- The source images and the traced SVGs live in `docs/wireframes/` with the `14-` prefix.
+**Why:** Lead's request after the review.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

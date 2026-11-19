@@ -1,6 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { STORAGE_PERSIST_KEY } from '../constants';
 import { requestPersistentStorage } from '../persist';
+
+// Browser test files share one origin, so another file can leave the flag behind.
+beforeEach(() => {
+  localStorage.removeItem(STORAGE_PERSIST_KEY);
+});
 
 afterEach(() => {
   localStorage.removeItem(STORAGE_PERSIST_KEY);

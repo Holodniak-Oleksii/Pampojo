@@ -43,7 +43,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `GET /api/v1/calendar?from=&to=` | Occurrences with statuses and the completed sessions of each date, see below | 12 |
 | `GET /api/v1/progress/exercises` | Trained exercises and this month's numbers, see below | 13 |
 | `GET /api/v1/progress/exercises/{id}?range=` | Chart points and all-time records, see below | 13 |
-| `GET/PUT/DELETE /api/v1/measurements[/{id}]` | Body measurements | 14 |
+| `GET/PUT/DELETE /api/v1/measurements[/{id}]` | Body measurements. `GET` returns `{ items }` with every live row. `PUT /{id}` takes `{ type, value, measuredOn }` and answers `{ item }`: 201 on a new row, 200 when it updates the row of that day. `DELETE /{id}` answers 204; an unknown or foreign id is 404 | 14 |
 | `POST /api/v1/sync/push`, `GET /api/v1/sync/pull?since=` | Offline sync | 16 |
 | `GET /api/v1/exercises/{id}/substitutes` | Deterministic suggestions | 18 |
 | `POST /api/v1/workouts/{id}/share-links`, `DELETE …/{linkId}` | Share links | 19 |

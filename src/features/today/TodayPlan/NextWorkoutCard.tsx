@@ -29,7 +29,11 @@ export function NextWorkoutCard({ next }: { next: NonNullable<TodayPlan['next']>
             {nextDateLabel(t, locale, next.date, isoWeekday(next.date))}
           </p>
         </div>
-        <Thumbnails urls={next.workout?.thumbnailUrls ?? []} name={name} />
+        <Thumbnails
+          urls={next.workout?.thumbnailUrls ?? []}
+          name={name}
+          count={next.workout?.exerciseCount ?? next.rule.workout.exerciseCount}
+        />
       </div>
       <p className="text-muted-foreground">
         {before}

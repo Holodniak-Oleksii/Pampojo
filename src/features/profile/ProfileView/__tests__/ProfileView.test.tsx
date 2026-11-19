@@ -37,6 +37,25 @@ vi.mock('@/api/gym', async () => {
 
 vi.mock('@/api/auth', () => ({ authClient: { signOut: vi.fn() } }));
 
+vi.mock('@/api/measurements', async () => {
+  const { useQuery } = await import('@tanstack/react-query');
+  const fetchMeasurements = vi.fn(async () => [
+    {
+      id: '00000000-0000-4000-8000-000000000001',
+      type: 'weight',
+      value: 79.8,
+      measuredOn: '2026-11-09',
+      updatedAt: '2026-11-09T10:00:00Z',
+    },
+  ]);
+  return {
+    fetchMeasurements,
+    useMeasurementsQuery: () =>
+      useQuery({ queryKey: ['measurements', 'list'], queryFn: fetchMeasurements }),
+    useSaveMeasurementsMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  };
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -75,7 +94,7 @@ describe('ProfileView', () => {
     await expect.element(screen.getByRole('img', { name: 'Fox' })).toBeVisible();
     await expect.element(screen.getByText('36 years')).toBeVisible();
     await expect.element(screen.getByText('180 cm')).toBeVisible();
-    await expect.element(screen.getByText('79.8 kg')).toBeVisible();
+    await expect.element(screen.getByText('Weight 79.8 kg, height 180 cm')).toBeVisible();
     await expect.element(screen.getByRole('button', { name: 'Log out' })).toBeVisible();
   });
 
@@ -97,7 +116,7 @@ describe('ProfileView', () => {
     );
 
     await expect.element(screen.getByText('5′11″')).toBeVisible();
-    await expect.element(screen.getByText('175.9 lb')).toBeVisible();
+    await expect.element(screen.getByText('Weight 175.9 lb, height 5′11″')).toBeVisible();
     await expect.element(screen.getByText('1 year')).toBeVisible();
   });
 

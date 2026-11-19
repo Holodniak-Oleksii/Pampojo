@@ -37,6 +37,25 @@ export function parseInteger(text: string): number | null {
   return Number(trimmed);
 }
 
+export function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+export function inFromCm(cm: number): number {
+  return round2(cm / CM_PER_INCH);
+}
+
+export function cmFromIn(inches: number): number {
+  return round2(inches * CM_PER_INCH);
+}
+
+/** A non-negative number with at most two decimals; comma or dot as separator. */
+export function parseDecimal2(text: string): number | null {
+  const trimmed = text.trim();
+  if (!/^\d{1,4}([.,]\d{1,2})?$/.test(trimmed)) return null;
+  return Number(trimmed.replace(',', '.'));
+}
+
 export function formatFeetInches({ feet, inches }: { feet: number; inches: number }): string {
   return `${feet}′${inches}″`;
 }

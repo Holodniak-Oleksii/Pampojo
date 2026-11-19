@@ -1,9 +1,11 @@
 import 'server-only';
+import { randomUUID } from 'node:crypto';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { MEASUREMENT_TYPE } from '@/constants/measurement';
 import type { Db } from '@/server/db/client';
 import { account, bodyMeasurement, profile, user } from '@/server/db/schema';
 import { touch } from '@/server/db/utils';
+import { upsertDay } from '@/server/measurements/queries';
 
 export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 type Executor = Db | Tx;
@@ -78,35 +80,17 @@ export async function updateProfileFields(tx: Tx, userId: string, fields: Profil
     .where(eq(profile.userId, userId));
 }
 
-export async function insertWeight(tx: Tx, userId: string, kg: number, measuredOn: string) {
-  await tx
-    .insert(bodyMeasurement)
-    .values({ userId, type: MEASUREMENT_TYPE.WEIGHT, value: kg, measuredOn });
-}
-
-/** Updates the user's weight for that day if one exists, otherwise adds one. Call under the profile lock. */
+/**
+ * Writes the user's weight for that day: updates the live row of that day if one exists, else adds
+ * one. It shares the measurements upsert, so it cannot collide with a parallel measurement save.
+ */
 export async function upsertDayWeight(tx: Tx, userId: string, kg: number, measuredOn: string) {
-  const [existing] = await tx
-    .select({ id: bodyMeasurement.id })
-    .from(bodyMeasurement)
-    .where(
-      and(
-        eq(bodyMeasurement.userId, userId),
-        eq(bodyMeasurement.type, MEASUREMENT_TYPE.WEIGHT),
-        eq(bodyMeasurement.measuredOn, measuredOn),
-        isNull(bodyMeasurement.deletedAt),
-      ),
-    )
-    .orderBy(desc(bodyMeasurement.createdAt))
-    .limit(1);
-  if (existing) {
-    await tx
-      .update(bodyMeasurement)
-      .set({ value: kg, ...touch() })
-      .where(and(eq(bodyMeasurement.id, existing.id), eq(bodyMeasurement.userId, userId)));
-    return;
-  }
-  await insertWeight(tx, userId, kg, measuredOn);
+  await upsertDay(tx, userId, {
+    id: randomUUID(),
+    type: MEASUREMENT_TYPE.WEIGHT,
+    value: kg,
+    measuredOn,
+  });
 }
 
 export async function setUserName(tx: Tx, userId: string, name: string) {

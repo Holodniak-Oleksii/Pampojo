@@ -1,5 +1,14 @@
 import { sql } from 'drizzle-orm';
-import { check, date, index, numeric, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  check,
+  date,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { MEASUREMENT_TYPE } from '@/constants/measurement';
 import { user } from './auth';
 import { inList } from './utils';
@@ -19,7 +28,10 @@ export const bodyMeasurement = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => [
-    index('body_measurement_user_type_date_idx').on(table.userId, table.type, table.measuredOn),
+    // One live measurement per user, type and day; soft-deleted rows keep their history.
+    uniqueIndex('body_measurement_user_type_day_uq')
+      .on(table.userId, table.type, table.measuredOn)
+      .where(sql`${table.deletedAt} is null`),
     check('body_measurement_type', inList(table.type, Object.values(MEASUREMENT_TYPE))),
     check('body_measurement_value_positive', sql`${table.value} > 0`),
   ],

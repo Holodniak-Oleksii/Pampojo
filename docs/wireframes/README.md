@@ -5,6 +5,8 @@ Reference images set mood, structure and density. They are not pixel specs: toke
 | File | Screen | Spec |
 | --- | --- | --- |
 | `01-landing.png` | Landing, mobile and desktop | 02 |
+| `14-body-male-source.jpeg`, `14-body-female-source.jpeg` | Source silhouettes that the lead supplied for the body diagram | 14 |
+| `14-body-male.svg`, `14-body-female.svg` | The traced figures; `src/features/measurements/BodyDiagram/figures.tsx` copies their paths | 14 |
 
 Add images as `NN-screen.png` with the spec number they belong to, and add a row here.
 

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   cmFromFeetInches,
+  cmFromIn,
+  inFromCm,
+  parseDecimal2,
+  round2,
   feetInchesFromCm,
   formatFeetInches,
   kgFromLb,
@@ -61,5 +65,29 @@ describe('parseInteger', () => {
     expect(parseInteger('180')).toBe(180);
     expect(parseInteger('180.5')).toBeNull();
     expect(parseInteger('')).toBeNull();
+  });
+});
+
+describe('measurement conversions', () => {
+  it('converts inches to cm at 0.01', () => {
+    expect(cmFromIn(40)).toBe(101.6);
+    expect(cmFromIn(15.25)).toBe(38.74);
+  });
+
+  it('converts cm to inches at 0.01', () => {
+    expect(inFromCm(101.6)).toBe(40);
+    expect(inFromCm(38.75)).toBe(15.26);
+  });
+
+  it('rounds to two decimals', () => {
+    expect(round2(104.256)).toBe(104.26);
+  });
+
+  it('parses up to two decimals with a comma or a dot', () => {
+    expect(parseDecimal2('104,25')).toBe(104.25);
+    expect(parseDecimal2('86.5')).toBe(86.5);
+    expect(parseDecimal2('86')).toBe(86);
+    expect(parseDecimal2('86,255')).toBeNull();
+    expect(parseDecimal2('abc')).toBeNull();
   });
 });

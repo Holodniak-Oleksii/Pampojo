@@ -157,7 +157,11 @@ Occurrences are computed, not stored (`src/shared/plan/occurrences.ts`). A rule 
 
 ## body_measurement
 
-`id`, `userId`, `type` (`weight`, `chest`, `waist`, `hips`, `biceps_left`, `biceps_right`, `thigh_left`, `thigh_right`, `body_fat_pct`, …), `value numeric` (canonical unit), `measuredOn date`, `createdAt`, `updatedAt`, `deletedAt`. Index `(userId, type, measuredOn)`. Spec 04 writes only `weight`, at most one row per day from the profile edit.
+`id`, `userId`, `type`, `value numeric(7,2)` (canonical unit), `measuredOn date`, `createdAt`, `updatedAt`, `deletedAt`.
+
+- `type`: `weight`, `neck`, `shoulders`, `chest`, `waist`, `hips`, `biceps_left`, `biceps_right`, `forearm_left`, `forearm_right`, `thigh_left`, `thigh_right`, `calf_left`, `calf_right`, `body_fat_pct` (spec 14).
+- `value`: weight in kg at 0.1, girths in cm and body fat in % at 0.01.
+- A partial unique index on `(userId, type, measuredOn) WHERE deletedAt IS NULL`: one live measurement per user, type and day.
 
 ## share_link
 

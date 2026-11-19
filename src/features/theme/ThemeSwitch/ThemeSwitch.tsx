@@ -46,7 +46,7 @@ export function ThemeSwitch({ variant, className }: ThemeSwitchProps) {
       aria-label={t('Theme')}
       className={cn(
         'gap-1 rounded-md bg-background p-1',
-        variant === 'labels' ? 'grid grid-cols-3' : 'inline-flex',
+        variant === 'labels' ? 'flex' : 'inline-flex',
         className,
       )}
     >
@@ -68,7 +68,10 @@ export function ThemeSwitch({ variant, className }: ThemeSwitchProps) {
             onKeyDown={onKeyDown}
             className={cn(
               'flex items-center justify-center gap-1.5 rounded-sm text-sm leading-tight outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              variant === 'labels' ? 'min-h-11 px-2 py-1 font-semibold' : 'size-11',
+              // The longest label keeps one line; the other options share the rest of the row.
+              variant === 'labels'
+                ? 'min-h-11 flex-1 px-2 py-1 font-semibold whitespace-nowrap'
+                : 'size-11',
               selected
                 ? 'bg-card font-bold text-foreground ring-1 ring-border-strong'
                 : 'text-muted-foreground',

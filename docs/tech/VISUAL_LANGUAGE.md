@@ -42,6 +42,9 @@ Rejected, so do not reintroduce them:
 | `--planned` | `#AEA79F` | Outline of planned days and not-yet-done sets |
 | `--success` | `#5BAA6A` | Online dot |
 | `--destructive` | `#E5534B` | Missed, errors, delete |
+| `--figure` | `#D9D3CB` (dark `#45403C`) | Body silhouette on Profile (spec 14) |
+| `--tape` | `#6E6862` (dark `#B3ACA3`) | Front half of a measurement ring and its end diamond |
+| `--tape-back` | `#AEA79F` (dark `#6E6862`) | Dashed back half of a measurement ring |
 
 - `--accent-soft` (peach) is retired except as one of the avatar colours.
 - Text on `--accent` is `--foreground`.

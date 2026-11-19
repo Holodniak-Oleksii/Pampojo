@@ -48,7 +48,7 @@ interface DotProps {
   index?: number;
 }
 
-export default function LineChartView({
+export default function TrendChart({
   points,
   dense,
 }: {

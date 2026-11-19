@@ -22,7 +22,7 @@ import { todayIn } from '@/lib/dates';
 import { addDays } from '@/shared/plan/occurrences';
 import { computeCalendar, findMakeUpDate, type StatusSession } from '@/shared/plan/statuses';
 import type { CalendarResponse } from '@/shared/schemas/calendar';
-import { requestPersistentStorage } from '@/features/pwa';
+import { exerciseDetailPaths, requestPersistentStorage, warmPages } from '@/features/pwa';
 import {
   findCompletedSessionsBetween,
   findScheduledSessions,
@@ -202,6 +202,7 @@ export function useStartSession() {
           db,
           exercises.map((item) => item.exerciseId),
         );
+        void warmPages(exerciseDetailPaths(exercises.map((item) => item.exerciseId)));
         router.push(sessionHref(id));
         return true;
       } catch {

@@ -37,7 +37,7 @@ import {
 } from './queries';
 
 const LIST_MUSCLES = 3;
-const LIST_THUMBNAILS = 4;
+const LIST_THUMBNAILS = 12;
 
 function notFound(): DomainError {
   return new DomainError(WORKOUT_ERROR.NOT_FOUND, 'Workout not found');

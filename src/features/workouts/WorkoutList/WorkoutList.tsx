@@ -146,7 +146,7 @@ export function WorkoutList() {
               </span>
               {item.thumbnailUrls.length > 0 ? (
                 <span aria-hidden="true" className="flex gap-1.5 max-lg:hidden lg:order-4">
-                  {item.thumbnailUrls.map((url) => (
+                  {item.thumbnailUrls.slice(0, 4).map((url) => (
                     <ExerciseImage
                       key={url}
                       src={url}
