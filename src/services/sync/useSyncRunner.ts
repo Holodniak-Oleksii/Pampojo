@@ -13,7 +13,7 @@ import { needsDownload } from './download';
 import { syncNow } from './engine';
 import { readSyncMeta } from './meta';
 import { finishesSession } from './push';
-import { onSyncRequested } from './request-sync';
+import { notifySyncDone, onSyncRequested } from './request-sync';
 
 const BACKOFF_START_MS = 2000;
 const BACKOFF_MAX_MS = 60_000;
@@ -59,6 +59,7 @@ export function useSyncRunner(db: PampojoDb): void {
         delay = Math.min(delay * 2, BACKOFF_MAX_MS);
       } else if (result === 'done') {
         delay = BACKOFF_START_MS;
+        notifySyncDone();
       } else {
         // Another sync holds the lock and may have finished before this change committed.
         timer = setTimeout(() => void run(), BUSY_RETRY_MS);

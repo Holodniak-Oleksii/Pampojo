@@ -8,6 +8,7 @@ import type { SyncTotals } from '@/shared/schemas/sync';
 import { syncNow } from './engine';
 import { readSyncMeta, updateSyncMeta } from './meta';
 import { addReceived, ZERO_TOTALS } from './pull';
+import { notifySyncDone } from './request-sync';
 
 export const DOWNLOAD_STEPS = [
   { key: 'profile', tables: [] },
@@ -137,6 +138,7 @@ export function useInitialDownload(db: PampojoDb): DownloadView {
         download: { status: 'done' },
         downloadVersion: SYNC_DOWNLOAD_VERSION,
       });
+      notifySyncDone();
     } else if (result === 'failed') {
       setFailed(true);
     } else {

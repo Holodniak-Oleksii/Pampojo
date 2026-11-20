@@ -9,7 +9,7 @@ import { LocalDataGate } from '@/features/sync/LocalDataGate';
 const CurrentUserContext = createContext<string | null>(null);
 
 function PageWarmer() {
-  useWarmAppPages();
+  useWarmAppPages(useRequiredLocalDb());
   return null;
 }
 

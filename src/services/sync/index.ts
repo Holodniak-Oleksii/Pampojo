@@ -9,5 +9,6 @@ export {
 } from './download';
 export { readSyncMeta, updateSyncMeta } from './meta';
 export { pushOutbox } from './push';
-export { requestSync } from './request-sync';
+export { onSyncDone, requestSync } from './request-sync';
+export { useHasUnsynced, useOutboxCount, useSyncMeta } from './hooks';
 export { useSyncRunner } from './useSyncRunner';

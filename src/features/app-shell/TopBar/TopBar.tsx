@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { BrandMark } from '@/components/BrandMark';
 import { useTranslation } from 'react-i18next';
-import { StatusPill } from '@/components/StatusPill';
-import { useIsOnline } from '@/hooks/useIsOnline';
+import { SyncStatus } from '@/features/sync/SyncStatus';
 import type { Section } from '../constants';
 import { useSectionLabels } from '../useSectionLabels';
 
@@ -15,7 +14,6 @@ export interface TopBarProps {
 export function TopBar({ section }: TopBarProps) {
   const { t } = useTranslation();
   const labels = useSectionLabels();
-  const online = useIsOnline();
 
   return (
     <header className="sticky top-0 z-20 bg-background pt-[env(safe-area-inset-top)]">
@@ -30,7 +28,7 @@ export function TopBar({ section }: TopBarProps) {
         <p className="min-w-0 truncate text-base font-semibold lg:hidden">
           {section ? labels[section] : null}
         </p>
-        <StatusPill status={online ? 'online' : 'offline'} className="ml-auto shrink-0" />
+        <SyncStatus className="ml-auto shrink-0" />
       </div>
     </header>
   );

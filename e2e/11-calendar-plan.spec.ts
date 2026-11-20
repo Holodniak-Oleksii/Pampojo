@@ -125,9 +125,9 @@ test.describe('calendar plan', () => {
 
     await context.setOffline(true);
     await page.evaluate(() => window.dispatchEvent(new Event('offline')));
-    await expect(page.getByText('Needs internet to change the schedule.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Schedule workout' }).first()).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Actions for Push Day' })).toBeDisabled();
+    await expect(
+      page.getByRole('button', { name: 'Actions for Push Day. Needs internet' }),
+    ).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeEnabled();
     await context.setOffline(false);
   });

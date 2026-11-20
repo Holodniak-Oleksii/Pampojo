@@ -29,7 +29,8 @@ Manrope through `next/font`, subsets `latin` and `cyrillic`, weights 400, 600, 7
 
 - `BottomNav`: a hexagonal charcoal panel with five slots and a central accent Play diamond cut into the panel.
 - `SidebarNav`: desktop. Start at the top, and the active row marked with an accent diamond.
-- `StatusPill`: online (card) or offline (the inverse of the page, with a pending count); it opens the sync sheet.
+- `StatusPill`: online (card) or offline (the inverse of the page), with a pending count in both states; it opens the sync sheet.
+- `OnlineOnly`: wraps a control that needs the network. Offline, it adds the `wifi-off` corner badge or leading icon, the dashed outline, the toast on tap and the desktop tooltip (spec 17).
 - `WeekStrip`: 7 days with diamond markers.
 - `SetRow`, `RestTimer`, `SessionBar` (spec 10), `ExerciseRow` (thumbnail, title, secondary line, value, chevron), `MuscleChips` (a family diamond before the label).
 - `EmojiAvatar`: an emoji on a 4px-radius square from the avatar palette.

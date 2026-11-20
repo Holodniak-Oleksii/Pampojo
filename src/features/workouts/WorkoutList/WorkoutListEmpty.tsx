@@ -25,7 +25,11 @@ export function WorkoutListEmpty() {
         {t('Build a workout once and repeat it every week.')}
       </p>
       <StepList className="mt-4" steps={steps} doneLabel={t('Done: ')} />
-      <OnlineLinkButton href="/library/workouts/new" className="mt-4 w-full sm:w-auto">
+      <OnlineLinkButton
+        href="/library/workouts/new"
+        label={t('Create workout')}
+        className="mt-4 w-full sm:w-auto"
+      >
         {t('Create workout')}
       </OnlineLinkButton>
     </section>

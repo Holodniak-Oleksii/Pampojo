@@ -19,6 +19,7 @@ const renderShell = (pathname: string) => {
     <AppShell>
       <h1>Page content</h1>
     </AppShell>,
+    { localDb: true },
   );
 };
 

@@ -53,3 +53,6 @@ export const SYNC_COUNTED_PHASES = [
 ] as const satisfies readonly SyncPhase[];
 
 export type SyncCountedPhase = (typeof SYNC_COUNTED_PHASES)[number];
+
+/** How often the health ping repeats while requests fail with no answer (spec 17). */
+export const CONNECTIVITY_PING_MS = 15_000;

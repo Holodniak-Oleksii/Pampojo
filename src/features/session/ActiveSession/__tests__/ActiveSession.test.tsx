@@ -36,6 +36,26 @@ afterEach(async () => {
 });
 
 describe('ActiveSession', () => {
+  it('marks a finished session that waits to sync, until the push (spec 17 AC8)', async () => {
+    const finished = localSession({ status: 'completed', finishedAt: new Date().toISOString() });
+    await seedLocal(finished, [localSet()]);
+    const entry = {
+      id: crypto.randomUUID(),
+      type: 'session.patch' as const,
+      entityId: finished.id,
+      payload: { status: 'completed' },
+      createdAt: new Date().toISOString(),
+      attempts: 0,
+    };
+    await db().outbox.add(entry);
+    const screen = await render(<ActiveSession sessionId={finished.id} />, { localDb: true });
+    const line = screen.getByText('Saved on this device. Will sync when online.');
+    await expect.element(line).toBeVisible();
+
+    await db().outbox.clear();
+    await expect.element(line).not.toBeInTheDocument();
+  });
+
   it('reads the session id from the address on the shared offline page (spec 16 AC1)', async () => {
     await seedLocal(localSession());
     const before = window.location.pathname;

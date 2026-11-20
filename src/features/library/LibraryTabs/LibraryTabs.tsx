@@ -62,7 +62,12 @@ export function LibraryTabs() {
           >
             <Plus aria-hidden="true" className="size-6" />
           </OnlineLinkButton>
-          <OnlineLinkButton href="/library/workouts/new" size="sm" className="max-lg:hidden">
+          <OnlineLinkButton
+            href="/library/workouts/new"
+            label={t('Create workout')}
+            size="sm"
+            className="max-lg:hidden"
+          >
             <Plus aria-hidden="true" />
             {t('Create workout')}
           </OnlineLinkButton>

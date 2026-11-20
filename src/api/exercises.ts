@@ -2,6 +2,7 @@ import {
   keepPreviousData,
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ import type { Locale } from '@/i18n/config';
 import {
   countLocalExercises,
   deleteLocalExercise,
+  getLocalExercise,
   getLocalGym,
   searchLocalExercises,
   useLocalQuery,
@@ -26,7 +28,7 @@ import {
   type ExerciseListResponse,
   type UpdateExerciseInput,
 } from '@/shared/schemas/exercise';
-import { http } from './http';
+import { ApiError, http } from './http';
 import { workoutKeys } from './workouts';
 
 const EXERCISES_PATH = '/api/v1/exercises';
@@ -51,6 +53,39 @@ export function fetchExercises(
   params.set('limit', String(EXERCISE_PAGE_SIZE));
   if (cursor) params.set('cursor', cursor);
   return http(`${EXERCISES_PATH}?${params}`, { schema: exerciseListResponseSchema });
+}
+
+/** One exercise from the server, or null when it does not exist for this user. */
+export async function fetchExercise(id: string): Promise<Exercise | null> {
+  try {
+    return await http(`${EXERCISES_PATH}/${id}`, { schema: exerciseSchema });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+/**
+ * Exercise details: the device copy first, then the server for an exercise the device lacks.
+ * The server read is a separate query, so the Dexie live query never calls the network.
+ */
+export function useExerciseQuery(id: string) {
+  const db = useOptionalLocalDb();
+  const lang = useTranslation().i18n.language;
+  const online = useIsOnline();
+  const local = useLocalQuery({
+    queryKey: [...exerciseKeys.detail(id), lang],
+    db,
+    read: (localDb) => getLocalExercise(localDb, id, lang),
+    remote: () => fetchExercise(id),
+  });
+  const missing = db !== null && local.data === null;
+  const remote = useQuery({
+    queryKey: [...exerciseKeys.detail(id), lang, 'remote'],
+    queryFn: () => fetchExercise(id),
+    enabled: missing && online,
+  });
+  return missing && online ? remote : local;
 }
 
 /** True offline on the device: the catalog then lists only the exercises the device keeps. */

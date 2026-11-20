@@ -53,14 +53,22 @@ export function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
       <div className="flex flex-wrap items-start gap-3">
         {exercise.isOwn ? (
           <>
-            <OnlineLinkButton href={`/library/exercises/${exercise.id}/edit`} variant="secondary">
+            <OnlineLinkButton
+              href={`/library/exercises/${exercise.id}/edit`}
+              label={t('Edit')}
+              variant="secondary"
+            >
               <Pencil aria-hidden="true" />
               {t('Edit')}
             </OnlineLinkButton>
-            <DeleteExerciseDialog exerciseId={exercise.id} disabled={!online} />
+            <DeleteExerciseDialog exerciseId={exercise.id} />
           </>
         ) : (
-          <OnlineLinkButton href={`/library/exercises/new?from=${exercise.id}`} variant="secondary">
+          <OnlineLinkButton
+            href={`/library/exercises/new?from=${exercise.id}`}
+            label={t('Duplicate as my own')}
+            variant="secondary"
+          >
             <Copy aria-hidden="true" />
             {t('Duplicate as my own')}
           </OnlineLinkButton>

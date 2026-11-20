@@ -4,6 +4,10 @@ export const INSTALL_CARD_HIDDEN_UNTIL_KEY = 'pampojo:install-card-hidden-until'
 export const STORAGE_PERSIST_KEY = 'pampojo:storage-persist-requested';
 export const INSTALL_CARD_SNOOZE_DAYS = 7;
 export const PAGES_CACHE = 'pampojo-pages';
+export const IMAGES_CACHE = 'pampojo-images';
+export const IMAGES_CACHE_MAX_ENTRIES = 600;
+/** The exercise image URLs of Supabase Storage, public and signed. */
+export const STORAGE_OBJECT_PATH = '/storage/v1/object/';
 export const SW_URL = '/sw.js';
 export const OFFLINE_PATH = '/offline';
 

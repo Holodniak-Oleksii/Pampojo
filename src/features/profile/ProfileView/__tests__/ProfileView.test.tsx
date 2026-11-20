@@ -242,9 +242,11 @@ describe('EditProfileSheet', () => {
       .toBeVisible();
     await expect
       .element(
-        screen.getByRole('dialog', { name: 'Edit profile' }).getByRole('button', { name: 'Save' }),
+        screen
+          .getByRole('dialog', { name: 'Edit profile' })
+          .getByRole('button', { name: 'Save. Needs internet' }),
       )
-      .toBeDisabled();
+      .toHaveAttribute('aria-disabled', 'true');
   });
 
   it('does not focus the name on a phone, so the keyboard stays closed', async () => {
