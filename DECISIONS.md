@@ -1106,6 +1106,12 @@ This supersedes the expanding row in "Workout builder rules".
 - Abandoned sessions come in pull with the status `abandoned`, and the client deletes them.
 **Why:** Lead's choices. No UI rewrite, correct records offline, and one request per page.
 
+## 2026-11-21 — ADR 0005 amendment for the device data scope
+
+**Context:** The `/review 16` follow-up. ADR 0005 said that the device mirrors the whole catalog and history.
+**Decision:** ADR 0005 gets an amendment that records the spec 16 scope: the working set and the sessions of the last 30 days.
+**Why:** Lead's choice. The ADR must match the decisions of `/grilling 16`.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.
