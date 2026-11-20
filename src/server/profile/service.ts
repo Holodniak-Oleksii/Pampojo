@@ -72,8 +72,10 @@ function toProfile(
   };
 }
 
-export async function findProfile(userId: string): Promise<Profile | null> {
-  const db = getDb();
+export async function findProfile(
+  userId: string,
+  db: Parameters<typeof findProfileRow>[0] = getDb(),
+): Promise<Profile | null> {
   const [row, weight] = await Promise.all([
     findProfileRow(db, userId),
     findLatestWeight(db, userId),

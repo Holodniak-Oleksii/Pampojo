@@ -57,6 +57,7 @@ export const exercise = pgTable(
   },
   (table) => [
     index('exercise_owner_id_idx').on(table.ownerId),
+    index('exercise_owner_updated_idx').on(table.ownerId, table.updatedAt),
     index('exercise_source_exercise_id_idx').on(table.sourceExerciseId),
     // Slugs identify system exercises (seed upserts, export files); own exercises have none.
     uniqueIndex('exercise_system_slug_uq')

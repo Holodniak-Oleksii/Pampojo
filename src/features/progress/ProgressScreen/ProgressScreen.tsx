@@ -7,8 +7,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   cachedExerciseRecords,
   useExerciseProgressQuery,
+  useLocalExerciseProgressQuery,
+  useLocalProgressExercisesQuery,
   useProgressExercisesQuery,
 } from '@/api/progress';
+import { usePlanTimeZone } from '@/features/plan';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import {
   DEFAULT_PROGRESS_RANGE,
@@ -32,7 +35,12 @@ export function ProgressScreen() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const online = useIsOnline();
-  const exercises = useProgressExercisesQuery({ enabled: online });
+  const timeZone = usePlanTimeZone();
+  const remoteExercises = useProgressExercisesQuery({ enabled: online });
+  // Offline with no server answer in the cache, the device's own sessions are the source.
+  const offlineLocal = !online && !remoteExercises.data;
+  const localExercises = useLocalProgressExercisesQuery(timeZone, offlineLocal);
+  const exercises = offlineLocal ? localExercises : remoteExercises;
   const items = exercises.data?.items ?? [];
   const requested = searchParams.get('exercise');
   const selected = items.find((item) => item.exerciseId === requested) ?? items[0];
@@ -40,11 +48,18 @@ export function ProgressScreen() {
   const [range, setRange] = useState<ProgressRange>(DEFAULT_PROGRESS_RANGE);
   const [chosenMetric, setMetric] = useState<ProgressMetric | null>(null);
   const metric = chosenMetric && metrics.includes(chosenMetric) ? chosenMetric : metrics[0];
-  const progress = useExerciseProgressQuery(selected?.exerciseId, range, { enabled: online });
+  const remoteProgress = useExerciseProgressQuery(selected?.exerciseId, range, {
+    enabled: online,
+  });
+  const offlineChart = !online && !remoteProgress.data && range === '1m';
+  const localProgress = useLocalExerciseProgressQuery(selected?.exerciseId, timeZone, offlineChart);
+  const progress = offlineChart
+    ? { data: localProgress.data ?? undefined, isError: false, refetch: localProgress.refetch }
+    : remoteProgress;
   const queryClient = useQueryClient();
 
   if (!exercises.data) {
-    if (!online) return <ProgressOffline />;
+    if (!online && (!offlineLocal || localExercises.isFetched)) return <ProgressOffline />;
     if (exercises.isError) {
       return (
         <CalendarError
@@ -66,7 +81,7 @@ export function ProgressScreen() {
 
   // While a range loads, or offline for a range that is not cached, keep the records on screen.
   const records =
-    progress.data?.records ?? cachedExerciseRecords(queryClient, selected.exerciseId) ?? [];
+    progress.data?.records ?? cachedExerciseRecords(queryClient, selected.exerciseId) ?? null;
 
   const select = (exerciseId: string) => {
     setMetric(null);
@@ -107,7 +122,7 @@ export function ProgressScreen() {
         />
       </div>
       <div className="flex min-w-0 flex-col gap-3.5 lg:col-start-2 lg:row-start-2">
-        <RecordList records={records} />
+        {records === null && !online ? <ProgressOffline /> : <RecordList records={records ?? []} />}
       </div>
     </div>
   );

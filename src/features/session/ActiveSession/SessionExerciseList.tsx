@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { SESSION_EXERCISES_MAX } from '@/constants/session';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import { useIsOnline } from '@/hooks/useIsOnline';
+import { useOptionalLocalDb } from '@/services/local-db';
 import { cn } from '@/lib/utils';
 import type { SessionExercise, SetLog } from '@/shared/schemas/session';
 import { loggedCount } from '../utils';
@@ -142,7 +143,10 @@ export function SessionExerciseList({
   onAdd,
 }: SessionExerciseListProps) {
   const { t } = useTranslation();
-  const online = useIsOnline();
+  // With the device copy, the picker searches the local exercises offline (spec 16).
+  const isOnline = useIsOnline();
+  const localDb = useOptionalLocalDb();
+  const online = isOnline || localDb !== null;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),

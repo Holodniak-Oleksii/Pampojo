@@ -15,15 +15,20 @@ Gyms are often in basements. The app must open, show today's workout and log a f
 
 ## What is local
 
-| Data | Local | Direction |
+| Data | Local copy | Direction |
 | --- | --- | --- |
-| Exercise catalog (system + own) | Yes | Pull |
-| Workouts and their exercises | Yes (read-only offline) | Pull |
-| Schedule rules | Yes (read-only offline) | Pull |
-| Sessions and set logs | Yes | Push and pull |
-| Body measurements | Yes | Push and pull |
-| Profile, gym profile | Yes (read-only offline) | Pull |
+| Workouts and their exercises | All workouts, deleted ones as tombstones | Pull; REST writes online |
+| Schedule rules | All non-deleted rules | Pull; REST writes online |
+| Exercises | Exercises in live workouts and local sessions, all own exercises; both locales | Pull; REST writes online |
+| Sessions and set logs | Sessions of the last 30 days, plus every in-progress session | Push and pull |
+| Last performance | Latest session and all-time bests per exercise of a live workout | Pull |
+| Body measurements | All live measurements | Push and pull |
+| Profile, gym profile | One row each | Pull; REST writes online |
 | Share links, AI | No | Online only |
+
+- The rest of the system catalog is online only. Offline, the library and the picker search only the local exercises.
+- After a sync, the device deletes finished sessions older than 30 days that have nothing in the outbox.
+- Online, calendar and progress use the server, merged with unsynced local sessions. Offline, they use the query cache or local data; the `1m` progress range is complete, other ranges and all-time records need the network.
 
 ## Offline rules
 

@@ -1,14 +1,24 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { addDays } from '@/shared/plan/occurrences';
+import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import {
+  applyLocalRuleDelete,
+  listLocalRules,
+  putLocalRules,
+  useLocalQuery,
+  useOptionalLocalDb,
+} from '@/services/local-db';
+import { requestSync } from '@/services/sync/request-sync';
 import {
   scheduleRuleListResponseSchema,
   type PatchScheduleRuleInput,
   type PutScheduleRuleInput,
-  type ScheduleRule,
   type ScheduleRuleListResponse,
 } from '@/shared/schemas/plan';
 import { calendarKeys } from './calendar';
 import { http } from './http';
+
+import { applyRuleDelete } from '@/shared/plan/rule-delete';
+
+export { applyRuleDelete };
 
 const RULES_PATH = '/api/v1/schedule-rules';
 
@@ -51,48 +61,53 @@ export async function deleteScheduleRule(id: string): Promise<void> {
 function invalidatePlan(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: planKeys.all });
   void queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+  requestSync();
 }
 
 export function useScheduleRulesQuery() {
-  return useQuery({ queryKey: planKeys.list(), queryFn: fetchScheduleRules, staleTime: 60_000 });
+  const db = useOptionalLocalDb();
+  return useLocalQuery({
+    queryKey: planKeys.list(),
+    db,
+    read: listLocalRules,
+    remote: fetchScheduleRules,
+  });
 }
 
 export function usePutScheduleRuleMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: PutScheduleRuleInput }) =>
-      putScheduleRule(id, input),
+    mutationFn: async ({ id, input }: { id: string; input: PutScheduleRuleInput }) => {
+      const response = await putScheduleRule(id, input);
+      if (db) await putLocalRules(db, response.items);
+      return response;
+    },
     onSuccess: () => invalidatePlan(queryClient),
   });
 }
 
 export function usePatchScheduleRuleMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: PatchScheduleRuleInput }) =>
-      patchScheduleRule(id, input),
+    mutationFn: async ({ id, input }: { id: string; input: PatchScheduleRuleInput }) => {
+      const response = await patchScheduleRule(id, input);
+      if (db) await putLocalRules(db, response.items);
+      return response;
+    },
     onSuccess: () => invalidatePlan(queryClient),
-  });
-}
-
-/** What a delete does to the list: a started rule ends yesterday, a future one disappears. */
-export function applyRuleDelete(
-  items: readonly ScheduleRule[],
-  id: string,
-  today: string,
-): ScheduleRule[] {
-  return items.flatMap((rule) => {
-    if (rule.id !== id) return [rule];
-    if (rule.endDate !== null && rule.endDate < today) return [rule];
-    if (rule.startDate < today) return [{ ...rule, endDate: addDays(today, -1) }];
-    return [];
   });
 }
 
 export function useDeleteScheduleRuleMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: ({ id }: { id: string; today: string }) => deleteScheduleRule(id),
+    mutationFn: async ({ id, today }: { id: string; today: string }) => {
+      await deleteScheduleRule(id);
+      if (db) await applyLocalRuleDelete(db, id, today);
+    },
     onMutate: async ({ id, today }) => {
       await queryClient.cancelQueries({ queryKey: planKeys.list() });
       const previous = queryClient.getQueryData<ScheduleRuleListResponse>(planKeys.list());

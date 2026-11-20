@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { render as renderInBrowser } from 'vitest-browser-react';
 import { CurrentUserIdProvider } from '@/features/auth/CurrentUser';
 import { I18nProvider } from '@/i18n/client';
+import { LocalDbProvider } from '@/services/local-db';
 import type { Catalog, Locale } from '@/i18n/config';
 import en from '@/i18n/locales/en.json';
 import uk from '@/i18n/locales/uk.json';
@@ -29,13 +30,21 @@ export function render(
     locale = 'en',
     userId = TEST_USER_ID,
     client = createTestQueryClient(),
-  }: { locale?: Locale; userId?: string; client?: QueryClient } = {},
+    localDb = false,
+  }: {
+    locale?: Locale;
+    userId?: string;
+    client?: QueryClient;
+    /** Reads come from the user's Dexie database, as in the signed-in app (spec 16). */
+    localDb?: boolean;
+  } = {},
 ) {
   function AppProviders({ children }: { children: ReactNode }) {
+    const content = <CurrentUserIdProvider userId={userId}>{children}</CurrentUserIdProvider>;
     return (
       <I18nProvider locale={locale} catalog={catalogs[locale]}>
         <QueryClientProvider client={client}>
-          <CurrentUserIdProvider userId={userId}>{children}</CurrentUserIdProvider>
+          {localDb ? <LocalDbProvider userId={userId}>{content}</LocalDbProvider> : content}
         </QueryClientProvider>
       </I18nProvider>
     );

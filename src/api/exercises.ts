@@ -4,7 +4,19 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { EXERCISE_PAGE_SIZE } from '@/constants/exercise';
+import { useIsOnline } from '@/hooks/useIsOnline';
+import type { Locale } from '@/i18n/config';
+import {
+  countLocalExercises,
+  deleteLocalExercise,
+  getLocalGym,
+  searchLocalExercises,
+  useLocalQuery,
+  useOptionalLocalDb,
+} from '@/services/local-db';
+import { requestSync } from '@/services/sync/request-sync';
 import type { CatalogFilters } from '@/features/exercises/types';
 import {
   exerciseListResponseSchema,
@@ -41,10 +53,37 @@ export function fetchExercises(
   return http(`${EXERCISES_PATH}?${params}`, { schema: exerciseListResponseSchema });
 }
 
+/** True offline on the device: the catalog then lists only the exercises the device keeps. */
+export function useLocalCatalog(): boolean {
+  const db = useOptionalLocalDb();
+  return !useIsOnline() && db !== null;
+}
+
+export function useLocalExerciseCount() {
+  const db = useOptionalLocalDb();
+  return useLocalQuery({
+    queryKey: [...exerciseKeys.all, 'local-count'],
+    db,
+    read: countLocalExercises,
+    remote: () => Promise.resolve(0),
+  });
+}
+
 export function useExercisesInfiniteQuery(filters: CatalogFilters) {
+  const db = useOptionalLocalDb();
+  const local = useLocalCatalog();
+  const lang = useTranslation().i18n.language as Locale;
   return useInfiniteQuery({
-    queryKey: exerciseKeys.list(filters),
-    queryFn: ({ pageParam }) => fetchExercises(filters, pageParam),
+    queryKey: [...exerciseKeys.list(filters), local ? 'local' : 'remote', lang],
+    queryFn: async ({ pageParam }): Promise<ExerciseListResponse> => {
+      if (local && db) {
+        const gym = (await getLocalGym(db)) ?? null;
+        const items = await searchLocalExercises(db, filters, lang, gym?.equipment ?? null);
+        return { items, nextCursor: null };
+      }
+      return fetchExercises(filters, pageParam);
+    },
+    networkMode: local ? 'always' : 'online',
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     // Keeps the current list on screen while new filters load, or fail offline.
@@ -91,15 +130,23 @@ export function useInvalidateExercises() {
   return (id: string) => {
     void queryClient.invalidateQueries({ queryKey: exerciseKeys.lists() });
     void queryClient.invalidateQueries({ queryKey: exerciseKeys.detail(id) });
+    // Own exercises reach the device through the pull, which also signs their frame URLs.
+    requestSync();
   };
 }
 
 export function useDeleteExerciseMutation() {
   const invalidate = useInvalidateExercises();
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: deleteExercise,
+    mutationFn: async (id: string) => {
+      await deleteExercise(id);
+      if (db) await deleteLocalExercise(db, id);
+    },
     onSuccess: (_data, id) => {
+      // The pull brings the workouts and sets the server changed with the delete.
+      requestSync();
       invalidate(id);
       // The server also removed the exercise from the user's workouts.
       void queryClient.invalidateQueries({ queryKey: workoutKeys.all });

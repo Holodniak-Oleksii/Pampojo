@@ -151,7 +151,7 @@ test.describe('exercise catalog in English', () => {
     }
   });
 
-  test('keeps the list and shows the offline notice when the connection drops', async ({
+  test('offline lists only the exercises on the device, with the hint (spec 16)', async ({
     page,
     context,
   }) => {
@@ -160,13 +160,20 @@ test.describe('exercise catalog in English', () => {
     await expect(items(page).first()).toContainText('Bench Press');
 
     await context.setOffline(true);
-    await (await catalogFilters(page)).getByRole('button', { name: 'Neck', exact: true }).click();
-    await closeCatalogFilters(page);
-
+    // A new user has no workouts or history, so the device keeps no exercises.
+    await expect(
+      page
+        .getByText(/^Offline, there are 0 exercises from your workouts and history/)
+        // The hint sits under the search on a phone and over the results on desktop.
+        .filter({ visible: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: 'Search exercises' })).toHaveAttribute(
+      'placeholder',
+      'Search saved exercises',
+    );
     await expect(
       page.getByText("You're offline. Connect to the internet to load exercises."),
-    ).toBeVisible();
-    await expect(items(page).first()).toContainText('Bench Press');
+    ).toBeHidden();
     await context.setOffline(false);
   });
 

@@ -126,13 +126,16 @@ test.describe('body measurements', () => {
     await expect(page.getByText('No measurements yet')).toBeVisible({ timeout: NETWORK_TIMEOUT });
   });
 
-  test('offline keeps the data and disables writes (AC13)', async ({ page, context }) => {
+  test('offline keeps the data and the writes, which sync later (AC13, spec 16)', async ({
+    page,
+    context,
+  }) => {
     await signUp(page);
     await page.goto('/profile');
     await expect(page.getByText('24.6')).toBeVisible({ timeout: NETWORK_TIMEOUT });
     await context.setOffline(true);
-    await expect(page.getByRole('button', { name: 'Add measurement' }).first()).toBeDisabled();
-    await expect(page.getByText('Needs internet').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add measurement' }).first()).toBeEnabled();
+    await expect(page.getByText('Needs internet')).toHaveCount(0);
     await expect(page.getByText('24.6')).toBeVisible();
     await context.setOffline(false);
   });

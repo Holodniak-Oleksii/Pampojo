@@ -1,5 +1,6 @@
 'use client';
 
+import { useMeasurementsAvailable } from '../hooks/useMeasurementsAvailable';
 import { ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -14,7 +15,6 @@ import { DEFAULT_PROGRESS_RANGE, PROGRESS_RANGES, type ProgressRange } from '@/c
 import { CalendarError } from '@/features/calendar/CalendarStates';
 import { dayMonth } from '@/features/plan/formatPlanDate';
 import { rangeLabel, rangeSpan } from '@/features/progress';
-import { useIsOnline } from '@/hooks/useIsOnline';
 import { useLocale } from '@/i18n/client';
 import { todayIn } from '@/lib/dates';
 import { rangeStart } from '@/shared/progress/metrics';
@@ -43,7 +43,8 @@ export interface MeasurementHistoryProps {
 export function MeasurementHistory({ type, initialProfile }: MeasurementHistoryProps) {
   const { t } = useTranslation();
   const locale = useLocale();
-  const online = useIsOnline();
+  // True offline too when the device keeps the data (spec 16).
+  const online = useMeasurementsAvailable();
   const profile = initialProfile;
   const units = profile.unitSystem;
   const query = useMeasurementsQuery({ enabled: online });

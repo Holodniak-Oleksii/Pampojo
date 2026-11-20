@@ -92,9 +92,9 @@ describe('LogOutButton', () => {
     await db.sessions.put(localSession());
     await db.outbox.add({
       id: crypto.randomUUID(),
-      method: 'PUT',
-      path: '/api/v1/sets/x',
-      body: {},
+      type: 'set.put',
+      entityId: crypto.randomUUID(),
+      payload: {},
       createdAt: new Date().toISOString(),
       attempts: 0,
     });

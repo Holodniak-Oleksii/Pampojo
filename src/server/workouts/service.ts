@@ -13,6 +13,7 @@ import { lockOwner } from '@/server/exercises/queries';
 import { knownTrackingType, only, orNull } from '@/server/exercises/service';
 import { DomainError } from '@/server/http/errors';
 import { endWorkoutRules } from '@/server/plan/queries';
+import { summarizeWorkout } from '@/shared/workout-summary';
 import type {
   ParsedPutWorkoutInput,
   Workout,
@@ -36,9 +37,6 @@ import {
   type WorkoutExerciseRow,
 } from './queries';
 
-const LIST_MUSCLES = 3;
-const LIST_THUMBNAILS = 12;
-
 function notFound(): DomainError {
   return new DomainError(WORKOUT_ERROR.NOT_FOUND, 'Workout not found');
 }
@@ -51,20 +49,6 @@ function invalid(path: (string | number)[], message: string): DomainError {
 
 function toNumber(value: string | null): number | null {
   return value === null ? null : Number(value);
-}
-
-/** The most frequent primary muscles; ties keep the order they first appear in. */
-function topMuscles(rows: readonly WorkoutExerciseRow[]): MuscleGroup[] {
-  const counts = new Map<MuscleGroup, number>();
-  for (const row of rows) {
-    for (const muscle of only<MuscleGroup>(MUSCLE_GROUPS, row.primary_muscles)) {
-      counts.set(muscle, (counts.get(muscle) ?? 0) + 1);
-    }
-  }
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, LIST_MUSCLES)
-    .map(([muscle]) => muscle);
 }
 
 export async function listWorkouts(
@@ -90,22 +74,17 @@ export async function listWorkouts(
   return {
     items: workouts.map((item) => {
       const entries = byWorkout.get(item.id) ?? [];
-      const exerciseIds = [...new Set(entries.map(({ row }) => row.exercise_id))];
-      const thumbnailUrls: string[] = [];
-      const seen = new Set<string>();
-      for (const { row, thumb } of entries) {
-        if (seen.has(row.exercise_id)) continue;
-        seen.add(row.exercise_id);
-        if (thumb && thumbnailUrls.length < LIST_THUMBNAILS) thumbnailUrls.push(thumb);
-      }
       return {
         id: item.id,
         name: item.name,
         updatedAt: item.updatedAt.toISOString(),
-        exerciseCount: entries.length,
-        exerciseIds,
-        primaryMuscles: topMuscles(entries.map(({ row }) => row)),
-        thumbnailUrls,
+        ...summarizeWorkout(
+          entries.map(({ row, thumb }) => ({
+            exerciseId: row.exercise_id,
+            primaryMuscles: row.primary_muscles,
+            thumbnailUrl: thumb,
+          })),
+        ),
       };
     }),
   };

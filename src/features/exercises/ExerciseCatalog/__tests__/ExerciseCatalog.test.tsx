@@ -4,7 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExerciseListResponse } from '@/shared/schemas/exercise';
 import { fetchGym } from '@/api/gym';
 import { getExerciseListItemMock, getGymMock } from '@/test/mocks';
-import { render } from '@/test/render';
+import { openLocalDb } from '@/services/local-db';
+import { localExercise } from '@/test/local-data';
+import { resetLocalDbs } from '@/test/local-session';
+import { render, TEST_USER_ID } from '@/test/render';
 import { ExerciseCatalog } from '../ExerciseCatalog';
 
 vi.mock('next/navigation', () => ({ useSearchParams: vi.fn() }));
@@ -361,5 +364,39 @@ describe('ExerciseCatalog', () => {
     expect(chip.element().querySelector('[data-family="back"]')).not.toBeNull();
     const mine = screen.getByRole('button', { name: 'Mine', exact: true });
     expect(mine.element().querySelector('[data-family]')).toBeNull();
+  });
+
+  it('offline lists and searches only the device exercises, with the hint and the empty state (AC11)', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    onlineManager.setOnline(false);
+    await openLocalDb(TEST_USER_ID).exercises.bulkPut([
+      localExercise('Bench Press'),
+      localExercise('Overhead Press', { primaryMuscles: ['shoulders'] }),
+    ]);
+    const screen = await render(<ExerciseCatalog />, { localDb: true });
+
+    await expect.element(screen.getByRole('link', { name: /Bench Press/ })).toBeVisible();
+    await expect.element(screen.getByRole('link', { name: /Overhead Press/ })).toBeVisible();
+    await expect
+      .element(
+        // The narrow test viewport shows the hint under the search, the first of the two.
+        screen.getByText(/Offline, there are 2 exercises from your workouts and history/).first(),
+      )
+      .toBeVisible();
+    await expect
+      .element(screen.getByRole('searchbox', { name: 'Search exercises' }))
+      .toHaveAttribute('placeholder', 'Search saved exercises');
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/exercises'),
+      expect.anything(),
+    );
+
+    withUrl('q=deadlift');
+    screen.rerender(<ExerciseCatalog />);
+    await expect
+      .element(screen.getByRole('heading', { name: 'No saved exercise matches' }))
+      .toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Clear search' })).toBeVisible();
+    await resetLocalDbs();
   });
 });

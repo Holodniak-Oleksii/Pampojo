@@ -7,3 +7,4 @@ export * from './profile';
 export * from './workout';
 export * from './session';
 export * from './plan';
+export * from './sync';

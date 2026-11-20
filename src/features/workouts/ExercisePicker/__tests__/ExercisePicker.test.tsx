@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getExerciseListItemMock } from '@/test/mocks';
-import { render } from '@/test/render';
+import { openLocalDb } from '@/services/local-db';
+import { localExercise } from '@/test/local-data';
+import { resetLocalDbs } from '@/test/local-session';
+import { render, TEST_USER_ID } from '@/test/render';
 import { ExercisePicker } from '..';
 
 const fetchMock = vi.fn<typeof fetch>();
@@ -39,8 +42,10 @@ beforeEach(() => {
   });
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  await resetLocalDbs();
 });
 
 describe('ExercisePicker', () => {
@@ -89,5 +94,27 @@ describe('ExercisePicker', () => {
     viewport.offsetTop = 40;
     viewport.dispatchEvent(new Event('resize'));
     await expect.element(sheet).toHaveStyle({ height: '420px', top: '40px' });
+  });
+
+  it('offline searches only the exercises on the device (AC11)', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    await openLocalDb(TEST_USER_ID).exercises.bulkPut([
+      localExercise('Lat Pulldown', { primaryMuscles: ['lats'] }),
+    ]);
+    const screen = await render(
+      <ExercisePicker open onOpenChange={vi.fn()} room={30} onAdd={vi.fn()} />,
+      { localDb: true },
+    );
+    await expect.element(screen.getByRole('button', { name: /^Lat Pulldown/ })).toBeVisible();
+    await expect
+      .element(screen.getByText(/Offline, there is 1 exercise from your workouts and history/))
+      .toBeVisible();
+    await expect
+      .element(screen.getByRole('button', { name: /^Bench Press/ }))
+      .not.toBeInTheDocument();
+    await screen.getByRole('searchbox', { name: 'Search exercises' }).fill('bench');
+    await expect
+      .element(screen.getByRole('heading', { name: 'No saved exercise matches' }))
+      .toBeVisible();
   });
 });

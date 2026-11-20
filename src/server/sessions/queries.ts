@@ -201,30 +201,40 @@ export interface LastPerformanceRow extends Record<string, unknown> {
   distance_m: number | null;
 }
 
-/** The live sets of the exercise in the user's latest completed session that has any. */
-export async function findLastPerformanceRows(
+export interface LastPerformanceForRow extends LastPerformanceRow {
+  exercise_id: string;
+}
+
+const uuidArray = (ids: readonly string[]) =>
+  sql`array[${sql.join(
+    ids.map((id) => sql`${id}`),
+    sql`, `,
+  )}]::uuid[]`;
+
+/** Per exercise, the live sets in the user's latest completed session that has any. Two scans for any count. */
+export async function findLastPerformanceRowsFor(
   db: Executor,
   userId: string,
-  exerciseId: string,
-): Promise<LastPerformanceRow[]> {
-  const rows = await db.execute<LastPerformanceRow>(sql`
+  exerciseIds: readonly string[],
+): Promise<LastPerformanceForRow[]> {
+  if (exerciseIds.length === 0) return [];
+  const rows = await db.execute<LastPerformanceForRow>(sql`
     with latest as (
-      select s.id, s.finished_at
-      from workout_session s
+      select distinct on (l.exercise_id) l.exercise_id, s.id, s.finished_at
+      from set_log l
+      join workout_session s on s.id = l.session_id
       where s.user_id = ${userId}
         and s.status = ${SESSION_STATUS.COMPLETED}
-        and exists (
-          select 1 from set_log l
-          where l.session_id = s.id and l.exercise_id = ${exerciseId} and l.deleted_at is null)
-      order by s.finished_at desc, s.id
-      limit 1
+        and l.deleted_at is null
+        and l.exercise_id = any(${uuidArray(exerciseIds)})
+      order by l.exercise_id, s.finished_at desc, s.id
     )
-    select latest.id as session_id, latest.finished_at, l.set_index, l.weight_kg, l.reps,
-      l.duration_sec, l.distance_m
+    select latest.exercise_id, latest.id as session_id, latest.finished_at, l.set_index,
+      l.weight_kg, l.reps, l.duration_sec, l.distance_m
     from latest
-    join set_log l on l.session_id = latest.id
-    where l.exercise_id = ${exerciseId} and l.deleted_at is null
-    order by l.completed_at, l.set_index`);
+    join set_log l on l.session_id = latest.id and l.exercise_id = latest.exercise_id
+    where l.deleted_at is null
+    order by latest.exercise_id, l.completed_at, l.set_index`);
   return [...rows];
 }
 

@@ -16,6 +16,8 @@ import { CatalogScopeChips } from '../CatalogScopeChips';
 import { CatalogSectionHeading } from '../CatalogSectionHeading';
 import { useExerciseLine } from '../hooks/useExerciseLine';
 import { usePickerCatalog } from '../hooks/usePickerCatalog';
+import { useLocalCatalog } from '@/api/exercises';
+import { OfflineCatalogHint, OfflineSearchEmpty } from '@/features/exercises/OfflineCatalog';
 
 export interface ExercisePickerProps {
   open: boolean;
@@ -63,6 +65,7 @@ function PickerBody({ room, onAdd }: Pick<ExercisePickerProps, 'room' | 'onAdd'>
   const { t } = useTranslation();
   const { sentinel, ...catalog } = usePickerCatalog();
   const line = useExerciseLine();
+  const localCatalog = useLocalCatalog();
   const [picked, setPicked] = useState<ExerciseListItem[]>([]);
 
   function toggle(item: ExerciseListItem) {
@@ -85,7 +88,7 @@ function PickerBody({ room, onAdd }: Pick<ExercisePickerProps, 'room' | 'onAdd'>
           type="search"
           value={catalog.search}
           maxLength={EXERCISE_SEARCH_MAX}
-          placeholder={t('Search exercises')}
+          placeholder={localCatalog ? t('Search saved exercises') : t('Search exercises')}
           aria-label={t('Search exercises')}
           className="min-w-0 flex-1 [&::-webkit-search-cancel-button]:appearance-none"
           onChange={(event) => catalog.setSearch(event.target.value)}
@@ -101,7 +104,14 @@ function PickerBody({ room, onAdd }: Pick<ExercisePickerProps, 'room' | 'onAdd'>
         />
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-4 pb-28">
-        {catalog.query.fetchStatus === 'paused' && !catalog.query.data ? (
+        {localCatalog ? <OfflineCatalogHint className="mb-1" /> : null}
+        {localCatalog &&
+        catalog.query.data &&
+        catalog.sections.every((group) => group.items.length === 0) &&
+        catalog.filters.q !== '' ? (
+          <OfflineSearchEmpty onClear={() => catalog.setSearch('')} />
+        ) : null}
+        {!localCatalog && catalog.query.fetchStatus === 'paused' && !catalog.query.data ? (
           <OfflineNotice>
             {t("You're offline. Connect to the internet to load exercises.")}
           </OfflineNotice>

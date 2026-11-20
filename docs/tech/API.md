@@ -54,6 +54,20 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `POST /api/v1/ai/exercises/tags` | Tag suggestions | 23 |
 | `POST /api/v1/ai/exercises/from-voice` | Voice → exercise draft | 24 |
 
+## Sync (spec 16)
+
+- **`POST /api/v1/sync/push`** takes `{ mutations: [{ id, type, entityId, payload, createdAt }] }`, 1–50 items, in outbox order.
+  - `type` is `session.put`, `session.patch`, `set.put`, `set.patch`, `set.delete`, `measurement.put` or `measurement.delete`. `payload` is the body of the matching REST request, and the server calls the same service function.
+  - The batch runs in one transaction with one savepoint per mutation. It answers `{ results: [{ id, status, error? }] }` in order: `applied`, `duplicate` (the id is in `sync_mutation`) or `rejected` with the error code (a 4xx case, or `CONFLICT` for an id of another user).
+  - Any other error rolls back the whole batch and answers 500. No `Idempotency-Key`: the mutation ids make a replay safe.
+- **`GET /api/v1/sync/pull?since=`** answers `{ changes, nextCursor, cursor, totals? }`.
+  - `changes` has `profile`, `gym` with `gymChanged`, `workouts` (each with its exercise list), `scheduleRules`, `exercises` (both translations, resolved frames), `lastPerformance` (as `GET /exercises/{id}/last-performance`, per exercise of a live workout), `sessions`, `setLogs` and `measurements`. Rows carry `deletedAt`; a session to delete has the status `abandoned`.
+  - Without `since` it is a full download of live rows. `totals` (row counts) comes on its first page only.
+  - A run walks the phases in that order, at most 500 rows per page. `nextCursor` continues the run. The last page gives `cursor`, the next `since`.
+  - A run takes rows with `updatedAt` in `(previous high − 30 s, now]`, because a transaction can commit after its `updatedAt`. Clients upsert, so a repeat is safe.
+  - Sessions are the ones that started in the last 30 days (padded for every time zone) plus every `in_progress` one; set logs follow them. Exercises are the referenced and own ones.
+  - An unknown cursor is 400 `INVALID_CURSOR`.
+
 ## Workouts (spec 09)
 
 - **List.** `GET /api/v1/workouts` returns `{ items }`: at most 200, newest `updatedAt` first. Each item has `id`, `name`, `updatedAt`, `exerciseCount`, `exerciseIds` (distinct), `primaryMuscles` (at most 3, most frequent first) and `thumbnailUrls` (at most 4).

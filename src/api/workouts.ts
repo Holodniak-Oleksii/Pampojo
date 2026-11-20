@@ -1,4 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import type { Locale } from '@/i18n/config';
+import {
+  fromWorkoutResponse,
+  getLocalWorkout,
+  listLocalWorkouts,
+  markLocalWorkoutDeleted,
+  putLocalWorkout,
+  putMissingWorkoutExercises,
+  useLocalQuery,
+  useOptionalLocalDb,
+  type PampojoDb,
+} from '@/services/local-db';
+import { requestSync } from '@/services/sync/request-sync';
 import {
   workoutListResponseSchema,
   workoutSchema,
@@ -44,37 +58,68 @@ export async function deleteWorkout(id: string): Promise<void> {
 }
 
 export function useWorkoutsQuery() {
-  return useQuery({ queryKey: workoutKeys.list(), queryFn: fetchWorkouts });
+  const db = useOptionalLocalDb();
+  return useLocalQuery({
+    queryKey: workoutKeys.list(),
+    db,
+    read: listLocalWorkouts,
+    remote: fetchWorkouts,
+  });
 }
 
 export function useWorkoutQuery(id: string, { enabled = true }: { enabled?: boolean } = {}) {
-  return useQuery({
-    queryKey: workoutKeys.detail(id),
-    queryFn: () => fetchWorkout(id),
+  const db = useOptionalLocalDb();
+  const lang = useTranslation().i18n.language;
+  return useLocalQuery({
+    queryKey: [...workoutKeys.detail(id), lang],
+    db,
+    read: (local) => getLocalWorkout(local, id, lang),
+    remote: () => fetchWorkout(id),
     enabled: enabled && Boolean(id),
+  });
+}
+
+/** Puts a written workout on the device, with placeholders for exercises it does not have yet. */
+async function storeWorkout(db: PampojoDb, workout: Workout, lang: Locale): Promise<void> {
+  await db.transaction('rw', [db.workouts, db.exercises], async () => {
+    await putLocalWorkout(db, fromWorkoutResponse(workout));
+    await putMissingWorkoutExercises(db, workout, lang);
   });
 }
 
 export function usePutWorkoutMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
+  const lang = useTranslation().i18n.language as Locale;
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: PutWorkoutInput }) => putWorkout(id, input),
+    mutationFn: async ({ id, input }: { id: string; input: PutWorkoutInput }) => {
+      const workout = await putWorkout(id, input);
+      if (db) await storeWorkout(db, workout, lang);
+      return workout;
+    },
     onSuccess: (workout) => {
-      queryClient.setQueryData(workoutKeys.detail(workout.id), workout);
+      if (!db) queryClient.setQueryData(workoutKeys.detail(workout.id), workout);
       void queryClient.invalidateQueries({ queryKey: workoutKeys.list() });
+      // The pull brings the exercises and "last time" that a new workout entry needs.
+      requestSync();
     },
   });
 }
 
 export function useDeleteWorkoutMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: deleteWorkout,
+    mutationFn: async (id: string) => {
+      await deleteWorkout(id);
+      if (db) await markLocalWorkoutDeleted(db, id);
+    },
     onSuccess: (_data, id) => {
       queryClient.removeQueries({ queryKey: workoutKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: workoutKeys.list() });
       // The server ended the workout's schedule rules in the same delete.
       void queryClient.invalidateQueries({ queryKey: planKeys.all });
+      requestSync();
     },
   });
 }

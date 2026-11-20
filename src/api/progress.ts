@@ -1,4 +1,11 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import {
+  exerciseProgressLocal,
+  progressExercisesLocal,
+  useLocalQuery,
+  useOptionalLocalDb,
+} from '@/services/local-db';
 import { PROGRESS_GC_MS, PROGRESS_STALE_MS, type ProgressRange } from '@/constants/progress';
 import {
   exerciseProgressResponseSchema,
@@ -62,5 +69,34 @@ export function useExerciseProgressQuery(
     staleTime: PROGRESS_STALE_MS,
     gcTime: PROGRESS_GC_MS,
     enabled: enabled && Boolean(id),
+  });
+}
+
+/** Progress from this device's sessions, for offline use when the cache has no server answer. */
+export function useLocalProgressExercisesQuery(timeZone: string, enabled: boolean) {
+  const db = useOptionalLocalDb();
+  const lang = useTranslation().i18n.language;
+  return useLocalQuery({
+    queryKey: [...progressKeys.all, 'local', 'exercises', timeZone, lang],
+    db,
+    read: (local) => progressExercisesLocal(local, timeZone, lang),
+    remote: () => Promise.reject(new Error('No local database')),
+    enabled: enabled && db !== null,
+  });
+}
+
+/** The `1m` points of one exercise from this device's sessions; records need the server. */
+export function useLocalExerciseProgressQuery(
+  id: string | undefined,
+  timeZone: string,
+  enabled: boolean,
+) {
+  const db = useOptionalLocalDb();
+  return useLocalQuery({
+    queryKey: [...progressKeys.all, 'local', 'exercise', id ?? '', timeZone],
+    db,
+    read: (local) => exerciseProgressLocal(local, id ?? '', timeZone),
+    remote: () => Promise.reject(new Error('No local database')),
+    enabled: enabled && db !== null && Boolean(id),
   });
 }

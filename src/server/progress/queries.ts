@@ -87,3 +87,29 @@ export async function listExerciseSetRows(
     order by s.started_at, s.id, l.completed_at, l.set_index`);
   return [...rows];
 }
+
+export interface ExerciseSetForRow extends ExerciseSetRow {
+  exercise_id: string;
+}
+
+/** Counted sets of several exercises in one query, grouped by exercise, then in session order. */
+export async function listExerciseSetRowsFor(
+  db: Executor,
+  userId: string,
+  exerciseIds: readonly string[],
+): Promise<ExerciseSetForRow[]> {
+  if (exerciseIds.length === 0) return [];
+  const ids = sql`array[${sql.join(
+    exerciseIds.map((id) => sql`${id}`),
+    sql`, `,
+  )}]::uuid[]`;
+  const rows = await db.execute<ExerciseSetForRow>(sql`
+    select l.exercise_id, s.id as session_id, s.started_at, l.weight_kg, l.reps, l.duration_sec,
+      l.distance_m
+    from set_log l
+    join workout_session s on s.id = l.session_id
+    where s.user_id = ${userId} and s.status = ${SESSION_STATUS.COMPLETED}
+      and l.exercise_id = any(${ids}) and l.deleted_at is null
+    order by l.exercise_id, s.started_at, s.id, l.completed_at, l.set_index`);
+  return [...rows];
+}

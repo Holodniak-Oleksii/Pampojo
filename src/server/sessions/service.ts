@@ -16,7 +16,8 @@ import { listWorkoutRules } from '@/server/plan/queries';
 import { userToday } from '@/server/plan/today';
 import { occursOn } from '@/shared/plan/occurrences';
 import { lateWindowEnd } from '@/shared/plan/statuses';
-import { findBests } from '@/server/progress/service';
+import { findBestsFor } from '@/server/progress/service';
+import type { SyncLastPerformance } from '@/shared/schemas/sync';
 import { findVisibleExercises, findWorkoutOwner } from '@/server/workouts/queries';
 import type {
   LastPerformanceResponse,
@@ -34,7 +35,7 @@ import type {
 import { decodeHistoryCursor, encodeHistoryCursor, type HistoryCursor } from './cursor';
 import { SESSION_ERROR } from './errors';
 import {
-  findLastPerformanceRows,
+  findLastPerformanceRowsFor,
   findSetRow,
   listLoggedEntryIds,
   findSessionRow,
@@ -467,21 +468,38 @@ export async function getLastPerformance(
   exerciseId: string,
   db: Executor = getDb(),
 ): Promise<LastPerformanceResponse> {
-  const rows = await findLastPerformanceRows(db, userId, exerciseId);
-  const [first] = rows;
-  if (!first) return { item: null, bests: null };
-  return {
-    bests: await findBests(db, userId, exerciseId),
-    item: {
-      sessionId: first.session_id,
-      finishedAt: iso(first.finished_at),
-      sets: rows.map((row) => ({
-        setIndex: row.set_index,
-        weightKg: toNumber(row.weight_kg),
-        reps: row.reps,
-        durationSec: row.duration_sec,
-        distanceM: row.distance_m,
-      })),
-    },
-  };
+  const [result] = await listLastPerformance(userId, [exerciseId], db);
+  return result?.item ? { item: result.item, bests: result.bests } : { item: null, bests: null };
+}
+
+/** "Last time" and all-time bests of several exercises, in a constant number of queries. */
+export async function listLastPerformance(
+  userId: string,
+  exerciseIds: readonly string[],
+  db: Executor = getDb(),
+): Promise<SyncLastPerformance[]> {
+  const ids = [...new Set(exerciseIds)];
+  const rows = await findLastPerformanceRowsFor(db, userId, ids);
+  const withSets = [...new Set(rows.map((row) => row.exercise_id))];
+  const bests = await findBestsFor(db, userId, withSets);
+  return ids.map((exerciseId) => {
+    const own = rows.filter((row) => row.exercise_id === exerciseId);
+    const [first] = own;
+    if (!first) return { exerciseId, item: null, bests: null };
+    return {
+      exerciseId,
+      bests: bests.get(exerciseId) ?? null,
+      item: {
+        sessionId: first.session_id,
+        finishedAt: iso(first.finished_at),
+        sets: own.map((row) => ({
+          setIndex: row.set_index,
+          weightKg: toNumber(row.weight_kg),
+          reps: row.reps,
+          durationSec: row.duration_sec,
+          distanceM: row.distance_m,
+        })),
+      },
+    };
+  });
 }

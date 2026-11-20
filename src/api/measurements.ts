@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  createMeasurementRepository,
+  listLocalMeasurements,
+  useLocalQuery,
+  useOptionalLocalDb,
+} from '@/services/local-db';
 import {
   measurementListResponseSchema,
   putMeasurementResponseSchema,
@@ -34,12 +40,13 @@ export async function deleteMeasurement(id: string): Promise<void> {
 }
 
 export function useMeasurementsQuery({ enabled = true }: { enabled?: boolean } = {}) {
-  return useQuery({
+  const db = useOptionalLocalDb();
+  return useLocalQuery({
     queryKey: measurementKeys.list(),
-    queryFn: fetchMeasurements,
+    db,
+    read: listLocalMeasurements,
+    remote: fetchMeasurements,
     enabled,
-    staleTime: 60_000,
-    gcTime: 24 * 60 * 60_000,
   });
 }
 
@@ -53,27 +60,47 @@ function useInvalidateMeasurements() {
     ]);
 }
 
+/** On the device, measurements save locally and sync later, so these work offline. */
+function useMeasurementRepository() {
+  const db = useOptionalLocalDb();
+  return db ? createMeasurementRepository(db) : null;
+}
+
 /** Saves the inputs one by one, each with a new client id. */
 export function useSaveMeasurementsMutation() {
   const invalidate = useInvalidateMeasurements();
+  const repository = useMeasurementRepository();
   return useMutation({
     mutationFn: async (inputs: readonly PutMeasurementInput[]) => {
-      for (const input of inputs) await putMeasurement(crypto.randomUUID(), input);
+      for (const input of inputs) {
+        if (repository) await repository.save(input);
+        else await putMeasurement(crypto.randomUUID(), input);
+      }
     },
+    networkMode: repository ? 'always' : 'online',
     onSuccess: invalidate,
   });
 }
 
 export function useUpdateMeasurementMutation() {
   const invalidate = useInvalidateMeasurements();
+  const repository = useMeasurementRepository();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: PutMeasurementInput }) =>
-      putMeasurement(id, input),
+    mutationFn: async ({ id, input }: { id: string; input: PutMeasurementInput }) => {
+      if (repository) await repository.update(id, input);
+      else await putMeasurement(id, input);
+    },
+    networkMode: repository ? 'always' : 'online',
     onSuccess: invalidate,
   });
 }
 
 export function useDeleteMeasurementMutation() {
   const invalidate = useInvalidateMeasurements();
-  return useMutation({ mutationFn: (id: string) => deleteMeasurement(id), onSuccess: invalidate });
+  const repository = useMeasurementRepository();
+  return useMutation({
+    mutationFn: (id: string) => (repository ? repository.remove(id) : deleteMeasurement(id)),
+    networkMode: repository ? 'always' : 'online',
+    onSuccess: invalidate,
+  });
 }

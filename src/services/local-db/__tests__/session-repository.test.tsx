@@ -4,7 +4,6 @@ import type { SessionExercise, WorkoutSnapshot } from '@/shared/schemas/session'
 import { closeLocalDbs, openLocalDb } from '../db';
 import { lastPerformanceFor } from '../last-performance';
 import { deleteAllLocalDbs, flushAllLocalDbs } from '../logout';
-import { flushOutbox } from '../outbox';
 import { createSessionRepository } from '../session-repository';
 
 const EXERCISE = '00000000-0000-4000-8000-0000000000aa';
@@ -74,9 +73,9 @@ describe('session repository', () => {
     const { db, repo, sessionId, entryId } = await setup();
     const set = await repo.logSet({ sessionId, entryId, setIndex: 0, values, restSec: 90 });
     const outbox = await db.outbox.orderBy('seq').toArray();
-    expect(outbox.map((entry) => [entry.method, entry.path])).toEqual([
-      ['PUT', `/api/v1/sessions/${sessionId}`],
-      ['PUT', `/api/v1/sets/${set.id}`],
+    expect(outbox.map((entry) => [entry.type, entry.entityId])).toEqual([
+      ['session.put', sessionId],
+      ['set.put', set.id],
     ]);
     const session = await db.sessions.get(sessionId);
     expect(session?.restSetId).toBe(set.id);
@@ -135,63 +134,6 @@ describe('session repository', () => {
     const sets = await db.setLogs.where('sessionId').equals(sessionId).toArray();
     expect(sets.every((set) => set.deletedAt !== null)).toBe(true);
     expect((await db.sessions.get(sessionId))?.status).toBe('abandoned');
-  });
-});
-
-describe('outbox', () => {
-  it('sends in order, stops on a network error, and resumes (AC7)', async () => {
-    const { db, repo, sessionId, entryId } = await setup();
-    await repo.logSet({ sessionId, entryId, setIndex: 0, values, restSec: 90 });
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('offline'));
-    expect(await flushOutbox(db)).toBe('failed');
-    expect(await db.outbox.count()).toBe(2);
-
-    const paths: string[] = [];
-    fetchMock.mockImplementation(async (input) => {
-      paths.push(String(input));
-      return new Response(null, { status: 204 });
-    });
-    expect(await flushOutbox(db)).toBe('done');
-    expect(await db.outbox.count()).toBe(0);
-    expect(paths[0]).toBe(`/api/v1/sessions/${sessionId}`);
-    expect(paths[1]).toMatch(/^\/api\/v1\/sets\//);
-  });
-
-  it('drops a 4xx entry with a callback and keeps going; waits on 401', async () => {
-    const { db, repo, sessionId, entryId } = await setup();
-    await repo.logSet({ sessionId, entryId, setIndex: 0, values, restSec: 90 });
-    const fetchMock = vi.spyOn(globalThis, 'fetch');
-    fetchMock.mockResolvedValueOnce(
-      Response.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 }),
-    );
-    expect(await flushOutbox(db)).toBe('failed');
-    expect(await db.outbox.count()).toBe(2);
-
-    fetchMock
-      .mockResolvedValueOnce(
-        Response.json({ error: { code: 'VALIDATION_FAILED' } }, { status: 400 }),
-      )
-      .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    const dropped = vi.fn();
-    expect(await flushOutbox(db, { onDropped: dropped })).toBe('done');
-    expect(dropped).toHaveBeenCalledTimes(1);
-    expect(await db.outbox.count()).toBe(0);
-  });
-
-  it('runs one flush at a time', async () => {
-    const { db } = await setup();
-    let release: () => void = () => {};
-    vi.spyOn(globalThis, 'fetch').mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          release = () => resolve(new Response(null, { status: 204 }));
-        }),
-    );
-    const first = flushOutbox(db);
-    await vi.waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(1));
-    expect(await flushOutbox(db)).toBe('busy');
-    release();
-    expect(await first).toBe('done');
   });
 });
 

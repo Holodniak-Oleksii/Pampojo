@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
+import { pushOutbox } from '@/services/sync/push';
 import { closeLocalDbs, LOCAL_DB_PREFIX, PampojoDb } from './db';
-import { flushOutbox, pendingCount } from './outbox';
+import { pendingCount } from './outbox';
 
 async function localDbNames(): Promise<string[]> {
   try {
@@ -16,7 +17,7 @@ export async function flushAllLocalDbs(): Promise<number> {
   for (const name of await localDbNames()) {
     const db = new PampojoDb(name);
     try {
-      await flushOutbox(db);
+      await pushOutbox(db);
       remaining += await pendingCount(db);
     } finally {
       db.close();
