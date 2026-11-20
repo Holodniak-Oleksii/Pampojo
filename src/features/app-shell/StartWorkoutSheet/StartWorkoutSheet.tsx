@@ -23,7 +23,11 @@ import { forgottenFinishedAt, isForgotten, loggedCount } from '@/features/sessio
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { cn } from '@/lib/utils';
-import { useSessionRepository, type InProgressSummary } from '@/services/local-db';
+import {
+  useOptionalLocalDb,
+  useSessionRepository,
+  type InProgressSummary,
+} from '@/services/local-db';
 import type { WorkoutListItem } from '@/shared/schemas/workout';
 
 export interface StartWorkoutSheetProps {
@@ -36,6 +40,8 @@ function WorkoutChoices({ onStarted }: { onStarted: () => void }) {
   const { t } = useTranslation();
   const online = useIsOnline();
   const queryClient = useQueryClient();
+  // The device copy holds every live workout, so a start offline needs no cached details.
+  const localDb = useOptionalLocalDb();
   const query = useWorkoutsQuery();
   const { start, pending } = useStartSession();
   const plan = useTodayPlan();
@@ -80,7 +86,7 @@ function WorkoutChoices({ onStarted }: { onStarted: () => void }) {
     <WorkoutChoiceRow
       key={item.id}
       item={item}
-      uncached={!online && !queryClient.getQueryData(workoutKeys.detail(item.id))}
+      uncached={!online && !localDb && !queryClient.getQueryData(workoutKeys.detail(item.id))}
       pending={pending}
       onStart={async () => {
         if (await start(item.id)) onStarted();

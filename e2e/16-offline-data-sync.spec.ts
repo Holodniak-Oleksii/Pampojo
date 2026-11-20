@@ -215,3 +215,79 @@ test.describe('offline data and sync', () => {
     await other.close();
   });
 });
+
+test.describe('an offline gym day on the installed app', () => {
+  // The service worker exists only in production builds.
+  test.skip(
+    !process.env.CI,
+    'needs a production build: pnpm build && CI=1 pnpm exec playwright test e2e/16-offline-data-sync.spec.ts',
+  );
+  test.use({ locale: 'en-US', serviceWorkers: 'allow' });
+  test.slow();
+
+  /** Waits until the worker controls the page and the page cache holds the main app pages. */
+  async function readyForOffline(page: Page) {
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((resolve) =>
+          navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true }),
+        );
+      }
+    });
+    await expect
+      .poll(
+        () =>
+          page.evaluate(async () =>
+            (await (await caches.open('pampojo-pages')).keys()).map(
+              (request) => new URL(request.url).pathname,
+            ),
+          ),
+        { timeout: NETWORK_TIMEOUT },
+      )
+      .toEqual(
+        expect.arrayContaining([
+          '/calendar',
+          '/progress',
+          '/session/00000000-0000-0000-0000-000000000000',
+        ]),
+      );
+  }
+
+  test('a workout started offline opens, finishes and shows in history and progress (AC1)', async ({
+    page,
+    context,
+  }, testInfo) => {
+    await signUp(page);
+    await createWorkout(page, 'Offline Day');
+    await openToday(page);
+    await readyForOffline(page);
+
+    await context.setOffline(true);
+    const start =
+      testInfo.project.name === 'mobile'
+        ? page
+            .getByRole('navigation', { name: 'Main navigation' })
+            .last()
+            .getByRole('button', { name: 'Start workout' })
+        : page.getByRole('complementary').getByRole('button', { name: 'Start workout' });
+    await start.click();
+    await page
+      .getByRole('dialog', { name: 'Choose workout' })
+      .getByRole('button', { name: /Offline Day/ })
+      .click();
+    await page.waitForURL('**/session/*');
+    await page.getByRole('textbox', { name: 'Set 1, weight' }).fill('60');
+    await page.getByRole('textbox', { name: 'Set 1, reps' }).fill('8');
+    await page.getByRole('button', { name: 'Check set 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Finish', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Workout finished' })).toBeVisible();
+
+    await page.goto('/calendar?view=list');
+    await expect(page.getByRole('link', { name: /Offline Day/ }).first()).toBeVisible();
+    await page.goto('/progress');
+    await page.getByText('1M', { exact: true }).click();
+    await expect(page.getByText('76 kg')).toBeVisible();
+    await context.setOffline(false);
+  });
+});

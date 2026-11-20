@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { fetchSession } from '@/api/sessions';
 import { SESSION_STATUS } from '@/constants/session';
 import { useCurrentUserId } from '@/features/auth/CurrentUser';
+import { SESSION_SHELL_ID } from '@/features/pwa/constants';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { useLocalSession, useSessionRepository } from '@/services/local-db';
 import { SessionNotFound } from './SessionNotFound';
@@ -11,8 +12,22 @@ import { SessionSkeleton } from './SessionSkeleton';
 import { SessionSummary } from './SessionSummary';
 import { SessionView } from './SessionView';
 
+const noSubscribe = () => () => {};
+const idFromAddress = () => window.location.pathname.split('/').pop() ?? SESSION_SHELL_ID;
+const shellId = () => SESSION_SHELL_ID;
+
+/**
+ * Offline, the service worker serves the shared session page for a session it has no copy of.
+ * That page renders with the shell id, so the real id comes from the address bar.
+ */
+function useSessionId(routeId: string): string {
+  const addressId = useSyncExternalStore(noSubscribe, idFromAddress, shellId);
+  return routeId === SESSION_SHELL_ID ? addressId : routeId;
+}
+
 /** `/session/[id]`: the session from the device, or from the server when this device lacks it. */
-export function ActiveSession({ sessionId }: { sessionId: string }) {
+export function ActiveSession({ sessionId: routeId }: { sessionId: string }) {
+  const sessionId = useSessionId(routeId);
   const userId = useCurrentUserId();
   const online = useIsOnline();
   const repository = useSessionRepository(userId);

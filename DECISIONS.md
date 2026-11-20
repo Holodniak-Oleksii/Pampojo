@@ -1112,6 +1112,16 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** ADR 0005 gets an amendment that records the spec 16 scope: the working set and the sessions of the last 30 days.
 **Why:** Lead's choice. The ADR must match the decisions of `/grilling 16`.
 
+## 2026-11-21 — Main pages and new sessions open offline (spec 16 AC1)
+
+**Context:** On the production build, a workout started offline opened the offline fallback, and pages not opened online did too. Spec 15 cached only visited pages.
+**Decision:**
+- The app loads the main pages into the page cache in the background, after the first download and after each new worker version.
+- The worker serves one shared session page for a session URL that it has no copy of. The page reads the id from the address bar.
+- With a local database, the "Choose workout" sheet lets the user start any workout offline.
+- `touch()` sets `updated_at` with the database `now()`, so writes and the pull cursor use one clock.
+**Why:** Lead's choice. The gym day must work offline with no earlier visit to each page. ADR 0008 has an amendment.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

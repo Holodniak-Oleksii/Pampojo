@@ -749,3 +749,17 @@ The lead asked to fix every finding of section 12.
    - Each test is a new device, so it waits for the first download (about 15 sequential SQL queries) before the first app page. Every flaky test passes alone. CI runs a production build with one retry.
 
 Checks after the fixes: lint pass, typecheck pass, `pnpm test` 146 files and 895 tests pass, `e2e/16-offline-data-sync.spec.ts` and `06:154` pass.
+
+## 14. Offline fixes on the production build — 2026-11-21
+
+A check on `next build` with the service worker found that AC1 failed. The dev server blocks the worker, so the e2e run did not find it.
+
+1. Fixed. The "Choose workout" sheet showed "Needs internet" for every workout offline. This was the spec 10 rule for a cache-only device. With a local database, the sheet now lets the user start any workout — `StartWorkoutSheet.tsx`.
+2. Fixed. A session started offline opened the offline fallback, because its new URL had no stored copy. The worker now serves the shared session shell, and `ActiveSession` reads the id from the address bar — `src/app/sw.ts`, `ActiveSession.tsx`.
+3. Fixed. Pages not opened online showed the offline fallback. The app now loads the main pages in the background — `useWarmAppPages`, `warmMissingPages`. The page rule ignores the query.
+4. Fixed. `touch()` sets `updated_at` with the database `now()`, which removes the clock skew risk of section 12.
+5. The spec 15 e2e test AC2 now uses `/profile/gym` as the page with no visit, because the app loads `/progress` in the background.
+
+New e2e test: "a workout started offline opens, finishes and shows in history and progress (AC1)". It runs on the production build only.
+
+Checks: lint, typecheck and format pass. `pnpm test` passes 146 files and 899 tests. `CI=1` e2e for specs 15 and 16 on `next build` passes 18 of 18. Full e2e on the dev server with one retry: 204 passed, 0 failed, 7 flaky.

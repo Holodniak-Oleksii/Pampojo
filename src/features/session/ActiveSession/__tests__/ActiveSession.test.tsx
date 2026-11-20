@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SESSION_SHELL_ID } from '@/features/pwa/constants';
 import { openLocalDb } from '@/services/local-db';
 import {
   BENCH_ID,
@@ -35,6 +36,18 @@ afterEach(async () => {
 });
 
 describe('ActiveSession', () => {
+  it('reads the session id from the address on the shared offline page (spec 16 AC1)', async () => {
+    await seedLocal(localSession());
+    const before = window.location.pathname;
+    window.history.replaceState(null, '', `/session/${SESSION}`);
+    try {
+      const screen = await render(<ActiveSession sessionId={SESSION_SHELL_ID} />);
+      await expect.element(screen.getByRole('heading', { name: 'Bench Press' })).toBeVisible();
+    } finally {
+      window.history.replaceState(null, '', before);
+    }
+  });
+
   it('logs a prefilled set with one tap and starts a 90 s rest (AC2)', async () => {
     await seedLocal(localSession());
     const screen = await render(<ActiveSession sessionId={SESSION} />);
