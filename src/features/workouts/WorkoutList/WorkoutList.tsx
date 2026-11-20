@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { Copy, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Copy, MoreHorizontal, Trash2, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -30,6 +30,7 @@ import { ExerciseImage } from '@/features/exercises/ExerciseImage';
 import { useExerciseLabels } from '@/features/exercises/hooks/useExerciseLabels';
 import { usePlanToday } from '@/features/plan';
 import { useStartSession } from '@/features/session/hooks/useStartSession';
+import { showNeedsInternet } from '@/features/offline/OnlineOnly';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import type { WorkoutListItem } from '@/shared/schemas/workout';
 import { duplicateInput } from '../utils';
@@ -40,6 +41,7 @@ export function WorkoutList() {
   const { t } = useTranslation();
   const router = useRouter();
   const online = useIsOnline();
+  const needsInternet = () => showNeedsInternet(t('Needs internet'));
   const labels = useExerciseLabels();
   const queryClient = useQueryClient();
   const query = useWorkoutsQuery();
@@ -164,7 +166,6 @@ export function WorkoutList() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  disabled={!online}
                   aria-label={t('Actions for {{name}}', { name: item.name })}
                   className="mr-1.5 size-11 shrink-0 lg:absolute lg:top-2 lg:right-2 lg:mr-0"
                 >
@@ -182,16 +183,27 @@ export function WorkoutList() {
                   </span>
                   {t('Start')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="min-h-11" onSelect={() => void duplicate(item)}>
-                  <Copy aria-hidden="true" />
+                <DropdownMenuItem
+                  className="min-h-11 data-blocked:text-muted-foreground"
+                  data-blocked={online ? undefined : ''}
+                  aria-label={
+                    online ? undefined : t('{{label}}. Needs internet', { label: t('Duplicate') })
+                  }
+                  onSelect={() => (online ? void duplicate(item) : needsInternet())}
+                >
+                  {online ? <Copy aria-hidden="true" /> : <WifiOff aria-hidden="true" />}
                   {t('Duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  variant="destructive"
-                  className="min-h-11"
-                  onSelect={() => setDeleting(item)}
+                  variant={online ? 'destructive' : 'default'}
+                  className="min-h-11 data-blocked:text-muted-foreground"
+                  data-blocked={online ? undefined : ''}
+                  aria-label={
+                    online ? undefined : t('{{label}}. Needs internet', { label: t('Delete') })
+                  }
+                  onSelect={() => (online ? setDeleting(item) : needsInternet())}
                 >
-                  <Trash2 aria-hidden="true" />
+                  {online ? <Trash2 aria-hidden="true" /> : <WifiOff aria-hidden="true" />}
                   {t('Delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>

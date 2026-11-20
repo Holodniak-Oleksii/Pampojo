@@ -209,14 +209,18 @@ describe('ExerciseDetails', () => {
       .toBeVisible();
   });
 
-  it('disables changes offline with a hint (AC11)', async () => {
+  it('blocks changes offline with the icon and no text label (spec 17 AC4)', async () => {
     mockReducedMotion(false);
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     const screen = await render(<ExerciseDetails exercise={getExerciseMock({ isOwn: true })} />);
 
-    await expect.element(screen.getByRole('button', { name: 'Edit' })).toBeDisabled();
-    await expect.element(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
-    await expect.element(screen.getByText('Needs internet')).toBeVisible();
+    await expect
+      .element(screen.getByRole('link', { name: 'Edit. Needs internet' }))
+      .toHaveAttribute('aria-disabled', 'true');
+    await expect
+      .element(screen.getByRole('button', { name: 'Delete. Needs internet' }))
+      .toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText('Needs internet').elements()).toHaveLength(0);
   });
 
   it('cycles three frames in order and steps through them with reduced motion (AC5)', async () => {

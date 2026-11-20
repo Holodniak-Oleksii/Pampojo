@@ -1,11 +1,11 @@
 'use client';
 
+import { WifiOff } from 'lucide-react';
 import Link from 'next/link';
-import type { ComponentProps, ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Children, isValidElement, type ComponentProps, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
 import { useIsOnline } from '@/hooks/useIsOnline';
-import { cn } from '@/lib/utils';
 
 export interface OnlineLinkButtonProps {
   href: string;
@@ -15,9 +15,15 @@ export interface OnlineLinkButtonProps {
   className?: string;
   /** For an icon-only button. */
   ariaLabel?: string;
+  /** The visible label, for the blocked name of a button with text. */
+  label?: string;
 }
 
-/** A link styled as a button that turns into a disabled button with a hint while offline. */
+const isDecorativeIcon = (child: ReactNode) =>
+  isValidElement<{ 'aria-hidden'?: unknown }>(child) &&
+  (child.props['aria-hidden'] === true || child.props['aria-hidden'] === 'true');
+
+/** A link styled as a button. Offline it is blocked with the WifiOff icon (spec 17). */
 export function OnlineLinkButton({
   href,
   children,
@@ -25,25 +31,28 @@ export function OnlineLinkButton({
   size,
   className,
   ariaLabel,
+  label,
 }: OnlineLinkButtonProps) {
-  const { t } = useTranslation();
   const online = useIsOnline();
+  const iconOnly = ariaLabel !== undefined;
+  // A labelled button leads with WifiOff offline, in place of its own icon.
+  const content =
+    online || iconOnly
+      ? children
+      : [
+          <WifiOff key="offline" aria-hidden="true" />,
+          ...Children.toArray(children).filter((child) => !isDecorativeIcon(child)),
+        ];
 
-  if (!online) {
-    return (
-      <span className={cn('flex flex-col items-start gap-1', className)}>
-        <Button variant={variant} size={size} aria-label={ariaLabel} disabled>
-          {children}
-        </Button>
-        <span className="text-sm text-muted-foreground">{t('Needs internet')}</span>
-      </span>
-    );
-  }
   return (
-    <Button asChild variant={variant} size={size} className={className}>
-      <Link href={href} aria-label={ariaLabel}>
-        {children}
-      </Link>
-    </Button>
+    <OnlineOnly
+      label={ariaLabel ?? label ?? ''}
+      kind={iconOnly ? 'icon' : 'label'}
+      wrapperClassName={className}
+    >
+      <Button asChild variant={variant} size={size} className={className}>
+        <Link href={href}>{content}</Link>
+      </Button>
+    </OnlineOnly>
   );
 }

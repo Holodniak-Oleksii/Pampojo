@@ -30,7 +30,7 @@ afterEach(() => {
 
 describe('DeleteExerciseDialog', () => {
   it('lists the workouts that use the exercise (spec 09 AC13)', async () => {
-    const screen = await render(<DeleteExerciseDialog exerciseId={EXERCISE} disabled={false} />);
+    const screen = await render(<DeleteExerciseDialog exerciseId={EXERCISE} />);
     await screen.getByRole('button', { name: 'Delete' }).click();
     await expect
       .element(screen.getByText('It will also be removed from these workouts:'))
@@ -65,7 +65,7 @@ describe('DeleteExerciseDialog', () => {
       }
       return Response.json({ items: [] });
     });
-    const screen = await render(<DeleteExerciseDialog exerciseId={EXERCISE} disabled={false} />);
+    const screen = await render(<DeleteExerciseDialog exerciseId={EXERCISE} />);
     await screen.getByRole('button', { name: 'Delete' }).click();
     await expect
       .element(screen.getByText('Its sets will be removed from these workouts:'))

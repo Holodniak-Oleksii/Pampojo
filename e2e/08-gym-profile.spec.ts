@@ -137,15 +137,18 @@ test.describe('gym profile', () => {
     ]);
   });
 
-  test('offline, the gym controls are disabled with a hint', async ({ page, context }) => {
+  test('offline, the gym controls are disabled with no text label (spec 17)', async ({
+    page,
+    context,
+  }) => {
     await signUp(page);
     await saveGymViaApi(page, ['dumbbells']);
     await page.goto('/profile/gym');
     await expect(chip(page, 'Dumbbells')).toHaveAttribute('aria-pressed', 'true');
 
     await context.setOffline(true);
-    await expect(page.getByText('Needs internet')).toBeVisible();
     await expect(chip(page, 'Dumbbells')).toBeDisabled();
+    await expect(page.getByText('Needs internet', { exact: true })).toHaveCount(0);
     await expect(
       page.getByRole('region', { name: 'Machines' }).getByRole('button', { name: 'Select all' }),
     ).toBeDisabled();

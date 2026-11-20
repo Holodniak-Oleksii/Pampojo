@@ -271,15 +271,17 @@ describe('ExerciseCatalog', () => {
       .toHaveAttribute('href', '/library/exercises/new');
   });
 
-  it('disables Create exercise offline (AC11)', async () => {
+  it('blocks Create exercise offline (spec 17 AC4)', async () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     respond(() => page([item(1)]));
     const screen = await render(<ExerciseCatalog />);
 
     await expect
-      .element(screen.getByRole('button', { name: 'Create exercise' }).first())
-      .toBeDisabled();
-    expect(screen.getByRole('link', { name: 'Create exercise' }).elements()).toHaveLength(0);
+      .element(screen.getByRole('link', { name: 'Create exercise. Needs internet' }).first())
+      .toHaveAttribute('aria-disabled', 'true');
+    expect(
+      screen.getByRole('link', { name: 'Create exercise', exact: true }).elements(),
+    ).toHaveLength(0);
   });
 
   it('keeps the Mine chip outside the Muscles group', async () => {

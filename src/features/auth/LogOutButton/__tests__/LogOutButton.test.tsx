@@ -82,37 +82,59 @@ describe('LogOutButton', () => {
     localStorage.removeItem('pampojo:onboarding:user-1');
   });
 
-  it('warns about an unsent outbox and deletes the local databases after logging out (spec 10 AC14)', async () => {
-    vi.mocked(authClient.signOut).mockResolvedValue({ data: { success: true }, error: null });
-    const fetchMock = vi.fn(async () => {
-      throw new TypeError('Failed to fetch');
-    });
-    vi.stubGlobal('fetch', fetchMock);
+  async function seedPending() {
     const db = openLocalDb('00000000-0000-4000-8000-00000000eeee');
     await db.sessions.put(localSession());
+    const id = crypto.randomUUID();
     await db.outbox.add({
-      id: crypto.randomUUID(),
+      id,
       type: 'set.put',
       entityId: crypto.randomUUID(),
       payload: {},
       createdAt: new Date().toISOString(),
       attempts: 0,
     });
+    return id;
+  }
+
+  it('asks to sync first and logs out after a sync that empties the outbox (spec 17 AC7)', async () => {
+    vi.mocked(authClient.signOut).mockResolvedValue({ data: { success: true }, error: null });
+    let networkUp = false;
+    const mutationId = await seedPending();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        if (!networkUp) throw new TypeError('Failed to fetch');
+        if (String(input).includes('/sync/push')) {
+          return Response.json({ results: [{ id: mutationId, status: 'applied' }] });
+        }
+        return Response.json({ ok: true });
+      }),
+    );
     const screen = await render(<LogOutButton />);
 
     await screen.getByRole('button', { name: 'Log out' }).click();
     await expect
       .element(
         screen
-          .getByRole('dialog', { name: 'Log out?' })
-          .getByText('Unsynced workout data will be lost. Connect to the internet so it can sync.'),
+          .getByRole('dialog', { name: 'Sync your changes first' })
+          .getByText(
+            '1 change is not on the server yet. Workouts that did not sync will be lost if you log out.',
+          ),
       )
       .toBeVisible();
+    expect(
+      screen
+        .getByRole('dialog', { name: 'Sync your changes first' })
+        .getByRole('button', { name: /Log out/ })
+        .elements(),
+    ).toHaveLength(0);
     expect(authClient.signOut).not.toHaveBeenCalled();
 
+    networkUp = true;
     await screen
-      .getByRole('dialog', { name: 'Log out?' })
-      .getByRole('button', { name: 'Log out' })
+      .getByRole('dialog', { name: 'Sync your changes first' })
+      .getByRole('button', { name: 'Sync now' })
       .click();
     await vi.waitFor(() => expect(authClient.signOut).toHaveBeenCalledTimes(1));
     await expect
@@ -122,5 +144,40 @@ describe('LogOutButton', () => {
       .toEqual([]);
     vi.unstubAllGlobals();
     await resetLocalDbs();
+  });
+
+  it('keeps the dialog with an error when the sync fails (spec 17 AC7)', async () => {
+    await seedPending();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new TypeError('Failed to fetch');
+      }),
+    );
+    const screen = await render(<LogOutButton />);
+
+    await screen.getByRole('button', { name: 'Log out' }).click();
+    await screen
+      .getByRole('dialog', { name: 'Sync your changes first' })
+      .getByRole('button', { name: 'Sync now' })
+      .click();
+    await expect
+      .element(screen.getByRole('dialog', { name: 'Sync your changes first' }).getByRole('alert'))
+      .toHaveTextContent("Couldn't sync. Try again.");
+    expect(authClient.signOut).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+    await resetLocalDbs();
+  });
+
+  it('is blocked offline (spec 17 AC7)', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    const screen = await render(<LogOutButton />);
+    const button = screen.getByRole('button', { name: 'Log out. Needs internet' });
+
+    await expect.element(button).toHaveAttribute('aria-disabled', 'true');
+    // Playwright treats aria-disabled as disabled; a real tap still reaches the button.
+    await button.click({ force: true });
+    expect(authClient.signOut).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
   });
 });

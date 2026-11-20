@@ -1122,6 +1122,39 @@ This supersedes the expanding row in "Workout builder rules".
 - `touch()` sets `updated_at` with the database `now()`, so writes and the pull cursor use one clock.
 **Why:** Lead's choice. The gym day must work offline with no earlier visit to each page. ADR 0008 has an amendment.
 
+## 2026-11-21 — Offline UX scope (spec 17)
+
+**Context:** `/grilling 17`. The lead wants the gym day to work offline with no friction, and blocked actions shown with an icon, not a text label.
+**Decision:**
+- Offline, the page of each workout, the details of each exercise on the device and each measurement page open with no earlier visit. Exercise details read Dexie.
+- A blocked control gets the muted style and a "no network" icon over its corner, with no text label. A tap shows the toast "Needs internet" for 2 seconds. Desktop also shows a tooltip.
+- The pill shows the pending count. A tap opens the sync sheet with the last sync time, "Sync now" and the last error.
+- The service worker caches the images of every exercise in the user's workouts and local sessions.
+- Offline, "Log out" is always blocked. Online with pending changes, the dialog offers "Sync now" and "Cancel", with no "Log out anyway".
+- An unsynced finished session shows a muted line "Saved on this device. Will sync when online." on its summary.
+- Today has no offline strip.
+**Why:** Lead's choices. The gym day must work offline, and blocked actions must not add text or dialogs.
+
+## 2026-11-21 — Offline UX design (spec 17)
+
+**Context:** `/design 17`; canvas boards D17.1–D17.9.
+**Decision:**
+- The "no network" icon is lucide `wifi-off`. An icon-only blocked control gets it in a dark corner badge. A blocked control with a label gets it inside, before the label.
+- Blocked controls keep the spec 16 dashed `--planned` outline. A tap shows a dark toast. Desktop also shows a tooltip.
+- The pill counter shows online too when changes wait.
+- The sync view is a bottom sheet on mobile and a popover on desktop. The last error has a reason per error code.
+- The logout dialog is "Спершу синхронізуй зміни" with "Синхронізувати зараз" and "Скасувати".
+**Why:** Lead's approval of the boards and the new copy.
+
+## 2026-11-21 — Offline UX plan choices (spec 17)
+
+**Context:** `/scratch 17`.
+**Decision:**
+- The workout page does not get a "Почати тренування" button, although the D17.4 board shows one.
+- Exercise details read Dexie first and fall back to the server, as the spec says. The page is no longer rendered on the server, except its title.
+- `useIsOnline` keeps its name and reads the new connectivity store, so the call sites do not change.
+**Why:** Lead's choices. No new feature on the editor, and one data path for every offline page.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

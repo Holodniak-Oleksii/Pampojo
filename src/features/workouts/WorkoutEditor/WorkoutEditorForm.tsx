@@ -16,7 +16,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, WifiOff } from 'lucide-react';
 import { Diamond } from '@/components/Diamond';
 import { useStartSession } from '@/features/session/hooks/useStartSession';
 import Link from 'next/link';
@@ -28,6 +28,7 @@ import { ApiError } from '@/api/http';
 import { usePutWorkoutMutation } from '@/api/workouts';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
 import { Input } from '@/components/ui/input';
 import {
   WORKOUT_DESCRIPTION_MAX,
@@ -294,14 +295,16 @@ export function WorkoutEditorForm({
               onOpen={setOpenKey}
             />
             {desktop ? null : (
-              <Button
-                variant="secondary"
-                disabled={readOnly || room <= 0}
-                onClick={() => setPickerOpen(true)}
-              >
-                <Plus aria-hidden="true" />
-                {t('Add exercises')}
-              </Button>
+              <OnlineOnly label={t('Add exercises')} kind="label">
+                <Button
+                  variant="secondary"
+                  disabled={room <= 0}
+                  onClick={() => setPickerOpen(true)}
+                >
+                  {readOnly ? <WifiOff aria-hidden="true" /> : <Plus aria-hidden="true" />}
+                  {t('Add exercises')}
+                </Button>
+              </OnlineOnly>
             )}
             {room <= 0 ? (
               <p className="text-sm text-muted-foreground">
@@ -311,15 +314,18 @@ export function WorkoutEditorForm({
           </section>
 
           <div className="flex flex-col gap-2 lg:flex-row-reverse lg:items-center lg:justify-start lg:gap-3">
-            <Button
-              size="lg"
-              className="w-full lg:w-auto"
-              disabled={readOnly || !savable || save.isPending}
-              aria-describedby="save-hint"
-              onClick={() => void submit()}
-            >
-              {t('Save')}
-            </Button>
+            <OnlineOnly label={t('Save')} kind="label">
+              <Button
+                size="lg"
+                className="w-full lg:w-auto"
+                disabled={!readOnly && (!savable || save.isPending)}
+                aria-describedby="save-hint"
+                onClick={() => void submit()}
+              >
+                {readOnly ? <WifiOff aria-hidden="true" /> : null}
+                {t('Save')}
+              </Button>
+            </OnlineOnly>
             <Button asChild variant="ghost" size="lg" className="w-full lg:w-auto">
               <Link href={LIST_PATH} onClick={leave}>
                 {t('Cancel')}
@@ -327,11 +333,7 @@ export function WorkoutEditorForm({
             </Button>
           </div>
           <p id="save-hint" className="-mt-3 text-sm text-muted-foreground lg:text-right">
-            {readOnly
-              ? t('Needs internet')
-              : savable
-                ? null
-                : t('Add a name and at least one exercise to save.')}
+            {readOnly || savable ? null : t('Add a name and at least one exercise to save.')}
           </p>
         </div>
       </div>

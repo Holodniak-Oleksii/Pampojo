@@ -1,18 +1,7 @@
 import { useSyncExternalStore } from 'react';
+import { isOnline, subscribeConnectivity } from '@/services/connectivity';
 
-function subscribe(onChange: () => void) {
-  window.addEventListener('online', onChange);
-  window.addEventListener('offline', onChange);
-  return () => {
-    window.removeEventListener('online', onChange);
-    window.removeEventListener('offline', onChange);
-  };
-}
-
+/** The one source for online checks: `navigator.onLine` plus the health ping (spec 17). */
 export function useIsOnline(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => navigator.onLine,
-    () => true,
-  );
+  return useSyncExternalStore(subscribeConnectivity, isOnline, () => true);
 }

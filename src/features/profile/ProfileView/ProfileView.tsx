@@ -1,5 +1,6 @@
 'use client';
 
+import { WifiOff } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProfileQuery } from '@/api/profile';
@@ -8,6 +9,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { UNIT_SYSTEM } from '@/constants/profile';
 import { LogOutButton } from '@/features/auth/LogOutButton';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
+import { useRequiresOnline } from '@/features/offline/hooks/useRequiresOnline';
 import { GymNudgeCard } from '@/features/gym/GymNudgeCard';
 import { GymProfileRow } from '@/features/gym/GymProfileRow';
 import { useProfileMeasurements } from '@/features/measurements';
@@ -27,6 +30,7 @@ export interface ProfileViewProps {
 
 export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
   const { t } = useTranslation();
+  const { blocked } = useRequiresOnline();
   const format = useFormat();
   const { data } = useProfileQuery({ initialData: initialProfile });
   const profile = data ?? initialProfile;
@@ -81,9 +85,12 @@ export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
             <InstallRow />
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" className="sm:flex-1" onClick={() => setEditing(true)}>
-              {t('Edit profile')}
-            </Button>
+            <OnlineOnly label={t('Edit profile')} kind="label">
+              <Button size="lg" className="sm:flex-1" onClick={() => setEditing(true)}>
+                {blocked ? <WifiOff aria-hidden="true" /> : null}
+                {t('Edit profile')}
+              </Button>
+            </OnlineOnly>
             <LogOutButton size="lg" className="sm:flex-1" />
           </div>
         </div>

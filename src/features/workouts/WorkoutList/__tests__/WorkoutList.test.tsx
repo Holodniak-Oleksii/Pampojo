@@ -127,12 +127,16 @@ describe('WorkoutList', () => {
     await vi.waitFor(() => expect(calls().some((call) => call.method === 'DELETE')).toBe(true));
   });
 
-  it('disables the actions offline', async () => {
+  it('keeps Start offline and blocks duplicate and delete (spec 17 AC4, AC5)', async () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     respond(() => Response.json({ items: [getWorkoutListItemMock()] }));
     const screen = await render(<WorkoutList />);
+    await screen.getByRole('button', { name: 'Actions for Push Day' }).click();
+    await expect.element(screen.getByRole('menuitem', { name: 'Start' })).toBeVisible();
     await expect
-      .element(screen.getByRole('button', { name: 'Actions for Push Day' }))
-      .toBeDisabled();
+      .element(screen.getByRole('menuitem', { name: 'Duplicate. Needs internet' }))
+      .toBeVisible();
+    await screen.getByRole('menuitem', { name: 'Delete. Needs internet' }).click();
+    expect(screen.getByRole('dialog').elements()).toHaveLength(0);
   });
 });

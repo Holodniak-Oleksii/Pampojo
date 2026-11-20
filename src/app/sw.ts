@@ -1,13 +1,23 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 import type { PrecacheEntry, SerwistGlobalConfig, SerwistPlugin } from 'serwist';
-import { NetworkFirst, NetworkOnly, Serwist } from 'serwist';
 import {
+  CacheableResponsePlugin,
+  CacheFirst,
+  ExpirationPlugin,
+  NetworkFirst,
+  NetworkOnly,
+  Serwist,
+} from 'serwist';
+import {
+  IMAGES_CACHE,
+  IMAGES_CACHE_MAX_ENTRIES,
   isAppPagePath,
   isSessionPagePath,
   OFFLINE_PATH,
   PAGES_CACHE,
   SESSION_SHELL_PATH,
+  STORAGE_OBJECT_PATH,
 } from '@/features/pwa/constants';
 
 declare global {
@@ -36,6 +46,15 @@ const sessionShell: SerwistPlugin = {
   handlerDidError: async () =>
     (await caches.match(SESSION_SHELL_PATH, { cacheName: PAGES_CACHE })) ??
     (await serwist.matchPrecache(OFFLINE_PATH)),
+};
+
+// A signed URL of an own image changes every hour, so the key drops the query and the image stays.
+const imageKeyWithoutQuery: SerwistPlugin = {
+  cacheKeyWillBeUsed: async ({ request }) => {
+    const url = new URL(request.url);
+    url.search = '';
+    return url.href;
+  },
 };
 
 const serwist = new Serwist({
@@ -67,6 +86,18 @@ const serwist = new Serwist({
         // The pages read their query on the client, so one copy serves every query.
         matchOptions: { ignoreSearch: true },
         plugins: [htmlOnly],
+      }),
+    },
+    {
+      matcher: ({ request, url }) =>
+        request.method === 'GET' && url.pathname.includes(STORAGE_OBJECT_PATH),
+      handler: new CacheFirst({
+        cacheName: IMAGES_CACHE,
+        plugins: [
+          imageKeyWithoutQuery,
+          new CacheableResponsePlugin({ statuses: [200] }),
+          new ExpirationPlugin({ maxEntries: IMAGES_CACHE_MAX_ENTRIES, purgeOnQuotaError: true }),
+        ],
       }),
     },
     { matcher: () => true, handler: new NetworkOnly() },

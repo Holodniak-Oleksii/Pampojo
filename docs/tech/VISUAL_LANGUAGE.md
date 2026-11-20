@@ -146,7 +146,8 @@ The structure is unchanged: Calendar, Library, Play, Progress, Profile.
 ### Status pill
 
 - Online: `--card`, a green diamond dot, "Онлайн".
-- Offline: `--foreground` with an accent outline diamond, "Офлайн" and a pending counter. It is a button that opens the sync sheet.
+- Offline: `--foreground` with an accent outline diamond, "Офлайн".
+- Both states add an accent pending counter when changes wait. The pill is a button that opens the sync sheet (mobile) or popover (desktop).
 
 ### Lists
 
@@ -186,10 +187,10 @@ The structure is unchanged: Calendar, Library, Play, Progress, Profile.
   - Below it, the week: 7 days with diamonds (done accent, today a dark outline, planned a `--planned` outline) and "N з M".
 - **Empty states.** A headline, one sentence, and the real next steps as a short list with numbered diamonds when the path has steps. Then one main action, sized to its label from `sm` up, and at most one quiet secondary link. No grey placeholder bars, which read as a loading skeleton, and never an icon in a bubble.
 - **Rest day.** "Сьогодні відпочинок", a hint that Play starts any workout, and a card for the next workout with thumbnails and "Переглянути тренування".
-- **Offline.**
-  - The dark status pill plus a quiet strip: "Ти офлайн" and how many changes are saved on the phone.
-  - Actions that need the network are disabled with "Потрібен інтернет". Starting a session stays enabled.
-  - A missing cached photo becomes a grey "Фото офлайн" tile.
+- **Offline (spec 17).**
+  - The dark status pill with the pending counter. There is no offline strip.
+  - Actions that need the network show the lucide `wifi-off` icon and have no text label. An icon-only control gets the icon in a dark corner badge. A control with a label gets it before the label. A tap shows the toast "Потрібен інтернет". Starting a session stays enabled.
+  - A missing cached photo shows the existing placeholder.
 - **Desktop.** Sidebar, then the main card on the left with a narrower column on the right (week, next workout). Never a stretched mobile column.
 - **Landing.** The structure is unchanged, with these treatments:
   - the hero shows the real workout UI instead of a phone mockup;
@@ -220,9 +221,7 @@ These are drafts from the mockups. Each is confirmed in the `/grilling` of the s
 | Today, no workouts | Тренувань ще немає / Створи перше тренування, щоб почати. / Обери вправи з каталогу, задай підходи, повтори й вагу. / Створити перше тренування | 09 |
 | Today, week with no plan | Тут зʼявиться твій план, коли поставиш тренування в календар. | 12 |
 | Today, rest day | Сьогодні відпочинок / За планом тренування немає. Хочеш позайматися, натисни Play. / Наступне тренування, N вправ / Переглянути тренування | 12 |
-| Offline strip | Ти офлайн / Тренуйся як завжди. N змін збережено на телефоні, синхронізуємо їх, щойно зʼявиться мережа. | 16 |
-| Sync sheet | Чекають синхронізації / Остання синхронізація / Підходи, тренування й заміри зберігаються на телефоні. Не виходь з акаунта, поки зміни не синхронізуються, інакше вони загубляться. / Синхронізувати зараз | 16 |
-| Cached photo missing | Фото офлайн | 17 |
+| Sync sheet | Final copy in spec 17 "Copy" | 17 |
 
 ## Constraints
 

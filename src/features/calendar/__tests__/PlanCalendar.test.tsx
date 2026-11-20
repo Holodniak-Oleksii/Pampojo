@@ -84,13 +84,11 @@ describe('PlanCalendar', () => {
     respond([getScheduleRuleMock()]);
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     const screen = await render(<PlanCalendar />);
-    await expect.element(screen.getByText('Needs internet to change the schedule.')).toBeVisible();
     await expect
-      .element(screen.getByRole('button', { name: 'Schedule workout' }).first())
-      .toBeDisabled();
-    await expect
-      .element(screen.getByRole('button', { name: 'Actions for Push Day' }))
-      .toBeDisabled();
+      .element(screen.getByRole('button', { name: 'Actions for Push Day. Needs internet' }))
+      .toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText('Needs internet to change the schedule.').elements()).toHaveLength(0);
+    expect(screen.getByText('Needs internet').elements()).toHaveLength(0);
     await expect.element(screen.getByRole('button', { name: 'Start', exact: true })).toBeEnabled();
   });
 

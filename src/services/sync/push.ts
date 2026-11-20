@@ -3,7 +3,7 @@ import { SYNC_MUTATION_TYPE, SYNC_PUSH_BATCH_MAX, SYNC_PUSH_STATUS } from '@/con
 import { SESSION_STATUS } from '@/constants/session';
 import type { OutboxEntry, PampojoDb } from '@/services/local-db/db';
 import { pushResponseSchema, type SyncMutation } from '@/shared/schemas/sync';
-import { updateSyncMeta } from './meta';
+import { readSyncMeta, updateSyncMeta } from './meta';
 
 export const SYNC_PUSH_PATH = '/api/v1/sync/push';
 
@@ -69,6 +69,10 @@ export async function pushOutbox(
         } else if (result.status === SYNC_PUSH_STATUS.APPLIED) {
           applied.push(entry);
         }
+      }
+      // The sync view shows the last rejection until a batch passes with none.
+      if (rejected.length === 0 && (await readSyncMeta(db)).lastError !== null) {
+        await updateSyncMeta(db, { lastError: null });
       }
     });
     for (const { entry, code } of rejected) options.onRejected?.(entry, code);

@@ -134,7 +134,7 @@ export function ExerciseCatalog() {
     </>
   );
   const createButton = (
-    <OnlineLinkButton href="/library/exercises/new" size="sm">
+    <OnlineLinkButton href="/library/exercises/new" label={t('Create exercise')} size="sm">
       <Plus aria-hidden="true" />
       {t('Create exercise')}
     </OnlineLinkButton>
@@ -168,7 +168,7 @@ export function ExerciseCatalog() {
           title={t('No exercises of your own yet')}
           description={t('Create one for anything the catalog misses.')}
           action={
-            <OnlineLinkButton href="/library/exercises/new">
+            <OnlineLinkButton href="/library/exercises/new" label={t('Create exercise')}>
               {t('Create exercise')}
             </OnlineLinkButton>
           }
