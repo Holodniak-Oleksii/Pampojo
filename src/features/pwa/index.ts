@@ -3,4 +3,5 @@ export { InstallCard } from './InstallCard';
 export { InstallRow } from './InstallRow';
 export { requestPersistentStorage } from './persist';
 export { PwaProvider } from './PwaProvider';
-export { exerciseDetailPaths, warmPages } from './warm-pages';
+export { useWarmAppPages } from './useWarmAppPages';
+export { exerciseDetailPaths, warmMissingPages, warmPages } from './warm-pages';

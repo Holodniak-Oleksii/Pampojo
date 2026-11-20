@@ -44,3 +44,17 @@ The Turbopack route did not work in production. Under `cacheComponents` the rout
 - **Precache:** `precachePrerendered: false`, because app pages are per-user and cached at runtime. `/offline` is an additional entry.
 - **Dependencies:** `@serwist/turbopack` is replaced by `@serwist/next` and `@serwist/cli` (dev). Registration uses `SerwistProvider` from `@serwist/next/react`. `serwist` and `esbuild` stay.
 - **Unchanged:** the worker source, the caching rules, the update behaviour and `reloadOnOnline={false}`.
+
+## Amendment — 2026-11-21: main pages open offline before a visit
+
+Spec 16 AC1 failed on the production build. These are the two causes:
+
+- A page that the user did not open online showed the offline fallback, for example Progress before the first gym day.
+- A session that the user started offline has a new URL, so the worker had no copy and showed the offline fallback.
+
+The worker deletes the page cache on each new version, so the first cause also occurred after each deploy.
+
+- **Warm-up:** when the worker controls the page and the first download is done, the app loads the missing main pages in the background. The pages are `/today`, `/calendar`, `/progress`, `/library/workouts`, `/library/exercises`, `/profile` and the session shell. The list is `WARM_PAGE_PATHS` in `src/features/pwa/constants.ts`.
+- **Query:** the page rule matches a stored page without its query, because the pages read the query on the client.
+- **Session shell:** `/session/<nil UUID>` is a session page with no session. For a `/session/<id>` request that fails with no stored copy, the worker serves this shell. `ActiveSession` then reads the id from the address bar.
+- **Unchanged:** other pages, for example exercise details and `/profile/gym`, open offline only after a visit.

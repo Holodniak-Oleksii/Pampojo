@@ -1,10 +1,18 @@
 import { onlineManager } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRef } from 'react';
-import { localSession, localSet, resetLocalDbs, seedLocal } from '@/test/local-session';
+import { openLocalDb, type LocalWorkout } from '@/services/local-db';
+import {
+  BENCH_ID,
+  localSession,
+  localSet,
+  resetLocalDbs,
+  seedLocal,
+  WORKOUT_ID,
+} from '@/test/local-session';
 import type { ScheduleRule } from '@/shared/schemas/plan';
 import { getScheduleRuleMock, getWorkoutListItemMock } from '@/test/mocks';
-import { render } from '@/test/render';
+import { render, TEST_USER_ID } from '@/test/render';
 import { StartWorkoutSheet } from '..';
 
 const push = vi.fn();
@@ -55,6 +63,34 @@ describe('StartWorkoutSheet', () => {
     await expect.element(screen.getByRole('button', { name: /Push Day/ })).toBeEnabled();
     await expect.element(screen.getByRole('button', { name: /Legs/ })).toBeDisabled();
     await expect.element(screen.getByText('0 exercises. Add exercises to start.')).toBeVisible();
+  });
+
+  it('starts any workout offline when the device has its local copy (spec 16 AC1)', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    const workout: LocalWorkout = {
+      id: WORKOUT_ID,
+      name: 'Push Day',
+      description: null,
+      updatedAt: '2026-11-01T10:00:00.000Z',
+      deletedAt: null,
+      exercises: [
+        {
+          id: crypto.randomUUID(),
+          exerciseId: BENCH_ID,
+          targetSets: 3,
+          targetRepsMin: 8,
+          targetRepsMax: 8,
+          targetWeightKg: null,
+          targetDurationSec: null,
+          targetDistanceM: null,
+          notes: null,
+        },
+      ],
+    };
+    await openLocalDb(TEST_USER_ID).workouts.put(workout);
+    const screen = await render(sheet(), { localDb: true });
+    await expect.element(screen.getByRole('button', { name: /Push Day/ })).toBeEnabled();
+    expect(screen.getByText('Needs internet').elements()).toHaveLength(0);
   });
 
   it('disables a workout that is not cached when offline', async () => {

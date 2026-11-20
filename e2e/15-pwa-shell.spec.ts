@@ -99,7 +99,8 @@ test.describe('PWA shell', () => {
     await context.setOffline(true);
     await page.goto('/today');
     await expect(page.getByText(/^Good (morning|afternoon|evening)/)).toBeVisible();
-    await page.goto('/progress');
+    // The app loads its main pages in the background, so the never-visited page is a nested one.
+    await page.goto('/profile/gym');
     await expect(page.getByRole('heading', { name: 'No connection' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
     await context.setOffline(false);

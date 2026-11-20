@@ -3,9 +3,15 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { LocalDbProvider, useRequiredLocalDb } from '@/services/local-db';
 import { useSyncRunner } from '@/services/sync';
+import { useWarmAppPages } from '@/features/pwa';
 import { LocalDataGate } from '@/features/sync/LocalDataGate';
 
 const CurrentUserContext = createContext<string | null>(null);
+
+function PageWarmer() {
+  useWarmAppPages();
+  return null;
+}
 
 function SyncRunner() {
   useSyncRunner(useRequiredLocalDb());
@@ -41,7 +47,10 @@ export function CurrentUserProvider({
     <CurrentUserContext.Provider value={userId}>
       <LocalDbProvider userId={userId}>
         <SyncRunner />
-        <LocalDataGate fallback={fallback}>{children}</LocalDataGate>
+        <LocalDataGate fallback={fallback}>
+          <PageWarmer />
+          {children}
+        </LocalDataGate>
       </LocalDbProvider>
     </CurrentUserContext.Provider>
   );

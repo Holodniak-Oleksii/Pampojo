@@ -2,7 +2,13 @@
 /// <reference lib="webworker" />
 import type { PrecacheEntry, SerwistGlobalConfig, SerwistPlugin } from 'serwist';
 import { NetworkFirst, NetworkOnly, Serwist } from 'serwist';
-import { isAppPagePath, OFFLINE_PATH, PAGES_CACHE } from '@/features/pwa/constants';
+import {
+  isAppPagePath,
+  isSessionPagePath,
+  OFFLINE_PATH,
+  PAGES_CACHE,
+  SESSION_SHELL_PATH,
+} from '@/features/pwa/constants';
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -22,6 +28,16 @@ const htmlOnly: SerwistPlugin = {
       : null,
 };
 
+const isPageRequest = (request: Request, url: URL) =>
+  request.method === 'GET' && !url.searchParams.has('_rsc') && !request.headers.has('RSC');
+
+// A session started offline has a new URL with no stored copy, so the shared session page opens it.
+const sessionShell: SerwistPlugin = {
+  handlerDidError: async () =>
+    (await caches.match(SESSION_SHELL_PATH, { cacheName: PAGES_CACHE })) ??
+    (await serwist.matchPrecache(OFFLINE_PATH)),
+};
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   // A new version waits for the next launch, so a running workout is never reloaded.
@@ -35,14 +51,21 @@ const serwist = new Serwist({
     },
     {
       matcher: ({ request, url, sameOrigin }) =>
-        sameOrigin &&
-        request.method === 'GET' &&
-        isAppPagePath(url.pathname) &&
-        !url.searchParams.has('_rsc') &&
-        !request.headers.has('RSC'),
+        sameOrigin && isPageRequest(request, url) && isSessionPagePath(url.pathname),
       handler: new NetworkFirst({
         cacheName: PAGES_CACHE,
         networkTimeoutSeconds: 4,
+        plugins: [htmlOnly, sessionShell],
+      }),
+    },
+    {
+      matcher: ({ request, url, sameOrigin }) =>
+        sameOrigin && isPageRequest(request, url) && isAppPagePath(url.pathname),
+      handler: new NetworkFirst({
+        cacheName: PAGES_CACHE,
+        networkTimeoutSeconds: 4,
+        // The pages read their query on the client, so one copy serves every query.
+        matchOptions: { ignoreSearch: true },
         plugins: [htmlOnly],
       }),
     },
