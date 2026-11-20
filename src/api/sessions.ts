@@ -1,4 +1,5 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { listLocalSessions, useLocalQuery, useOptionalLocalDb } from '@/services/local-db';
 import { HISTORY_PAGE_SIZE } from '@/constants/plan';
 import { SESSION_STATUS } from '@/constants/session';
 import {
@@ -62,9 +63,14 @@ export function useSessionsQuery(
   filters: SessionListQuery,
   { enabled = true }: { enabled?: boolean } = {},
 ) {
-  return useQuery({
-    queryKey: sessionKeys.list(filters),
-    queryFn: () => fetchSessions(filters),
+  const db = useOptionalLocalDb();
+  // The 30-day window holds every in-progress session and every session of a planned date.
+  const local = filters.status === SESSION_STATUS.IN_PROGRESS || filters.scheduledFor !== undefined;
+  return useLocalQuery({
+    queryKey: [...sessionKeys.list(filters), local && db ? 'local' : 'remote'],
+    db: local ? db : null,
+    read: (localDb) => listLocalSessions(localDb, filters),
+    remote: () => fetchSessions(filters),
     enabled,
   });
 }

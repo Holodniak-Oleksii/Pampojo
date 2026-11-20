@@ -37,6 +37,11 @@ export function ActiveSession({ sessionId }: { sessionId: string }) {
     };
   }, [data, online, remote, repository, sessionId]);
 
+  const inProgress = local?.status === SESSION_STATUS.IN_PROGRESS;
+  useEffect(() => {
+    if (inProgress) void repository.activate(sessionId);
+  }, [inProgress, repository, sessionId]);
+
   // Offline, a session the device does not have cannot be fetched, so it is not found.
   const missing = remote === 'missing' || !online;
   let content;

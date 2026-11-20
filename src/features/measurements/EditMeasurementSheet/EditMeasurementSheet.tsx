@@ -1,5 +1,6 @@
 'use client';
 
+import { useMeasurementsAvailable } from '../hooks/useMeasurementsAvailable';
 import { useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +12,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import type { UnitSystem } from '@/constants/profile';
 import { dayMonth } from '@/features/plan/formatPlanDate';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
-import { useIsOnline } from '@/hooks/useIsOnline';
 import { useLocale } from '@/i18n/client';
 import { cn } from '@/lib/utils';
 import type { Measurement } from '@/shared/schemas/measurement';
@@ -77,7 +77,8 @@ function EditForm({
 }) {
   const { t } = useTranslation();
   const locale = useLocale();
-  const online = useIsOnline();
+  // True offline too when the device keeps the data (spec 16).
+  const online = useMeasurementsAvailable();
   const update = useUpdateMeasurementMutation();
   const remove = useDeleteMeasurementMutation();
   const { type } = measurement;

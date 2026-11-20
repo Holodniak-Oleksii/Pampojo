@@ -2,7 +2,6 @@
 
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
-import { SESSION_STATUS } from '@/constants/session';
 import {
   localSessionSchema,
   localSetLogSchema,
@@ -11,6 +10,7 @@ import {
   type LocalSetLog,
   type PampojoDb,
 } from './db';
+import { findActiveSession } from './active-session';
 import { lastPerformanceFor } from './last-performance';
 import { findCompletedSessionsBetween, findScheduledSessions } from './scheduled';
 import type { StatusSession } from '@/shared/plan/statuses';
@@ -52,13 +52,15 @@ export interface InProgressSummary {
   setLogs: LocalSetLog[];
 }
 
-/** The newest in-progress session on this device, or `null`; `undefined` while loading. */
+/**
+ * The active in-progress session of this device, or `null`; `undefined` while loading. It is the
+ * one this device started or opened last, else the newest one of this device, else the newest
+ * one from another device.
+ */
 export function useLocalInProgress(userId: string): InProgressSummary | null | undefined {
   const db = useLocalDb(userId);
   return useLiveQuery(async () => {
-    const rows = await db.sessions.where('status').equals(SESSION_STATUS.IN_PROGRESS).toArray();
-    const newest = rows.sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
-    const parsed = localSessionSchema.safeParse(newest);
+    const parsed = localSessionSchema.safeParse(await findActiveSession(db));
     if (!parsed.success) return null;
     const setLogs = (await db.setLogs.where('sessionId').equals(parsed.data.id).toArray()).filter(
       (log) => log.deletedAt === null,

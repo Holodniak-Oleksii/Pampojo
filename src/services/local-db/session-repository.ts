@@ -1,5 +1,5 @@
-import { sessionPath, setPath } from '@/api/sessions';
 import { REST, SESSION_SETS_MAX, SESSION_STATUS } from '@/constants/session';
+import { SYNC_MUTATION_TYPE } from '@/constants/sync';
 import type {
   PatchSessionInput,
   PatchSetInput,
@@ -11,6 +11,7 @@ import type {
   WorkoutSnapshot,
 } from '@/shared/schemas/session';
 import type { LocalSession, LocalSetLog, PampojoDb } from './db';
+import { clearActiveSession, findActiveSession, setActiveSession } from './active-session';
 import { enqueue, notifyOutbox } from './outbox';
 import { rememberNewRecords } from './records';
 import type { Bests } from '@/shared/schemas/progress';
@@ -46,7 +47,7 @@ function nowIso(): string {
  */
 export function createSessionRepository(db: PampojoDb) {
   async function write<T>(fn: () => Promise<T>): Promise<T> {
-    const result = await db.transaction('rw', [db.sessions, db.setLogs, db.outbox], fn);
+    const result = await db.transaction('rw', [db.sessions, db.setLogs, db.outbox, db.meta], fn);
     notifyOutbox();
     return result;
   }
@@ -59,7 +60,11 @@ export function createSessionRepository(db: PampojoDb) {
 
   async function patch(sessionId: string, body: PatchSessionInput, local: Partial<LocalSession>) {
     await db.sessions.update(sessionId, { ...local, updatedAt: nowIso() });
-    await enqueue(db, { method: 'PATCH', path: sessionPath(sessionId), body });
+    await enqueue(db, {
+      type: SYNC_MUTATION_TYPE.SESSION_PATCH,
+      entityId: sessionId,
+      payload: body,
+    });
   }
 
   return {
@@ -90,7 +95,12 @@ export function createSessionRepository(db: PampojoDb) {
           drafts: {},
           newRecords: null,
         });
-        await enqueue(db, { method: 'PUT', path: sessionPath(input.id), body });
+        await enqueue(db, {
+          type: SYNC_MUTATION_TYPE.SESSION_PUT,
+          entityId: input.id,
+          payload: body,
+        });
+        await setActiveSession(db, input.id);
       });
     },
 
@@ -135,7 +145,7 @@ export function createSessionRepository(db: PampojoDb) {
           distanceM: set.distanceM,
           completedAt,
         };
-        await enqueue(db, { method: 'PUT', path: setPath(set.id), body });
+        await enqueue(db, { type: SYNC_MUTATION_TYPE.SET_PUT, entityId: set.id, payload: body });
         return set;
       });
     },
@@ -143,7 +153,7 @@ export function createSessionRepository(db: PampojoDb) {
     async editSet(setId: string, values: PatchSetInput): Promise<void> {
       await write(async () => {
         await db.setLogs.update(setId, values);
-        await enqueue(db, { method: 'PATCH', path: setPath(setId), body: values });
+        await enqueue(db, { type: SYNC_MUTATION_TYPE.SET_PATCH, entityId: setId, payload: values });
       });
     },
 
@@ -170,7 +180,7 @@ export function createSessionRepository(db: PampojoDb) {
             ...(stopRest ? { restEndsAt: null, restSetId: null } : {}),
           });
         }
-        await enqueue(db, { method: 'DELETE', path: setPath(setId) });
+        await enqueue(db, { type: SYNC_MUTATION_TYPE.SET_DELETE, entityId: setId });
       });
     },
 
@@ -251,6 +261,7 @@ export function createSessionRepository(db: PampojoDb) {
           { status: SESSION_STATUS.COMPLETED, finishedAt },
           { status: SESSION_STATUS.COMPLETED, finishedAt, restEndsAt: null, restSetId: null },
         );
+        await clearActiveSession(db, sessionId);
       });
       // Records first: rememberLastPerformance overwrites the stored bests that are the baseline.
       const bests = await rememberNewRecords(db, sessionId);
@@ -271,6 +282,7 @@ export function createSessionRepository(db: PampojoDb) {
           { status: SESSION_STATUS.ABANDONED },
           { status: SESSION_STATUS.ABANDONED, finishedAt: deletedAt, restEndsAt: null },
         );
+        await clearActiveSession(db, sessionId);
       });
     },
 
@@ -293,7 +305,21 @@ export function createSessionRepository(db: PampojoDb) {
     },
 
     findInProgress(): Promise<LocalSession | undefined> {
-      return db.sessions.where('status').equals(SESSION_STATUS.IN_PROGRESS).last();
+      return findActiveSession(db);
+    },
+
+    /**
+     * Makes an opened in-progress session the active one of this device, unless the device
+     * already has another active session of its own.
+     */
+    async activate(sessionId: string): Promise<void> {
+      await db.transaction('rw', [db.sessions, db.meta], async () => {
+        const session = await db.sessions.get(sessionId);
+        if (session?.status !== SESSION_STATUS.IN_PROGRESS) return;
+        const active = await findActiveSession(db);
+        if (active && active.id !== sessionId && active.deviceOwned !== false) return;
+        await setActiveSession(db, sessionId);
+      });
     },
   };
 }

@@ -8,15 +8,14 @@ export const viewport: Viewport = { viewportFit: 'cover' };
 
 /** Full screen, no app shell: the session hides the navigation. */
 export default function SessionLayout({ children }: LayoutProps<'/[lang]/session'>) {
+  const skeleton = (
+    <div className="min-h-dvh bg-background text-foreground">
+      <SessionSkeleton />
+    </div>
+  );
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-dvh bg-background text-foreground">
-          <SessionSkeleton />
-        </div>
-      }
-    >
-      <SessionGate>{children}</SessionGate>
+    <Suspense fallback={skeleton}>
+      <SessionGate fallback={skeleton}>{children}</SessionGate>
     </Suspense>
   );
 }

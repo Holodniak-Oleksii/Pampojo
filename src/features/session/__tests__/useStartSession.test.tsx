@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MakeUpPromptProvider } from '@/features/plan';
-import { openLocalDb } from '@/services/local-db';
+import {
+  fromWorkoutResponse,
+  openLocalDb,
+  putLocalProfile,
+  putLocalRules,
+} from '@/services/local-db';
 import { addDays, isoWeekday } from '@/shared/plan/occurrences';
 import type { ScheduleRule } from '@/shared/schemas/plan';
 import { resetLocalDbs } from '@/test/local-session';
@@ -43,8 +48,49 @@ function Starter() {
   );
 }
 
+/** The device copy that a pull would have written: the start reads only Dexie. */
+async function seedDevice(rules: ScheduleRule[]) {
+  const db = openLocalDb(TEST_USER_ID);
+  await putLocalProfile(db, getProfileMock({ timeZone: zone }));
+  await putLocalRules(db, rules);
+  await db.workouts.put(fromWorkoutResponse(workout));
+  await db.exercises.bulkPut(
+    workout.exercises.map(({ exercise }) => ({
+      id: exercise.id,
+      isOwn: 0 as const,
+      primaryMuscles: exercise.primaryMuscles,
+      secondaryMuscles: [],
+      equipment: [],
+      movementPattern: null,
+      mechanic: null,
+      laterality: exercise.laterality,
+      trackingType: exercise.trackingType,
+      difficulty: null,
+      popularity: null,
+      frames: [],
+      gymEquipment: [],
+      sourceExerciseId: null,
+      updatedAt: workout.updatedAt,
+      deletedAt: null,
+      translations: [
+        {
+          locale: 'en' as const,
+          name: exercise.name,
+          aliases: [],
+          description: '',
+          instructions: [],
+          commonMistakes: [],
+          searchName: exercise.name.toLowerCase(),
+          searchAliases: '',
+        },
+      ],
+    })),
+  );
+}
+
 async function setup(rules: ScheduleRule[]) {
   respond(rules);
+  await seedDevice(rules);
   return render(
     <MakeUpPromptProvider>
       <Starter />

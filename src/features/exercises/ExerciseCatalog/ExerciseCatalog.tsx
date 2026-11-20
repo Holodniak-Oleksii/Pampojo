@@ -4,7 +4,8 @@ import { Dumbbell, Plus, SearchX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NETWORK_ERROR } from '@/api/http';
-import { useExercisesInfiniteQuery } from '@/api/exercises';
+import { useExercisesInfiniteQuery, useLocalCatalog } from '@/api/exercises';
+import { OfflineCatalogHint, OfflineSearchEmpty } from '../OfflineCatalog';
 import { useGymQuery } from '@/api/gym';
 import { Diamond } from '@/components/Diamond';
 import { EmptyState } from '@/components/EmptyState';
@@ -67,6 +68,7 @@ export function ExerciseCatalog() {
     resetFilters,
   } = useCatalogParams();
   const query = useExercisesInfiniteQuery(filters);
+  const localCatalog = useLocalCatalog();
   // The chip stays hidden until the gym is saved; the API ignores gym=1 without one.
   const { data: gym } = useGymQuery();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError } = query;
@@ -138,7 +140,7 @@ export function ExerciseCatalog() {
     </OnlineLinkButton>
   );
   // Offline, TanStack Query pauses the request; a fetch that fails on the way is a network error.
-  const offline = query.fetchStatus === 'paused' || isNetworkError(query.error);
+  const offline = !localCatalog && (query.fetchStatus === 'paused' || isNetworkError(query.error));
   const offlineNotice = (
     <OfflineNotice>{t("You're offline. Connect to the internet to load exercises.")}</OfflineNotice>
   );
@@ -172,6 +174,10 @@ export function ExerciseCatalog() {
           }
         />
       );
+    }
+
+    if (items.length === 0 && localCatalog && filters.q !== '') {
+      return <OfflineSearchEmpty onClear={() => setDraft('')} />;
     }
 
     if (items.length === 0) {
@@ -243,7 +249,7 @@ export function ExerciseCatalog() {
             value={draft}
             className="min-w-0 flex-1 [&::-webkit-search-cancel-button]:appearance-none"
             maxLength={EXERCISE_SEARCH_MAX}
-            placeholder={t('Search exercises')}
+            placeholder={localCatalog ? t('Search saved exercises') : t('Search exercises')}
             aria-label={t('Search exercises')}
             onChange={(event) => setDraft(event.target.value)}
           />
@@ -259,6 +265,7 @@ export function ExerciseCatalog() {
             />
           </div>
         </div>
+        {localCatalog ? <OfflineCatalogHint className="lg:hidden" /> : null}
         <MuscleChips
           className="max-lg:hidden"
           selected={filters.muscles}
@@ -270,6 +277,8 @@ export function ExerciseCatalog() {
         </div>
       </div>
       <section aria-label={t('Exercises')} className="flex min-w-0 flex-col gap-4">
+        {/* Desktop (D16.8): the hint leads the results; on a phone it stays under the search. */}
+        {localCatalog ? <OfflineCatalogHint className="hidden lg:flex" /> : null}
         {results()}
       </section>
     </div>

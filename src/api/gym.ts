@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getLocalGym, putLocalGym, useLocalQuery, useOptionalLocalDb } from '@/services/local-db';
 import { gymSchema, type Gym, type PutGymInput } from '@/shared/schemas/gym';
 import { exerciseKeys } from './exercises';
 import { ApiError, http } from './http';
@@ -26,13 +27,29 @@ export function saveGym(input: PutGymInput): Promise<Gym> {
 }
 
 export function useGymQuery({ initialData }: { initialData?: Gym | null } = {}) {
-  return useQuery({ queryKey: gymKeys.me(), queryFn: fetchGym, initialData });
+  const db = useOptionalLocalDb();
+  return useLocalQuery({
+    queryKey: gymKeys.me(),
+    db,
+    // Before the first pull the device has no copy, so the server answer is used once.
+    read: async (local) => {
+      const gym = await getLocalGym(local);
+      return gym === undefined ? (initialData ?? fetchGym()) : gym;
+    },
+    remote: fetchGym,
+    initialData,
+  });
 }
 
 export function useSaveGymMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: saveGym,
+    mutationFn: async (input: PutGymInput) => {
+      const gym = await saveGym(input);
+      if (db) await putLocalGym(db, gym);
+      return gym;
+    },
     onSuccess: (gym) => {
       queryClient.setQueryData(gymKeys.me(), gym);
       // A list filtered by "Available in my gym" depends on the saved equipment.

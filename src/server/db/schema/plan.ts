@@ -31,6 +31,7 @@ export const scheduleRule = pgTable(
   (table) => [
     index('schedule_rule_user_active_idx').on(table.userId, table.deletedAt, table.endDate),
     index('schedule_rule_workout_idx').on(table.workoutId),
+    index('schedule_rule_user_updated_idx').on(table.userId, table.updatedAt),
     check(
       'schedule_rule_interval',
       sql`${table.intervalWeeks} between ${n(SCHEDULE.intervalMin)} and ${n(SCHEDULE.intervalMax)}`,

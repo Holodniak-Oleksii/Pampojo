@@ -1,4 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getLocalProfile,
+  putLocalProfile,
+  useLocalQuery,
+  useOptionalLocalDb,
+} from '@/services/local-db';
+import { requestSync } from '@/services/sync/request-sync';
 import {
   profileSchema,
   type CompleteOnboardingInput,
@@ -27,21 +34,45 @@ export function updateProfile(input: UpdateProfileInput): Promise<Profile> {
 }
 
 export function useProfileQuery({ initialData }: { initialData?: Profile } = {}) {
-  return useQuery({ queryKey: profileKeys.me(), queryFn: fetchProfile, initialData });
+  const db = useOptionalLocalDb();
+  return useLocalQuery({
+    queryKey: profileKeys.me(),
+    db,
+    // Before the first pull the device has no copy, so the server answer is used once.
+    read: async (local) => (await getLocalProfile(local)) ?? initialData ?? fetchProfile(),
+    remote: fetchProfile,
+    initialData,
+  });
 }
 
 export function useCompleteOnboardingMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: completeOnboarding,
-    onSuccess: (profile) => queryClient.setQueryData(profileKeys.me(), profile),
+    mutationFn: async (input: CompleteOnboardingInput) => {
+      const profile = await completeOnboarding(input);
+      if (db) await putLocalProfile(db, profile);
+      return profile;
+    },
+    onSuccess: (profile) => {
+      if (!db) queryClient.setQueryData(profileKeys.me(), profile);
+    },
   });
 }
 
 export function useUpdateProfileMutation() {
   const queryClient = useQueryClient();
+  const db = useOptionalLocalDb();
   return useMutation({
-    mutationFn: updateProfile,
-    onSuccess: (profile) => queryClient.setQueryData(profileKeys.me(), profile),
+    mutationFn: async (input: UpdateProfileInput) => {
+      const profile = await updateProfile(input);
+      if (db) await putLocalProfile(db, profile);
+      return profile;
+    },
+    onSuccess: (profile) => {
+      if (!db) queryClient.setQueryData(profileKeys.me(), profile);
+      // A weight change writes a measurement on the server; the pull brings it.
+      requestSync();
+    },
   });
 }

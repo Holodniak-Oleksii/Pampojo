@@ -91,6 +91,7 @@ export const setLog = pgTable(
   },
   (table) => [
     index('set_log_session_idx').on(table.sessionId),
+    index('set_log_session_updated_idx').on(table.sessionId, table.updatedAt),
     index('set_log_exercise_idx').on(table.exerciseId),
     uniqueIndex('set_log_position_uq')
       .on(table.sessionId, table.sessionExerciseId, table.setIndex)

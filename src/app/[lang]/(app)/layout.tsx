@@ -10,7 +10,7 @@ export const viewport: Viewport = { viewportFit: 'cover' };
 export default function AppLayout({ children }: LayoutProps<'/[lang]'>) {
   return (
     <Suspense fallback={<AppShellSkeleton />}>
-      <SessionGate>
+      <SessionGate fallback={<AppShellSkeleton />}>
         <AppShell>{children}</AppShell>
       </SessionGate>
     </Suspense>

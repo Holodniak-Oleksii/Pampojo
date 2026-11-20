@@ -1051,6 +1051,61 @@ This supersedes the expanding row in "Workout builder rules".
 - The source images and the traced SVGs live in `docs/wireframes/` with the `14-` prefix.
 **Why:** Lead's request after the review.
 
+## 2026-11-20 — Offline data scope (spec 16)
+
+**Context:** `/grilling 16`; the device needs gym data offline, but not the whole catalog and history.
+**Decision:**
+- Dexie keeps all live workouts, schedule rules, measurements, the profile and the gym profile.
+- Dexie keeps the exercises in workouts and local sessions, and all own exercises, in both locales. Offline search covers only them.
+- Dexie keeps sessions from the last 30 days plus every `in_progress` session. After a sync, the client deletes older synced sessions.
+- Older history pages load on scroll into the query cache only.
+- Online, calendar and progress use the server endpoints merged with unsynced local sessions. Offline, they use the cache or local data, and only the `1m` progress range is complete.
+- Measurements work offline through the outbox.
+**Why:** Lead's choices. A month of history covers the gym, and the device keeps less data.
+
+## 2026-11-20 — Sync writes and protocol (spec 16)
+
+**Context:** `/grilling 16`.
+**Decision:**
+- Workouts, rules, own exercises, profile and gym profile stay REST writes. After success, the client puts the response into Dexie.
+- Push mutations are `{ id, type, entityId, payload, createdAt }`, and `payload` is the REST body. At most 50 per batch, one transaction with one savepoint per mutation. Results are `applied`, `duplicate` or `rejected`. A 5xx rolls back the batch.
+- The server applies mutations in arrival order with its own `updatedAt`. The client clock is not used.
+- The pull cursor is `(updatedAt, id)` with a 30-second overlap. A workout comes as one row with its exercises.
+- Dexie version 2 converts the spec 10 REST outbox entries into mutations with the same ids.
+**Why:** Lead's choices. The REST services keep one validation path, and the overlap prevents rows missed by late commits.
+
+## 2026-11-20 — First start and two devices (spec 16)
+
+**Context:** `/grilling 16`.
+**Decision:**
+- The initial download shows a full-screen progress screen with a retry. Offline with an empty database, it says that the first start needs internet.
+- A session that started on another device can be continued. Rest, focus and drafts stay on each device.
+- Each device keeps its own `in_progress` session active. Another device's `in_progress` session shows in History until the device has no active session.
+- The notice for a rejected mutation moves to spec 17, because its sync sheet already shows the last error. The agent decided this in the grilling.
+**Why:** Lead's choices. Nothing is lost, and each device keeps the session that the user has in hand.
+
+## 2026-11-20 — Offline data design (spec 16)
+
+**Context:** `/design 16`; canvas boards D16.1–D16.8.
+**Decision:**
+- The initial download screen has no app shell: the wordmark and one card, as on `/offline`.
+- The card shows a 3px progress bar and five ordered steps with the set-done diamonds and counts.
+- An error marks the failed step with a destructive outline and offers "Спробувати ще раз". The retry continues from that step.
+- The error state has a quiet "Вийти з акаунта" link, with no spec 17 guard, because a new device has an empty outbox. The offline empty-database state has no logout link, because logout needs the network (changed in `/scratch 16`).
+- Offline, the exercise library and the session picker use the placeholder "Пошук серед збережених" and a muted hint line with the local exercise count.
+- An offline search with no result shows a card and "Очистити пошук".
+**Why:** Lead's approval of the mockups and of the two open points.
+
+## 2026-11-20 — Sync plan choices (spec 16)
+
+**Context:** `/scratch 16`.
+**Decision:**
+- The existing TanStack query hooks keep their names and result shape. Their `queryFn` reads Dexie, and a Dexie live query refreshes the cache. UI code does not change.
+- Pull also returns `lastPerformance` (the latest completed session and the all-time bests) for the exercises in live workouts, so an offline start shows true records.
+- Pull returns `{ changes, cursor, nextCursor, totals? }`, pages of at most 500 rows, tables in the order of the download steps. `totals` is on the first page of a full download only.
+- Abandoned sessions come in pull with the status `abandoned`, and the client deletes them.
+**Why:** Lead's choices. No UI rewrite, correct records offline, and one request per page.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

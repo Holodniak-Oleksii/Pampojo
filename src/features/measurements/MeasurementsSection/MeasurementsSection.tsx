@@ -1,5 +1,6 @@
 'use client';
 
+import { useMeasurementsAvailable } from '../hooks/useMeasurementsAvailable';
 import { Plus, WifiOff } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +9,6 @@ import { OfflineNotice } from '@/components/OfflineNotice';
 import { Button } from '@/components/ui/button';
 import { GIRTH_TYPES, MEASUREMENT_TYPE, type MeasurementType } from '@/constants/measurement';
 import { CalendarError } from '@/features/calendar/CalendarStates';
-import { useIsOnline } from '@/hooks/useIsOnline';
 import { todayIn } from '@/lib/dates';
 import type { Measurement } from '@/shared/schemas/measurement';
 import type { Profile } from '@/shared/schemas/profile';
@@ -63,7 +63,8 @@ export function useProfileMeasurements(profile: Profile): {
   measurements: ReactNode;
 } {
   const { t } = useTranslation();
-  const online = useIsOnline();
+  // True offline too when the device keeps the data (spec 16).
+  const online = useMeasurementsAvailable();
   const query = useMeasurementsQuery({ enabled: online });
   const [adding, setAdding] = useState<{ focus?: MeasurementType } | null>(null);
   const today = todayIn(profile.timeZone);

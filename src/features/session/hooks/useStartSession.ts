@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { fetchSession, fetchSessions } from '@/api/sessions';
 import { calendarKeys, fetchCalendar } from '@/api/calendar';
-import { fetchScheduleRules, planKeys } from '@/api/plan';
-import { fetchWorkout, workoutKeys } from '@/api/workouts';
-import { SESSION_STATUS } from '@/constants/session';
 import { useCurrentUserId } from '@/features/auth/CurrentUser';
 import {
   planZoneForStart,
@@ -26,11 +22,14 @@ import { exerciseDetailPaths, requestPersistentStorage, warmPages } from '@/feat
 import {
   findCompletedSessionsBetween,
   findScheduledSessions,
+  getLocalProfile,
+  getLocalWorkout,
+  listLocalRules,
   prefetchLastPerformance,
   useLocalDb,
   useSessionRepository,
 } from '@/services/local-db';
-import type { ScheduleRule, ScheduleRuleListResponse } from '@/shared/schemas/plan';
+import type { ScheduleRule } from '@/shared/schemas/plan';
 import type { Workout } from '@/shared/schemas/workout';
 import { buildSessionFromWorkout } from '../utils';
 
@@ -38,7 +37,7 @@ export const sessionHref = (id: string) => `/session/${id}`;
 
 /** Starts a workout, or opens the session already in progress (one at a time). */
 export function useStartSession() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
   const userId = useCurrentUserId();
@@ -47,30 +46,17 @@ export function useStartSession() {
   const ask = useMakeUpPrompt();
   const [pending, setPending] = useState(false);
 
-  const loadRules = useCallback(async (): Promise<ScheduleRule[]> => {
-    const cached = queryClient.getQueryData<ScheduleRuleListResponse>(planKeys.list())?.items;
-    if (cached || !navigator.onLine) return cached ?? [];
-    try {
-      return (
-        await queryClient.fetchQuery({ queryKey: planKeys.list(), queryFn: fetchScheduleRules })
-      ).items;
-    } catch {
-      return [];
-    }
-  }, [queryClient]);
+  const loadRules = useCallback(
+    async (): Promise<ScheduleRule[]> => (await listLocalRules(db)).items,
+    [db],
+  );
 
   /** Today's date when this start fulfils today's plan for the workout, else null (spec 11). */
   const plannedDateFor = useCallback(
     async (workoutId: string, today: string): Promise<string | null> => {
+      // The device keeps every session of the last 30 days, so it knows today's sessions.
       const sessions: ScheduledSession[] = await findScheduledSessions(db, today);
       const rules = await loadRules();
-      if (navigator.onLine) {
-        try {
-          sessions.push(...(await fetchSessions({ scheduledFor: today })).items);
-        } catch {
-          // Without the server the local data decides.
-        }
-      }
       const live = rules.filter((rule) => !rule.workout.deleted);
       return resolveScheduledFor({ workoutId, rules: live, today, sessions });
     },
@@ -129,7 +115,8 @@ export function useStartSession() {
   const scheduleFor = useCallback(
     async (workout: Workout, makeUpFor?: string): Promise<string | null | undefined> => {
       if (makeUpFor) return makeUpFor;
-      const timeZone = await planZoneForStart(queryClient);
+      const timeZone =
+        (await getLocalProfile(db))?.timeZone ?? (await planZoneForStart(queryClient));
       if (timeZone === null) return null;
       const today = todayIn(timeZone);
       const planned = await plannedDateFor(workout.id, today);
@@ -140,7 +127,7 @@ export function useStartSession() {
       if (choice === 'cancel') return undefined;
       return choice === 'make_up' ? missed : null;
     },
-    [queryClient, plannedDateFor, makeUpDateFor, ask],
+    [queryClient, db, plannedDateFor, makeUpDateFor, ask],
   );
 
   const start = useCallback(
@@ -153,33 +140,8 @@ export function useStartSession() {
           router.push(sessionHref(local.id));
           return true;
         }
-        if (navigator.onLine) {
-          try {
-            const remote = (await fetchSessions({ status: SESSION_STATUS.IN_PROGRESS })).items[0];
-            const session = remote ? await fetchSession(remote.id) : null;
-            if (session) {
-              await repository.importRemote(session);
-              router.push(sessionHref(session.id));
-              return true;
-            }
-          } catch {
-            // The server could not be asked; start on this device.
-          }
-        }
-
-        let workout: Workout | null | undefined;
-        if (navigator.onLine) {
-          try {
-            workout = await queryClient.fetchQuery({
-              queryKey: workoutKeys.detail(workoutId),
-              queryFn: () => fetchWorkout(workoutId),
-            });
-          } catch {
-            workout = queryClient.getQueryData<Workout | null>(workoutKeys.detail(workoutId));
-          }
-        } else {
-          workout = queryClient.getQueryData<Workout | null>(workoutKeys.detail(workoutId));
-        }
+        // Pull brings in-progress sessions of other devices, so the device copy decides.
+        const workout: Workout | null = await getLocalWorkout(db, workoutId, i18n.language);
         if (!workout || workout.exercises.length === 0) {
           toast(t('Needs internet'));
           return false;
@@ -212,7 +174,7 @@ export function useStartSession() {
         setPending(false);
       }
     },
-    [pending, repository, router, queryClient, db, t, scheduleFor],
+    [pending, repository, router, db, t, i18n.language, scheduleFor],
   );
 
   return { start, pending };

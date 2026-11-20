@@ -24,6 +24,7 @@ import type {
 import {
   findMonthTotalsRow,
   listExerciseSetRows,
+  listExerciseSetRowsFor,
   listTrainedExerciseRows,
   type ExerciseSetRow,
 } from './queries';
@@ -127,5 +128,27 @@ export async function findBests(
   return bestsOf(
     null,
     sessionsOf(rows, 'UTC').map((session) => session.sets),
+  );
+}
+
+/** `findBests` for several exercises in one query; an exercise with no counted set maps to null. */
+export async function findBestsFor(
+  db: Executor,
+  userId: string,
+  exerciseIds: readonly string[],
+): Promise<Map<string, Bests | null>> {
+  const byExercise = new Map<string, typeof rows>();
+  const rows = await listExerciseSetRowsFor(db, userId, exerciseIds);
+  for (const row of rows) {
+    byExercise.set(row.exercise_id, [...(byExercise.get(row.exercise_id) ?? []), row]);
+  }
+  return new Map(
+    exerciseIds.map((id) => [
+      id,
+      bestsOf(
+        null,
+        sessionsOf(byExercise.get(id) ?? [], 'UTC').map((session) => session.sets),
+      ),
+    ]),
   );
 }

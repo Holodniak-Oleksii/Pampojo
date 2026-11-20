@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   check,
   date,
+  index,
   numeric,
   pgTable,
   text,
@@ -32,6 +33,7 @@ export const bodyMeasurement = pgTable(
     uniqueIndex('body_measurement_user_type_day_uq')
       .on(table.userId, table.type, table.measuredOn)
       .where(sql`${table.deletedAt} is null`),
+    index('body_measurement_user_updated_idx').on(table.userId, table.updatedAt),
     check('body_measurement_type', inList(table.type, Object.values(MEASUREMENT_TYPE))),
     check('body_measurement_value_positive', sql`${table.value} > 0`),
   ],

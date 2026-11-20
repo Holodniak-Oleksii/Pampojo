@@ -89,11 +89,23 @@ test.describe('history and adherence', () => {
       .click();
     const dialog = page.getByRole('dialog', { name: /^Make up .*'s Push Day\?$/ });
     await expect(dialog).toBeVisible({ timeout: NETWORK_TIMEOUT });
-    const put = page.waitForRequest(
-      (request) => request.method() === 'PUT' && /\/api\/v1\/sessions\/[^/]+$/.test(request.url()),
+    // The start reaches the server as a `session.put` mutation of the sync push (spec 16).
+    const push = page.waitForRequest(
+      (request) =>
+        request.method() === 'POST' &&
+        request.url().endsWith('/api/v1/sync/push') &&
+        (request.postDataJSON() as { mutations: { type: string }[] }).mutations.some(
+          (item) => item.type === 'session.put',
+        ),
+      { timeout: NETWORK_TIMEOUT },
     );
     await dialog.getByRole('button', { name: 'Yes, make it up' }).click();
-    expect((await put).postDataJSON()).toMatchObject({ scheduledFor: missed });
+    const { mutations } = (await push).postDataJSON() as {
+      mutations: { type: string; payload: { scheduledFor?: string } }[];
+    };
+    expect(mutations.find((item) => item.type === 'session.put')?.payload).toMatchObject({
+      scheduledFor: missed,
+    });
     await page.waitForURL('**/session/**');
 
     // A make-up finished on another device: the calendar shows the day as done late.

@@ -173,7 +173,12 @@ Occurrences are computed, not stored (`src/shared/plan/occurrences.ts`). A rule 
 
 ## sync_mutation (spec 16)
 
-`id` (client mutation id, PK), `userId`, `type`, `appliedAt`. Lets the server ignore a replayed mutation.
+`id` (client mutation id, PK), `userId` (cascade), `type`, `appliedAt`. Lets the server ignore a replayed mutation.
+
+- `type`: `session.put`, `session.patch`, `set.put`, `set.patch`, `set.delete`, `measurement.put`, `measurement.delete`.
+- Index on `userId`. Only applied mutations are recorded; a rejected one is not.
+
+Pull indexes (spec 16): `schedule_rule (userId, updatedAt)`, `exercise (ownerId, updatedAt)`, `body_measurement (userId, updatedAt)`, `set_log (sessionId, updatedAt)`.
 
 ## Derived values
 

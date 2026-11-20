@@ -18,9 +18,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 const SESSION = localSession().id;
 const db = () => openLocalDb(TEST_USER_ID);
 const outboxMethods = async () =>
-  (await db().outbox.orderBy('seq').toArray()).map(
-    (entry) => `${entry.method} ${entry.path.split('/')[3]}`,
-  );
+  (await db().outbox.orderBy('seq').toArray()).map((entry) => entry.type);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -49,7 +47,7 @@ describe('ActiveSession', () => {
       .toHaveAttribute('aria-pressed', 'true');
     await expect.element(screen.getByRole('region', { name: 'Rest' }).first()).toBeVisible();
     await expect.element(screen.getByText('Rest 1:30')).toBeVisible();
-    expect(await outboxMethods()).toEqual(['PUT sets']);
+    expect(await outboxMethods()).toEqual(['set.put']);
     const set = (await db().setLogs.toArray())[0];
     expect(set).toMatchObject({ reps: 8, weightKg: null, setIndex: 0 });
   });
@@ -119,7 +117,7 @@ describe('ActiveSession', () => {
     await expect.element(screen.getByRole('button', { name: 'Check set 1' })).toBeVisible();
     await expect.element(screen.getByRole('textbox', { name: 'Set 1, weight' })).toHaveValue('80');
     await expect.element(screen.getByRole('region', { name: 'Rest' })).not.toBeInTheDocument();
-    expect(await outboxMethods()).toEqual(['DELETE sets']);
+    expect(await outboxMethods()).toEqual(['set.delete']);
   });
 
   it('adds sets up to 20 and removes the last unlogged one (AC12)', async () => {
@@ -133,7 +131,7 @@ describe('ActiveSession', () => {
     await expect
       .element(screen.getByRole('textbox', { name: 'Set 20, reps' }))
       .not.toBeInTheDocument();
-    expect(await outboxMethods()).toEqual(['PATCH sessions', 'PATCH sessions']);
+    expect(await outboxMethods()).toEqual(['session.patch', 'session.patch']);
   });
 
   it('links the current exercise to its details page (spec 14 AC14)', async () => {

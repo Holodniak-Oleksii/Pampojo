@@ -1,5 +1,6 @@
 'use client';
 
+import { useMeasurementsAvailable } from '../hooks/useMeasurementsAvailable';
 import { useEffect, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { GIRTH_TYPES, MEASUREMENT_TYPES, type MeasurementType } from '@/constants/measurement';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
-import { useIsOnline } from '@/hooks/useIsOnline';
 import { useLocale } from '@/i18n/client';
 import { cn } from '@/lib/utils';
 import type { Measurement, PutMeasurementInput } from '@/shared/schemas/measurement';
@@ -66,7 +66,8 @@ function AddMeasurementForm({
 }: Omit<AddMeasurementSheetProps, 'open' | 'onOpenChange'> & { onDone: () => void }) {
   const { t } = useTranslation();
   const locale = useLocale();
-  const online = useIsOnline();
+  // True offline too when the device keeps the data (spec 16).
+  const online = useMeasurementsAvailable();
   const mutation = useSaveMeasurementsMutation();
   const units = profile.unitSystem;
   const resolver = useMemo(

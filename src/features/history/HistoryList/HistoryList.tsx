@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Diamond } from '@/components/Diamond';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSessionHistoryQuery } from '@/api/sessions';
+import { useSessionHistoryQuery, useSessionsQuery } from '@/api/sessions';
 import { CALENDAR_RANGE_MAX_DAYS } from '@/constants/plan';
 import { SESSION_STATUS } from '@/constants/session';
 import { useOpenStartSheet } from '@/features/app-shell/StartSheetContext';
@@ -24,11 +24,12 @@ import {
   usePlanToday,
   weekdayShortOf,
 } from '@/features/plan';
+import { useInProgress } from '@/features/session/hooks/useInProgress';
 import { sessionHref } from '@/features/session/hooks/useStartSession';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { useLocale } from '@/i18n/client';
-import { useLocalCompletedSessions } from '@/services/local-db';
+import { useLocalCompletedSessions, useOptionalLocalDb } from '@/services/local-db';
 import { addDays } from '@/shared/plan/occurrences';
 import {
   linkedKind,
@@ -197,8 +198,10 @@ export function HistoryList() {
 
   return (
     <div className="flex max-w-[1000px] flex-col gap-3.5">
+      <OtherDeviceSessions />
       {content}
-      {!empty && hasNextPage ? (
+      {/* Offline with only local rows, the server may still hold older sessions. */}
+      {!empty && (hasNextPage || (!online && !history.data)) ? (
         <div ref={sentinel}>
           <p
             role="status"
@@ -306,5 +309,41 @@ function HistoryTable({
         </tbody>
       ))}
     </table>
+  );
+}
+
+/** In-progress sessions of other devices: this device has its own active session (spec 16). */
+function OtherDeviceSessions() {
+  const { t } = useTranslation();
+  const active = useInProgress();
+  // Only the device copy knows which session is active here, so the list needs it.
+  const inProgress = useSessionsQuery(
+    { status: SESSION_STATUS.IN_PROGRESS },
+    { enabled: useOptionalLocalDb() !== null },
+  );
+  const others = (inProgress.data?.items ?? []).filter(
+    (item) => active !== undefined && item.id !== active?.session.id,
+  );
+  if (others.length === 0) return null;
+  return (
+    <ul className="divide-y divide-border rounded-lg bg-card">
+      {others.map((session) => (
+        <li key={session.id}>
+          <Link
+            href={sessionHref(session.id)}
+            className="flex min-h-16 items-center gap-3 py-2.5 pr-2 pl-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="truncate text-base font-bold">{session.workoutName}</span>
+              <span className="inline-flex items-center gap-[7px] text-sm font-semibold">
+                <StatusMarker status="planned" />
+                {t('Workout in progress')}
+              </span>
+            </span>
+            <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
