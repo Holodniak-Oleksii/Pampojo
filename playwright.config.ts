@@ -7,6 +7,9 @@ export default defineConfig({
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   reporter: isCI ? 'github' : 'list',
+  // On CI an API call takes 1-5 s, and each new page first waits for a sync pull of several calls.
+  timeout: isCI ? 60_000 : 30_000,
+  expect: { timeout: isCI ? 20_000 : 5_000 },
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',

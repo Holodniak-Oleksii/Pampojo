@@ -93,7 +93,8 @@ test.describe('PWA shell', () => {
     await controlled(page);
     // The first load ran before the worker took over; load once more so the page is cached.
     await page.reload();
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    // Offline before the first download ends, the app shows "The first start needs internet".
+    await expect(page.getByText(/^Good (morning|afternoon|evening)/)).toBeVisible();
 
     await context.setOffline(true);
     await page.goto('/today');
