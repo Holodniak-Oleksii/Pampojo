@@ -9,3 +9,13 @@ export function onSyncRequested(listener: () => void): () => void {
   events.addEventListener('sync', listener);
   return () => events.removeEventListener('sync', listener);
 }
+
+/** Tells listeners that a sync ended with `done`, so they can load what the pull brought. */
+export function notifySyncDone(): void {
+  events.dispatchEvent(new Event('done'));
+}
+
+export function onSyncDone(listener: () => void): () => void {
+  events.addEventListener('done', listener);
+  return () => events.removeEventListener('done', listener);
+}

@@ -2,6 +2,7 @@ import { Plus, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Diamond } from '@/components/Diamond';
 import { Button } from '@/components/ui/button';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
 import { dayHeading, type ScheduledSession } from '@/features/plan';
 import { useStartSession } from '@/features/session/hooks/useStartSession';
 import { useLocale } from '@/i18n/client';
@@ -52,7 +53,7 @@ export function DayPanel({
   const locale = useLocale();
   const { start, pending } = useStartSession();
   const isToday = date === today;
-  const canSchedule = online && date >= today;
+  const canSchedule = date >= today;
   const doneOf = (rule: ScheduleRule) =>
     isToday
       ? (sessions.find(
@@ -103,7 +104,6 @@ export function DayPanel({
               isToday={isToday}
               done={doneOf(rule)}
               editable={isEditable(rule, today)}
-              online={online}
               starting={pending}
               onStart={() => void start(rule.workoutId)}
               onEdit={() => onEdit(rule)}
@@ -131,23 +131,26 @@ export function DayPanel({
             <span className="text-muted-foreground">{t('Nothing planned on this day.')}</span>
           </span>
           {canSchedule && !desktop ? (
-            <Button className="w-full" onClick={onSchedule}>
-              {t('Schedule workout')}
-            </Button>
+            <OnlineOnly label={t('Schedule workout')} kind="label">
+              <Button className="w-full" onClick={onSchedule}>
+                {online ? null : <WifiOff aria-hidden="true" />}
+                {t('Schedule workout')}
+              </Button>
+            </OnlineOnly>
           ) : null}
         </div>
       )}
       {desktop && canSchedule ? (
-        <Button variant="secondary" className="w-full" onClick={onSchedule}>
-          <Plus aria-hidden="true" strokeWidth={2.4} />
-          {t('Schedule on this day')}
-        </Button>
-      ) : null}
-      {!online ? (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <WifiOff aria-hidden="true" className="size-4" />
-          {t('Needs internet to change the schedule.')}
-        </p>
+        <OnlineOnly label={t('Schedule on this day')} kind="label">
+          <Button variant="secondary" className="w-full" onClick={onSchedule}>
+            {online ? (
+              <Plus aria-hidden="true" strokeWidth={2.4} />
+            ) : (
+              <WifiOff aria-hidden="true" />
+            )}
+            {t('Schedule on this day')}
+          </Button>
+        </OnlineOnly>
       ) : null}
     </section>
   );

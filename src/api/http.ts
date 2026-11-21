@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { reportNetworkFailure } from '@/services/connectivity';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -79,6 +80,7 @@ export async function http<S extends z.ZodType | undefined = undefined>(
         await backoff(attempt);
         continue;
       }
+      reportNetworkFailure();
       throw new ApiError(NETWORK_ERROR);
     }
     if (response.ok) {

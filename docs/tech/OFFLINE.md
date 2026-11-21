@@ -34,11 +34,20 @@ Gyms are often in basements. The app must open, show today's workout and log a f
 
 Allowed: view everything local, start and finish sessions, log and edit sets, swap exercises (deterministic suggestions), add measurements, use the rest timer.
 
-Blocked, with the control disabled and the hint "Needs internet": create or edit workouts and plans, custom exercise editing, sharing and importing by link, AI features, account and settings changes. **Log out** is blocked while the outbox is not empty; the dialog explains that unsynced sessions would be lost.
+Blocked: create or edit workouts and plans, custom exercise editing, the gym profile, sharing and importing by link, AI features, account and settings changes, and log out.
+
+- A blocked control keeps its place and gets the dashed outline and the lucide `wifi-off` icon, with no text label. An icon-only control gets the icon in a corner badge.
+- A tap shows the toast "Needs internet" and opens nothing. Desktop also shows a tooltip.
+- `OnlineOnly` in `src/features/offline/` does this (spec 17).
+- **Log out** is always blocked offline. Online with a non-empty outbox, a dialog offers "Sync now" and "Cancel". Logout continues after a sync that empties the outbox.
+
+Offline, these pages open with no earlier visit: the main pages, the session shell, the page of each workout, the details of each exercise on the device and each measurement page. The app loads them into the page cache in the background.
 
 ## Status indicator
 
-A pill in the top bar: `Online` / `Offline` and, when the outbox is not empty, `3 changes pending`. Tapping it opens a small sheet with the last sync time and a "Sync now" button (online only). Detection: `navigator.onLine` plus a lightweight ping on failure, because `onLine` can report true without real connectivity.
+A pill in the top bar: `Online` / `Offline` and, when the outbox is not empty, a pending counter in both states. A tap opens the sync view: a bottom sheet on phones, a popover on desktop. It shows the state, the pending count, the last sync time, the last rejected change with its reason, and "Sync now" (blocked offline).
+
+Detection: `navigator.onLine` plus a health ping. A request that fails with no answer starts a ping of `/api/v1/health` every 15 seconds. The app is offline until a ping gets any answer. The reason is that `onLine` can report true without real connectivity. `useIsOnline()` reads this store (`src/services/connectivity.ts`).
 
 ## Outbox and sync
 
@@ -57,7 +66,7 @@ A pill in the top bar: `Online` / `Offline` and, when the outbox is not empty, `
 
 - Call `navigator.storage.persist()` after install; show the install guide on iOS, because non-installed Safari storage is small and can be evicted after inactivity.
 - The server is the source of truth. Losing local data costs a re-download, never history, as long as the outbox was synced.
-- Cache images only for exercises in upcoming workouts (next 14 days of the plan plus the last used ones), compressed WebP. Missing image → placeholder with the exercise name.
+- The service worker caches the images of the exercises in the user's workouts and local sessions, cache-first, up to 600 entries. The cache key has no query, so an own image stays after its signed URL expires. Missing image → placeholder with the exercise name. Logout deletes the image cache.
 
 ## Rest timer
 

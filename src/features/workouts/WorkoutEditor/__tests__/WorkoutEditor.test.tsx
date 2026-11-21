@@ -137,10 +137,14 @@ describe('WorkoutEditor', () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     const screen = await render(<WorkoutEditor mode="edit" id={ID} />);
     await expect.element(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
-    await expect.element(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-    await expect.element(screen.getByText('Needs internet')).toBeVisible();
+    await expect
+      .element(screen.getByRole('button', { name: 'Save. Needs internet' }))
+      .toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText('Needs internet').elements()).toHaveLength(0);
     expect(screen.getByRole('button', { name: /^Drag / }).elements()).toHaveLength(0);
-    await expect.element(screen.getByRole('button', { name: 'Add exercises' })).toBeDisabled();
+    await expect
+      .element(screen.getByRole('button', { name: 'Add exercises. Needs internet' }))
+      .toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows not found for an unknown id', async () => {

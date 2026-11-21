@@ -219,8 +219,7 @@ test.describe('workout builder', () => {
 
     await context.setOffline(true);
     await expect(page.getByRole('textbox', { name: 'Name' })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled();
-    await expect(page.getByText('Needs internet')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save. Needs internet' })).toBeDisabled();
     await expect(rows(page)).toHaveCount(0);
     await context.setOffline(false);
   });

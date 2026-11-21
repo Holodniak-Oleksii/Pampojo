@@ -1,10 +1,13 @@
 'use client';
 
+import { WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { useGymQuery } from '@/api/gym';
 import { MyGymIcon } from '@/components/BrandIcons';
 import { Button } from '@/components/ui/button';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
+import { useRequiresOnline } from '@/features/offline/hooks/useRequiresOnline';
 import type { Gym } from '@/shared/schemas/gym';
 import { GYM_PATH } from '../constants';
 
@@ -16,6 +19,7 @@ export interface GymNudgeCardProps {
 export function GymNudgeCard({ initialGym }: GymNudgeCardProps) {
   const { t } = useTranslation();
   const { data } = useGymQuery({ initialData: initialGym });
+  const { blocked } = useRequiresOnline();
   if (data) return null;
 
   return (
@@ -34,9 +38,14 @@ export function GymNudgeCard({ initialGym }: GymNudgeCardProps) {
           </p>
         </div>
       </div>
-      <Button asChild className="w-full sm:w-auto">
-        <Link href={GYM_PATH}>{t('Set up')}</Link>
-      </Button>
+      <OnlineOnly label={t('Set up')} kind="label">
+        <Button asChild className="w-full sm:w-auto">
+          <Link href={GYM_PATH}>
+            {blocked ? <WifiOff aria-hidden="true" /> : null}
+            {t('Set up')}
+          </Link>
+        </Button>
+      </OnlineOnly>
     </section>
   );
 }

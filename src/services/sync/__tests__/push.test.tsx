@@ -38,6 +38,18 @@ function server(status: (mutation: SyncMutation) => string = () => 'applied') {
 }
 
 describe('pushOutbox', () => {
+  it('clears the last error after a batch with no rejection (spec 17 AC3)', async () => {
+    const db = openLocalDb(crypto.randomUUID());
+    await fill(db, 1);
+    server(() => 'rejected');
+    await pushOutbox(db);
+    expect((await readSyncMeta(db)).lastError?.code).toBe('VALIDATION_FAILED');
+    await fill(db, 1);
+    server();
+    await pushOutbox(db);
+    expect((await readSyncMeta(db)).lastError).toBeNull();
+  });
+
   it('sends entries in seq order, at most 50 per request, and empties the outbox (AC7)', async () => {
     const db = openLocalDb(crypto.randomUUID());
     await fill(db, 120);

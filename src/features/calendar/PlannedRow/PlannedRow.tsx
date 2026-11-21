@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Diamond } from '@/components/Diamond';
 import { Button } from '@/components/ui/button';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,6 @@ export interface PlannedRowProps {
   isToday: boolean;
   done: ScheduledSession | null;
   editable: boolean;
-  online: boolean;
   starting: boolean;
   onStart: () => void;
   onEdit: () => void;
@@ -36,7 +36,6 @@ export function PlannedRow({
   isToday,
   done,
   editable,
-  online,
   starting,
   onStart,
   onEdit,
@@ -75,17 +74,17 @@ export function PlannedRow({
       ) : null}
       {editable ? (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled={!online}
-              aria-label={t('Actions for {{name}}', { name })}
-              className="h-11 w-10 shrink-0"
-            >
-              <MoreHorizontal aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
+          <OnlineOnly
+            label={t('Actions for {{name}}', { name })}
+            kind="icon"
+            wrapperClassName="shrink-0"
+          >
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-11 w-10 shrink-0">
+                <MoreHorizontal aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+          </OnlineOnly>
           <DropdownMenuContent align="end" className="min-w-56">
             <DropdownMenuItem className="min-h-11 font-semibold" onSelect={onEdit}>
               <Pencil aria-hidden="true" />

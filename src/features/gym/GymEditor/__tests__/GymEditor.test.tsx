@@ -177,13 +177,15 @@ describe('GymEditor states', () => {
     await expect.element(screen.getByRole('button', { name: 'Save my gym' })).toBeVisible();
   });
 
-  it('disables every control offline with "Needs internet"', async () => {
+  it('blocks saving offline with the icon and no text label (spec 17 AC4)', async () => {
     vi.mocked(fetchGym).mockResolvedValue(null);
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     const screen = await render(<GymEditor />);
 
-    await expect.element(screen.getByText('Needs internet').first()).toBeVisible();
-    await expect.element(screen.getByRole('button', { name: 'Save my gym' })).toBeDisabled();
+    await expect
+      .element(screen.getByRole('button', { name: 'Save my gym. Needs internet' }))
+      .toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText('Needs internet').elements()).toHaveLength(0);
     await expect
       .element(screen.getByRole('button', { name: 'Barbell', exact: true }))
       .toBeDisabled();

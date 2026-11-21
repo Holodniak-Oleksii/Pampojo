@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { ExerciseDetails } from '@/features/exercises/ExerciseDetails';
+import { ExerciseDetailsScreen } from '@/features/exercises/ExerciseDetails';
 import { ExerciseDetailsSkeleton } from '@/features/exercises/ExerciseDetailsSkeleton';
 import { getI18n, getLocale } from '@/i18n/server';
 import { getRequestSession } from '@/server/auth/request-session';
@@ -31,9 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function DetailsContent({ params }: Pick<Props, 'params'>) {
-  const exercise = await loadExercise((await params).id);
-  if (!exercise) notFound();
-  return <ExerciseDetails exercise={exercise} />;
+  const { id } = await params;
+  if (!exerciseIdParamsSchema.shape.id.safeParse(id).success) notFound();
+  // The details read the device copy first, so the page opens offline (spec 17).
+  return <ExerciseDetailsScreen id={id} />;
 }
 
 export default function ExerciseDetailsPage({ params }: Props) {

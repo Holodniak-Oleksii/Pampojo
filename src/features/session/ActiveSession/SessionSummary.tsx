@@ -1,13 +1,15 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { Check, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { buttonVariants } from '@/components/ui/button';
 import { formatNumber } from '@/i18n/format';
 import { useLocale } from '@/i18n/client';
 import { cn } from '@/lib/utils';
-import type { LocalSession, LocalSetLog } from '@/services/local-db';
+import { useOptionalLocalDb, type LocalSession, type LocalSetLog } from '@/services/local-db';
+import type { PampojoDb } from '@/services/local-db/db';
+import { useHasUnsynced } from '@/services/sync';
 import { formatElapsed, summaryOf, type SummaryResult } from '../utils';
 import { NewRecords } from './NewRecords';
 
@@ -42,6 +44,18 @@ function useResultText() {
   };
 }
 
+/** Shows while the outbox still holds the session or one of its sets (spec 17). */
+function UnsyncedLine({ db, ids }: { db: PampojoDb; ids: string[] }) {
+  const { t } = useTranslation();
+  if (!useHasUnsynced(db, ids)) return null;
+  return (
+    <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+      <WifiOff aria-hidden="true" className="size-4 shrink-0" />
+      {t('Saved on this device. Will sync when online.')}
+    </p>
+  );
+}
+
 export function SessionSummary({
   session,
   setLogs,
@@ -51,6 +65,7 @@ export function SessionSummary({
 }) {
   const { t } = useTranslation();
   const locale = useLocale();
+  const db = useOptionalLocalDb();
   const resultText = useResultText();
   const summary = summaryOf(session, setLogs);
   const date = new Intl.DateTimeFormat(locale, {
@@ -86,6 +101,7 @@ export function SessionSummary({
           <span className="text-muted-foreground">
             {t('{{name}}, {{date}}', { name: session.workoutSnapshot.name, date })}
           </span>
+          {db ? <UnsyncedLine db={db} ids={[session.id, ...setLogs.map((set) => set.id)]} /> : null}
         </div>
       </div>
 

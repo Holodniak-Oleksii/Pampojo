@@ -181,9 +181,8 @@ test.describe('custom exercises', () => {
     await expect(page.getByRole('link', { name: 'Edit' })).toBeVisible();
 
     await context.setOffline(true);
-    await expect(page.getByRole('button', { name: 'Edit' })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Delete' })).toBeDisabled();
-    await expect(page.getByText('Needs internet')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Edit. Needs internet' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Delete. Needs internet' })).toBeDisabled();
     await context.setOffline(false);
   });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import {
   type GymEquipment,
   type GymEquipmentGroup,
 } from '@/constants/gym';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { GymEditorSkeleton } from '../GymEditorSkeleton';
 import { GymEquipmentPicker } from '../GymEquipmentPicker';
@@ -38,12 +39,10 @@ function withGroup(
 
 function Layout({
   status,
-  online,
   children,
   footer,
 }: {
   status?: AutosaveStatus;
-  online: boolean;
   children: ReactNode;
   footer?: ReactNode;
 }) {
@@ -69,7 +68,6 @@ function Layout({
       <p className="text-muted-foreground">
         {t('Tick what your gym has. You can then hide exercises that need anything else.')}
       </p>
-      {!online ? <p className="text-sm font-semibold">{t('Needs internet')}</p> : null}
       {children}
       <p className="text-sm text-muted-foreground">
         {t('Bodyweight exercises are always available.')}
@@ -96,17 +94,19 @@ function FirstVisit() {
 
   return (
     <Layout
-      online={online}
       footer={
         <div>
-          <Button
-            size="lg"
-            className="w-full lg:w-auto"
-            disabled={!online || save.isPending}
-            onClick={() => void submit()}
-          >
-            {t('Save my gym')}
-          </Button>
+          <OnlineOnly label={t('Save my gym')} kind="label">
+            <Button
+              size="lg"
+              className="w-full lg:w-auto"
+              disabled={online && save.isPending}
+              onClick={() => void submit()}
+            >
+              {online ? null : <WifiOff aria-hidden="true" />}
+              {t('Save my gym')}
+            </Button>
+          </OnlineOnly>
         </div>
       }
     >
@@ -124,7 +124,7 @@ function Autosave({ initial }: { initial: readonly GymEquipment[] }) {
   const online = useIsOnline();
   const { selected, status, change } = useGymAutosave(initial);
   return (
-    <Layout online={online} status={status}>
+    <Layout status={status}>
       <GymEquipmentPicker
         selected={selected}
         disabled={!online}
@@ -143,7 +143,7 @@ export function GymEditor() {
   if (query.data === undefined) {
     if (query.isError || query.fetchStatus === 'paused') {
       return (
-        <Layout online={online}>
+        <Layout>
           <div className="flex flex-col items-start gap-3 rounded-lg bg-card p-5">
             <p>{t("Couldn't load your gym.")}</p>
             <Button

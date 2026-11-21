@@ -1,5 +1,6 @@
 'use client';
 
+import { WifiOff } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRef, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,6 +10,7 @@ import { ApiError } from '@/api/http';
 import { useUpdateProfileMutation } from '@/api/profile';
 import { OfflineNotice } from '@/components/OfflineNotice';
 import { Button } from '@/components/ui/button';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useIsOnline } from '@/hooks/useIsOnline';
@@ -134,14 +136,17 @@ function EditProfileForm({ profile, onDone }: { profile: Profile; onDone: () => 
           <Button type="button" variant="secondary" size="lg" className="flex-1" onClick={onDone}>
             {t('Cancel')}
           </Button>
-          <Button
-            type="submit"
-            size="lg"
-            className="flex-1"
-            disabled={!isDirty || pending || !online}
-          >
-            {pending ? t('Saving…') : t('Save')}
-          </Button>
+          <OnlineOnly label={t('Save')} kind="label">
+            <Button
+              type="submit"
+              size="lg"
+              className="flex-1"
+              disabled={online && (!isDirty || pending)}
+            >
+              {online ? null : <WifiOff aria-hidden="true" />}
+              {pending ? t('Saving…') : t('Save')}
+            </Button>
+          </OnlineOnly>
         </div>
       </SheetFooter>
     </form>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { Trash2, WifiOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,14 +13,16 @@ import { SESSION_STATUS } from '@/constants/session';
 import { useLocale } from '@/i18n/client';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { OnlineOnly } from '@/features/offline/OnlineOnly';
+import { useRequiresOnline } from '@/features/offline/hooks/useRequiresOnline';
 
 export interface DeleteExerciseDialogProps {
   exerciseId: string;
-  disabled: boolean;
 }
 
-export function DeleteExerciseDialog({ exerciseId, disabled }: DeleteExerciseDialogProps) {
+export function DeleteExerciseDialog({ exerciseId }: DeleteExerciseDialogProps) {
   const { t } = useTranslation();
+  const { blocked } = useRequiresOnline();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const mutation = useDeleteExerciseMutation();
@@ -57,10 +59,12 @@ export function DeleteExerciseDialog({ exerciseId, disabled }: DeleteExerciseDia
 
   return (
     <>
-      <Button variant="secondary" disabled={disabled} onClick={() => setOpen(true)}>
-        <Trash2 aria-hidden="true" />
-        {t('Delete')}
-      </Button>
+      <OnlineOnly label={t('Delete')} kind="label">
+        <Button variant="secondary" onClick={() => setOpen(true)}>
+          {blocked ? <WifiOff aria-hidden="true" /> : <Trash2 aria-hidden="true" />}
+          {t('Delete')}
+        </Button>
+      </OnlineOnly>
       <ConfirmDialog
         open={open}
         onOpenChange={setOpen}
