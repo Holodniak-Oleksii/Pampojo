@@ -17,7 +17,9 @@ import {
   OFFLINE_PATH,
   PAGES_CACHE,
   SESSION_SHELL_PATH,
+  STAGED_PAGES_CACHE,
   STORAGE_OBJECT_PATH,
+  WARM_PAGE_PATHS,
 } from '@/features/pwa/constants';
 
 declare global {
@@ -28,14 +30,14 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+const isCompletePage = (response: Response) =>
+  response.status === 200 &&
+  !response.redirected &&
+  (response.headers.get('content-type') ?? '').includes('text/html');
+
 // Only complete HTML pages are kept: never a login redirect or an error.
 const htmlOnly: SerwistPlugin = {
-  cacheWillUpdate: async ({ response }) =>
-    response.status === 200 &&
-    !response.redirected &&
-    (response.headers.get('content-type') ?? '').includes('text/html')
-      ? response
-      : null,
+  cacheWillUpdate: async ({ response }) => (isCompletePage(response) ? response : null),
 };
 
 const isPageRequest = (request: Request, url: URL) =>
@@ -109,7 +111,58 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
-// Cached pages point at the chunks of the build that rendered them, so a new version starts clean.
+const STAGE_CONCURRENCY = 4;
+
+/**
+ * Loads this version of every cached page while the network is there: the browser installs a new
+ * version only after it downloads it. The first launch after an update can be offline.
+ */
+async function stagePages(): Promise<void> {
+  const current = await caches.open(PAGES_CACHE);
+  const paths = new Set<string>(WARM_PAGE_PATHS);
+  for (const request of await current.keys()) {
+    const url = new URL(request.url);
+    paths.add(url.pathname + url.search);
+  }
+  await caches.delete(STAGED_PAGES_CACHE);
+  const staged = await caches.open(STAGED_PAGES_CACHE);
+  const queue = [...paths];
+  const worker = async () => {
+    for (let path = queue.shift(); path !== undefined; path = queue.shift()) {
+      try {
+        // A signed-out page redirects to login; following that redirect from install never ends.
+        const response = await fetch(path, {
+          credentials: 'same-origin',
+          redirect: 'manual',
+          headers: { accept: 'text/html' },
+        });
+        if (isCompletePage(response)) await staged.put(path, response);
+      } catch {
+        // The page is not staged; the app loads it again on its next online launch.
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: STAGE_CONCURRENCY }, worker));
+}
+
+// Cached pages point at the chunks of the build that rendered them, so the staged copies replace them.
+async function promoteStagedPages(): Promise<void> {
+  await caches.delete(PAGES_CACHE);
+  if (!(await caches.has(STAGED_PAGES_CACHE))) return;
+  const staged = await caches.open(STAGED_PAGES_CACHE);
+  const pages = await caches.open(PAGES_CACHE);
+  for (const request of await staged.keys()) {
+    const response = await staged.match(request);
+    if (response) await pages.put(request, response);
+  }
+  await caches.delete(STAGED_PAGES_CACHE);
+}
+
+self.addEventListener('install', (event) => {
+  // A failed stage must not stop the update.
+  event.waitUntil(stagePages().catch(() => undefined));
+});
+
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.delete(PAGES_CACHE));
+  event.waitUntil(promoteStagedPages());
 });

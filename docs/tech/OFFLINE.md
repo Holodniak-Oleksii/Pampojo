@@ -8,7 +8,8 @@ Gyms are often in basements. The app must open, show today's workout and log a f
 - **Service worker** — Serwist (ADR 0008), production builds only.
   - It precaches the build output, `public/` and the `/offline` page.
   - It keeps visited app pages in `pampojo-pages`: network-first with a 4 s timeout, and `/offline` for pages never opened online. It never caches `/api`, auth or marketing pages.
-  - Logout deletes `pampojo-pages`. A new version waits for the next launch and clears `pampojo-pages` when it activates.
+  - Logout deletes `pampojo-pages` and `pampojo-pages-next`. A new version waits for the next launch.
+  - At install, the new version loads its copy of each cached page into `pampojo-pages-next`, because the network is there. At activation, these copies replace `pampojo-pages`. The old copies point at the chunks of the old build. Thus the first launch after an update can be offline.
   - Exercise images are runtime-cached in spec 17. Specs 15 and 17.
 - **Dexie (IndexedDB)** — local copy of the user's data and the outbox. Spec 16.
 - **Sync API** — `POST /api/v1/sync/push`, `GET /api/v1/sync/pull`. Spec 16.
