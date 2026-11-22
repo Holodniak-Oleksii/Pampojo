@@ -1155,6 +1155,12 @@ This supersedes the expanding row in "Workout builder rules".
 - `useIsOnline` keeps its name and reads the new connectivity store, so the call sites do not change.
 **Why:** Lead's choices. No new feature on the editor, and one data path for every offline page.
 
+## 2026-11-22 — Review Evals skips forks
+
+**Context:** PR #29 adds `review-evals.yml`. On `workflow_run`, the job has the repository secrets, and its setup step runs `./.github/actions/setup` and `pnpm install` from the PR code.
+**Decision:** The `evaluate` job runs only if the PR head branch is in this repository. For a PR from a fork, GitHub skips the job.
+**Why:** A fork can change the setup action and the install scripts, and then read `ANTHROPIC_API_KEY` and the write token. The `allow-forks` check of the action runs after the setup step.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.
