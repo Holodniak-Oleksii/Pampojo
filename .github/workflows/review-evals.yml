@@ -18,9 +18,12 @@ concurrency:
 jobs:
   evaluate:
     # The setup step runs PR code while the job has secrets, so skip pull requests from forks.
+    # Claude posts each inline comment as a separate review, so skip them here.
+    # workflow_run evaluates all of them after Claude Auto Review ends.
     if: >-
       github.event.workflow_run.head_repository.full_name == github.repository ||
-      github.event.pull_request.head.repo.full_name == github.repository
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.review.user.login != 'claude[bot]')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
