@@ -1,0 +1,41 @@
+name: Review Evals
+
+on:
+  workflow_run:
+    workflows: ["Claude Auto Review"]
+    types: [completed]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: review-evals-${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    # The setup step runs PR code while the job has secrets, so skip pull requests from forks.
+    if: >-
+      github.event.workflow_run.head_repository.full_name == github.repository ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DATABASE_URL: postgres://review-evals:placeholder@127.0.0.1:5432/none
+      BETTER_AUTH_SECRET: review-evals-placeholder-secret-not-real-0000
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - uses: Holodniak-Oleksii/review-evals@main
+        with:
+          mode: annotate
+          timeout-seconds: 300
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
