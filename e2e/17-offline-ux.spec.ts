@@ -261,6 +261,50 @@ test.describe('offline pages on the installed app', () => {
     await context.setOffline(false);
   });
 
+  test('a logout during an update drops the pages staged before it', async ({ page, context }) => {
+    await signUp(page);
+    await openReady(page, '/today');
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((resolve) =>
+          navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true }),
+        );
+      }
+    });
+    await page.evaluate(async () => {
+      const registration = await navigator.serviceWorker.register('/sw.js?version=logout');
+      await new Promise<void>((resolve) => {
+        const check = () => (registration.waiting ? resolve() : setTimeout(check, 200));
+        check();
+      });
+      // As logout does, then a staging request that ends after it stores one more page.
+      await (
+        await caches.open('pampojo-meta')
+      ).put('/pampojo/pages-reset', new Response(String(Date.now())));
+      await caches.delete('pampojo-pages');
+      await caches.delete('pampojo-pages-next');
+      await (await caches.open('pampojo-pages-next')).put('/today', new Response('late page'));
+    });
+
+    await page.close();
+    const idle = await context.newPage();
+    await idle.waitForTimeout(2000);
+    const next = await context.newPage();
+    await idle.close();
+    await next.goto('/offline');
+    expect(
+      await next.evaluate(
+        async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL,
+      ),
+    ).toContain('version=logout');
+    const late = await next.evaluate(async () => {
+      const cached = await caches.match('/today', { cacheName: 'pampojo-pages' });
+      return cached ? await cached.text() : null;
+    });
+    expect(late).not.toBe('late page');
+  });
+
   test('a language switch leaves no cached page in the old language', async ({ page }) => {
     await signUp(page);
     await openReady(page, '/profile');

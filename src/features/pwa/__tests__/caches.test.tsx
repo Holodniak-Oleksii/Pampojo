@@ -9,6 +9,8 @@ describe('deletePageCaches (AC5)', () => {
     await deletePageCaches();
     expect(await caches.has('pampojo-pages')).toBe(false);
     expect(await caches.has('pampojo-pages-next')).toBe(false);
+    const mark = await caches.match('/pampojo/pages-reset', { cacheName: 'pampojo-meta' });
+    expect(Number(await mark?.text())).toBeGreaterThan(0);
     expect(await caches.has('other')).toBe(true);
     await caches.delete('other');
   });

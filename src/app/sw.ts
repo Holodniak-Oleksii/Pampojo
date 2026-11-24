@@ -16,7 +16,10 @@ import {
   isSessionPagePath,
   OFFLINE_PATH,
   PAGES_CACHE,
+  PAGES_RESET_KEY,
+  PWA_META_CACHE,
   SESSION_SHELL_PATH,
+  STAGED_AT_KEY,
   STAGED_PAGES_CACHE,
   STORAGE_OBJECT_PATH,
   WARM_PAGE_PATHS,
@@ -125,6 +128,8 @@ async function stagePages(): Promise<void> {
     paths.add(url.pathname + url.search);
   }
   await caches.delete(STAGED_PAGES_CACHE);
+  const meta = await caches.open(PWA_META_CACHE);
+  await meta.put(STAGED_AT_KEY, new Response(String(Date.now())));
   const staged = await caches.open(STAGED_PAGES_CACHE);
   const queue = [...paths];
   const worker = async () => {
@@ -145,15 +150,42 @@ async function stagePages(): Promise<void> {
   await Promise.all(Array.from({ length: STAGE_CONCURRENCY }, worker));
 }
 
-// Cached pages point at the chunks of the build that rendered them, so the staged copies replace them.
+async function readTime(key: string): Promise<number | null> {
+  const response = await caches.match(key, { cacheName: PWA_META_CACHE });
+  return response ? Number(await response.text()) : null;
+}
+
+/**
+ * Logout and a language switch clear the pages, but a staging request still running can store a
+ * page after that. Staged pages are valid only if no clear happened after staging started.
+ */
+async function stagedPagesValid(): Promise<boolean> {
+  const stagedAt = await readTime(STAGED_AT_KEY);
+  const resetAt = await readTime(PAGES_RESET_KEY);
+  return stagedAt !== null && (resetAt === null || resetAt < stagedAt);
+}
+
+/**
+ * Cached pages point at the chunks of the build that rendered them, so the staged copies replace
+ * them. The copy comes first: a stop half-way still leaves pages to open.
+ */
 async function promoteStagedPages(): Promise<void> {
-  await caches.delete(PAGES_CACHE);
-  if (!(await caches.has(STAGED_PAGES_CACHE))) return;
+  const valid = (await caches.has(STAGED_PAGES_CACHE)) && (await stagedPagesValid());
+  if (!valid) {
+    await Promise.all([caches.delete(PAGES_CACHE), caches.delete(STAGED_PAGES_CACHE)]);
+    return;
+  }
   const staged = await caches.open(STAGED_PAGES_CACHE);
   const pages = await caches.open(PAGES_CACHE);
+  const keep = new Set<string>();
   for (const request of await staged.keys()) {
     const response = await staged.match(request);
-    if (response) await pages.put(request, response);
+    if (!response) continue;
+    await pages.put(request, response);
+    keep.add(request.url);
+  }
+  for (const request of await pages.keys()) {
+    if (!keep.has(request.url)) await pages.delete(request);
   }
   await caches.delete(STAGED_PAGES_CACHE);
 }
