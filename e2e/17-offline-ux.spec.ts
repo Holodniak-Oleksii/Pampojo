@@ -185,4 +185,127 @@ test.describe('offline pages on the installed app', () => {
       .toBe(true);
     await context.setOffline(false);
   });
+
+  test('the first launch after an update opens the pages and a new workout offline', async ({
+    page,
+    context,
+  }, testInfo) => {
+    await signUp(page);
+    const workout = await createWorkout(page, 'Update Day');
+    await openReady(page, '/today');
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((resolve) =>
+          navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true }),
+        );
+      }
+    });
+    await expect
+      .poll(
+        () =>
+          page.evaluate(async () =>
+            (await (await caches.open('pampojo-pages')).keys()).map(
+              (request) => new URL(request.url).pathname,
+            ),
+          ),
+        { timeout: NETWORK_TIMEOUT },
+      )
+      .toEqual(
+        expect.arrayContaining([
+          `/library/workouts/${workout.id}`,
+          '/session/00000000-0000-0000-0000-000000000000',
+        ]),
+      );
+
+    // A new script URL makes the browser install a new version, as after a deploy.
+    await page.evaluate(async () => {
+      const registration = await navigator.serviceWorker.register('/sw.js?version=next');
+      await new Promise<void>((resolve) => {
+        const check = () => (registration.waiting ? resolve() : setTimeout(check, 200));
+        check();
+      });
+    });
+
+    await context.setOffline(true);
+    await page.close();
+    // The waiting version activates when no page of the app is open.
+    const idle = await context.newPage();
+    await idle.waitForTimeout(2000);
+    const next = await context.newPage();
+    await idle.close();
+    await next.goto('/today');
+    expect(
+      await next.evaluate(
+        async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL,
+      ),
+    ).toContain('version=next');
+
+    const start =
+      testInfo.project.name === 'mobile'
+        ? next
+            .getByRole('navigation', { name: 'Main navigation' })
+            .last()
+            .getByRole('button', { name: 'Start workout' })
+        : next.getByRole('complementary').getByRole('button', { name: 'Start workout' });
+    await start.click();
+    await next
+      .getByRole('dialog', { name: 'Choose workout' })
+      .getByRole('button', { name: /Update Day/ })
+      .click();
+    await next.waitForURL('**/session/*');
+    await next.reload();
+    await expect(next.getByRole('textbox', { name: 'Set 1, weight' })).toBeVisible();
+    await next.goto(`/library/workouts/${workout.id}`);
+    await expect(next.getByRole('textbox', { name: 'Name' })).toHaveValue('Update Day');
+    await context.setOffline(false);
+  });
+
+  test('a language switch leaves no cached page in the old language', async ({ page }) => {
+    await signUp(page);
+    await openReady(page, '/profile');
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((resolve) =>
+          navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true }),
+        );
+      }
+    });
+    const cachedLanguages = () =>
+      page.evaluate(async () => {
+        const cache = await caches.open('pampojo-pages');
+        const languages = new Set<string>();
+        for (const request of await cache.keys()) {
+          const html = await (await cache.match(request))!.text();
+          languages.add(/<html[^>]* lang="([a-z]+)"/.exec(html)?.[1] ?? '?');
+        }
+        return [...languages];
+      });
+    // A warm-up that ran during the switch is replaced by the next one.
+    await expect.poll(cachedLanguages, { timeout: 2 * NETWORK_TIMEOUT }).toEqual(['en']);
+    await expect
+      .poll(
+        () => page.evaluate(async () => (await (await caches.open('pampojo-pages')).keys()).length),
+        { timeout: NETWORK_TIMEOUT },
+      )
+      .toBeGreaterThan(5);
+
+    // The cached copy wins when the network is slow, so it must not keep the old language.
+    await page.getByRole('button', { name: /^Language/ }).click();
+    await page.getByRole('menuitemradio', { name: 'Українська' }).click();
+    await expect(page.getByRole('button', { name: 'Вийти' }).first()).toBeVisible({
+      timeout: NETWORK_TIMEOUT,
+    });
+    // A warm-up that ran during the switch is replaced by the next one.
+    await expect.poll(cachedLanguages, { timeout: 2 * NETWORK_TIMEOUT }).toEqual(['uk']);
+
+    await page.getByRole('button', { name: /^Мова/ }).click();
+    await page.getByRole('menuitemradio', { name: 'English' }).click();
+    await expect(page.getByRole('button', { name: 'Log out' }).first()).toBeVisible({
+      timeout: NETWORK_TIMEOUT,
+    });
+    // A warm-up that ran during the switch is replaced by the next one.
+    await expect.poll(cachedLanguages, { timeout: 2 * NETWORK_TIMEOUT }).toEqual(['en']);
+  });
 });

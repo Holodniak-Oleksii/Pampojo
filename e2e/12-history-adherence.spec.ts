@@ -118,6 +118,38 @@ test.describe('history and adherence', () => {
     await expect(row).toHaveAttribute('href', /\/session\//);
   });
 
+  test('a finished workout is deleted from its summary and leaves the calendar', async ({
+    page,
+  }) => {
+    const email = await signUp(page);
+    const workoutId = await createWorkout(page, 'Delete Day');
+    const yesterday = shift(today(), -1);
+    await insertCompletedSessions(email, workoutId, [
+      { startedAt: noonOf(yesterday), name: 'Delete Day' },
+    ]);
+
+    await page.goto(`/calendar?date=${yesterday}`);
+    await page
+      .getByRole('link', { name: /Delete Day/ })
+      .first()
+      .click({ timeout: NETWORK_TIMEOUT });
+    await expect(page.getByRole('heading', { name: 'Workout finished' })).toBeVisible({
+      timeout: NETWORK_TIMEOUT,
+    });
+    await page.getByRole('button', { name: 'Delete workout' }).click();
+    await page
+      .getByRole('dialog', { name: 'Delete this workout?' })
+      .getByRole('button', { name: 'Delete' })
+      .click();
+
+    await page.waitForURL('**/calendar', { timeout: NETWORK_TIMEOUT });
+    await page.goto(`/calendar?date=${yesterday}`);
+    await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Delete Day/ })).toHaveCount(0, {
+      timeout: NETWORK_TIMEOUT,
+    });
+  });
+
   test('the history list loads older workouts as it scrolls (AC5)', async ({ page }) => {
     const email = await signUp(page);
     const workoutId = await createWorkout(page, 'Push Day');

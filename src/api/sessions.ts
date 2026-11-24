@@ -53,6 +53,11 @@ export async function fetchSession(id: string): Promise<Session | null> {
   }
 }
 
+/** Removes a session from the history; a repeat also succeeds. */
+export async function deleteSession(id: string): Promise<void> {
+  await http(sessionPath(id), { method: 'DELETE' });
+}
+
 export async function fetchLastPerformance(exerciseId: string): Promise<LastPerformanceResponse> {
   return http(`/api/v1/exercises/${exerciseId}/last-performance`, {
     schema: lastPerformanceResponseSchema,

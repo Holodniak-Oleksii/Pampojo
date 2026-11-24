@@ -45,12 +45,24 @@ async function warmMissing(extraPaths: readonly string[]): Promise<void> {
   if (typeof caches === 'undefined' || !navigator.serviceWorker?.controller) return;
   try {
     const cache = await caches.open(PAGES_CACHE);
+    const language = document.documentElement.lang;
     const missing: string[] = [];
     for (const path of new Set([...WARM_PAGE_PATHS, ...extraPaths])) {
-      if (!(await cache.match(path, { ignoreSearch: true }))) missing.push(path);
+      const cached = await cache.match(path, { ignoreSearch: true });
+      if (!cached || !(await hasLanguage(cached, language))) missing.push(path);
     }
     await warmPages(missing);
   } catch {
     // Cache storage unavailable: the pages open offline only after a visit.
   }
+}
+
+/**
+ * A warm-up that ran during a language switch can store a page in the old language after the
+ * switch cleared the cache. Such a page counts as missing.
+ */
+async function hasLanguage(response: Response, language: string): Promise<boolean> {
+  if (!language) return true;
+  const match = /<html[^>]*\slang="([^"]+)"/.exec(await response.text());
+  return match?.[1] === language;
 }

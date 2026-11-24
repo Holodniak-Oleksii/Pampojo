@@ -1167,6 +1167,23 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** The `pull_request_review` trigger skips reviews by `claude[bot]`, and `workflow_run` evaluates them after Claude Auto Review ends. Reviews by people and other bots still start the job.
 **Why:** Lead's choice. Fewer cancelled runs in Actions and in the PR checks, and one evaluation of the full Claude review.
 
+## 2026-11-24 — Delete a finished workout, and a quieter Today
+
+**Context:** Lead's request after the offline fix in PR #31.
+**Decision:**
+- The workout summary gets "Видалити" next to "Готово". It deletes the session through a new `DELETE /api/v1/sessions/{id}`.
+- The delete is online-only, so the outbox and the `sync_mutation` type check do not change. The server stores it as `abandoned`, so no migration is needed.
+- Today shows the getting-started card ("Тренування готове") only when the calendar has no rules.
+- Today shows the next workout also on a day with planned workouts, as a small card under them.
+- Today no longer shows "Дотримання плану". "Цей тиждень" and "Останнє тренування" stay.
+**Why:** Lead's choices: a new DELETE endpoint over a PATCH, and the next workout always.
+
+## 2026-11-24 — No side labels on the body diagram
+
+**Context:** Lead's request for the Profile page.
+**Decision:** The body diagram no longer shows "Права сторона" and "Ліва сторона" over the chip columns. The column of a chip tells the side. The link name keeps the full type name with the side.
+**Why:** Lead's choice. Less text on the diagram.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

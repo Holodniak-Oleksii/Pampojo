@@ -2,7 +2,7 @@ name: Review Evals
 
 on:
   workflow_run:
-    workflows: ["Claude Auto Review"]
+    workflows: ['Claude Auto Review']
     types: [completed]
   pull_request_review:
     types: [submitted]

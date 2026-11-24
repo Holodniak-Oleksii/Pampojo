@@ -353,6 +353,26 @@ export async function patchSession(
   return toSession(row, await listSetLogRows(db, id));
 }
 
+/**
+ * Deletes a session from the history: it becomes abandoned and its sets are soft-deleted, so the
+ * next pull removes it from other devices. A repeated delete is a no-op.
+ */
+export async function deleteSession(
+  userId: string,
+  id: string,
+  db: Executor = getDb(),
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    const row = await lockOwnSession(tx, userId, id);
+    if (row.status === SESSION_STATUS.ABANDONED) return;
+    await softDeleteSessionSetLogs(tx, id);
+    await updateSessionColumns(tx, userId, id, {
+      status: SESSION_STATUS.ABANDONED,
+      finishedAt: row.finishedAt ?? new Date(),
+    });
+  });
+}
+
 function trackingTypeOf(session: SessionRow, entryId: string, exerciseId: string): TrackingType {
   const entry = session.exercises.find((item) => item.id === entryId);
   if (!entry || entry.exerciseId !== exerciseId) {

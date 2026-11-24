@@ -36,7 +36,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
 | `PUT/DELETE /api/v1/exercises/{id}/frames/{frameId}` | Upload (multipart) or remove one photo frame of an own exercise | 07 |
 | `GET/PUT /api/v1/me/gym` | Gym equipment `{ equipment, updatedAt }`; `GET` is 404 `GYM_PROFILE_NOT_FOUND` before the first save; `PUT` upserts | 08 |
 | `GET /api/v1/workouts`, `GET/PUT/DELETE /api/v1/workouts/{id}` | Workouts with exercises, see below | 09 |
-| `GET /api/v1/sessions` (`?status=&exerciseId=&scheduledFor=`), `GET/PUT/PATCH /api/v1/sessions/{id}` | Sessions, see below | 10, 11 |
+| `GET /api/v1/sessions` (`?status=&exerciseId=&scheduledFor=`), `GET/PUT/PATCH/DELETE /api/v1/sessions/{id}` | Sessions, see below | 10, 11 |
 | `PUT/PATCH/DELETE /api/v1/sets/{id}` | Set logs | 10 |
 | `GET /api/v1/exercises/{id}/last-performance` | Previous values in session | 10 |
 | `GET /api/v1/schedule-rules`, `PUT/PATCH/DELETE /api/v1/schedule-rules/{id}` | Plan rules, see below | 11 |
@@ -91,6 +91,7 @@ JSON over HTTPS under `/api/v1`. Auth by Better Auth session cookie. Conventions
   - an earlier date on which the workout occurs in the user's rules, when the start date is in that date's late window (spec 12).
   - Both checks use the start time, not the request time, so a late outbox replay still passes.
 - **`PATCH /api/v1/sessions/{id}`** writes `exercises`, `notes`, or `status` (`completed` with `finishedAt`, or `abandoned`, which soft deletes its set logs). Plan and note changes need `in_progress`.
+- **`DELETE /api/v1/sessions/{id}`** removes a session of any status from the history. The session becomes `abandoned` and its set logs are soft-deleted, so the next pull removes it from other devices. A repeat is 204. Another user's session is 404. The client sends it only online, after the outbox is empty.
 - **`PUT/PATCH/DELETE /api/v1/sets/{id}`**: create or replace (clears `deletedAt`), change values, soft delete (204 on repeat). Values must match the exercise tracking type and the main metric is required.
 - **`GET /api/v1/exercises/{id}/last-performance`** returns `{ item: null | { sessionId, finishedAt, sets }, bests }` from the latest completed session with a live set of the exercise. `bests` is the all-time bests of the exercise (spec 13), or null when `item` is null.
 - **Errors:** `SESSION_NOT_FOUND` (404, also for another user's id), `SESSION_NOT_IN_PROGRESS` (409), validation 400.

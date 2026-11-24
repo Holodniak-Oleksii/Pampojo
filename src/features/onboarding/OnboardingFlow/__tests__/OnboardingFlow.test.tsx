@@ -160,6 +160,18 @@ describe('OnboardingFlow', () => {
     await expect.element(screen.getByText('Enter a weight between 67 lb and 661 lb')).toBeVisible();
   });
 
+  it('shows no errors on empty fields when the units change after Continue', async () => {
+    storeDraft(2);
+    const screen = await render(<OnboardingFlow userId="user-1" prefillName="" />);
+    await screen.getByRole('button', { name: 'Continue' }).click();
+    await expect.element(screen.getByRole('heading', { name: 'Height and weight' })).toBeVisible();
+
+    await screen.getByText('Imperial').click();
+    await screen.getByText('Metric').click();
+    await expect.element(screen.getByLabelText('Height', { exact: true })).toBeVisible();
+    expect(screen.getByText(/^Enter a (height|weight) between/).elements()).toHaveLength(0);
+  });
+
   it('converts typed values when the units change', async () => {
     storeDraft(3, { heightCm: '180', weight: '79.8' });
     const screen = await render(<OnboardingFlow userId="user-1" prefillName="" />);

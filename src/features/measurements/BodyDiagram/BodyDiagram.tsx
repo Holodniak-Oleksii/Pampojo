@@ -39,20 +39,6 @@ export function BodyDiagram({ sex, latest, units }: BodyDiagramProps) {
           <RingMarks key={ring.type} ring={ring} />
         ))}
       </svg>
-      <span
-        aria-hidden="true"
-        className="absolute top-0 text-[11px] leading-[14px] text-planned"
-        style={{ right: DIAGRAM.rightEdge }}
-      >
-        {t('Right side')}
-      </span>
-      <span
-        aria-hidden="true"
-        className="absolute top-0 text-[11px] leading-[14px] text-planned"
-        style={{ left: DIAGRAM.rightEdge }}
-      >
-        {t('Left side')}
-      </span>
       {rings.map((ring) => {
         const row = latest.get(ring.type);
         const value = row ? formatMeasurement(t, locale, ring.type, row.value, units) : '—';

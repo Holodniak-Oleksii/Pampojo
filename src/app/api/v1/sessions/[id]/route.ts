@@ -1,6 +1,6 @@
 import { withHandler } from '@/server/http/handler';
 import { json } from '@/server/http/response';
-import { getSession, patchSession, putSession } from '@/server/sessions/service';
+import { deleteSession, getSession, patchSession, putSession } from '@/server/sessions/service';
 import {
   patchSessionInputSchema,
   putSessionInputSchema,
@@ -21,4 +21,13 @@ export const PUT = withHandler(
 export const PATCH = withHandler(
   { auth: 'required', params: sessionIdParamsSchema, body: patchSessionInputSchema },
   async ({ userId, params, body }) => json(await patchSession(userId, params.id, body)),
+);
+
+// Removes the session from the history; a repeated delete also answers 204 (request-safety.md).
+export const DELETE = withHandler(
+  { auth: 'required', params: sessionIdParamsSchema },
+  async ({ userId, params }) => {
+    await deleteSession(userId, params.id);
+    return new Response(null, { status: 204 });
+  },
 );

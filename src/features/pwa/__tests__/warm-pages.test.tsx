@@ -54,6 +54,12 @@ describe('warmPages (spec 14 AC16)', () => {
 });
 
 describe('warmMissingPages (spec 16 AC1)', () => {
+  const page = (lang: string) => new Response(`<!DOCTYPE html><html lang="${lang}"></html>`);
+
+  beforeEach(() => {
+    document.documentElement.lang = 'uk';
+  });
+
   afterEach(async () => {
     await caches.delete(PAGES_CACHE);
   });
@@ -61,8 +67,8 @@ describe('warmMissingPages (spec 16 AC1)', () => {
   it('requests only the app pages that the page cache does not hold', async () => {
     controlled({});
     const cache = await caches.open(PAGES_CACHE);
-    await cache.put('/today', new Response('<html></html>'));
-    await cache.put('/calendar?view=list', new Response('<html></html>'));
+    await cache.put('/today', page('uk'));
+    await cache.put('/calendar?view=list', page('uk'));
     await warmMissingPages();
     const requested = fetchMock.mock.calls.map(([path]) => path);
     expect(requested).toEqual(
@@ -80,10 +86,19 @@ describe('warmMissingPages (spec 16 AC1)', () => {
   it('also requests the pages of the user data (spec 17 AC6)', async () => {
     controlled({});
     const cache = await caches.open(PAGES_CACHE);
-    for (const path of WARM_PAGE_PATHS) await cache.put(path, new Response('<html></html>'));
-    await cache.put('/library/workouts/a', new Response('<html></html>'));
+    for (const path of WARM_PAGE_PATHS) await cache.put(path, page('uk'));
+    await cache.put('/library/workouts/a', page('uk'));
     await warmMissingPages(['/library/workouts/a', '/library/exercises/b']);
     expect(fetchMock.mock.calls.map(([path]) => path)).toEqual(['/library/exercises/b']);
+  });
+
+  it('requests again a page cached in another language', async () => {
+    controlled({});
+    const cache = await caches.open(PAGES_CACHE);
+    for (const path of WARM_PAGE_PATHS) await cache.put(path, page('uk'));
+    await cache.put('/today', page('en'));
+    await warmMissingPages();
+    expect(fetchMock.mock.calls.map(([path]) => path)).toEqual(['/today']);
   });
 });
 

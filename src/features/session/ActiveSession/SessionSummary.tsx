@@ -11,6 +11,7 @@ import { useOptionalLocalDb, type LocalSession, type LocalSetLog } from '@/servi
 import type { PampojoDb } from '@/services/local-db/db';
 import { useHasUnsynced } from '@/services/sync';
 import { formatElapsed, summaryOf, type SummaryResult } from '../utils';
+import { DeleteSessionButton } from './DeleteSessionButton';
 import { NewRecords } from './NewRecords';
 
 function useResultText() {
@@ -130,13 +131,14 @@ export function SessionSummary({
         ))}
       </ul>
 
-      <div className="fixed inset-x-4 bottom-[max(1.625rem,env(safe-area-inset-bottom))] lg:static">
+      <div className="fixed inset-x-4 bottom-[max(1.625rem,env(safe-area-inset-bottom))] flex flex-row-reverse gap-2 lg:static lg:flex-row lg:items-center lg:gap-4">
         <Link
           href="/today"
-          className={cn(buttonVariants({ size: 'md' }), 'w-full lg:w-auto lg:px-10')}
+          className={cn(buttonVariants({ size: 'md' }), 'flex-1 lg:flex-none lg:px-10')}
         >
           {t('Done')}
         </Link>
+        <DeleteSessionButton sessionId={session.id} />
       </div>
     </main>
   );
