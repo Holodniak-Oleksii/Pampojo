@@ -1161,6 +1161,17 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** The `evaluate` job runs only if the PR head branch is in this repository. For a PR from a fork, GitHub skips the job.
 **Why:** A fork can change the setup action and the install scripts, and then read `ANTHROPIC_API_KEY` and the write token. The `allow-forks` check of the action runs after the setup step.
 
+## 2026-11-24 — Delete a finished workout, and a quieter Today
+
+**Context:** Lead's request after the offline fix in PR #31.
+**Decision:**
+- The workout summary gets "Видалити" next to "Готово". It deletes the session through a new `DELETE /api/v1/sessions/{id}`.
+- The delete is online-only, so the outbox and the `sync_mutation` type check do not change. The server stores it as `abandoned`, so no migration is needed.
+- Today shows the getting-started card ("Тренування готове") only when the calendar has no rules.
+- Today shows the next workout also on a day with planned workouts, as a small card under them.
+- Today no longer shows "Дотримання плану". "Цей тиждень" and "Останнє тренування" stay.
+**Why:** Lead's choices: a new DELETE endpoint over a PATCH, and the next workout always.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

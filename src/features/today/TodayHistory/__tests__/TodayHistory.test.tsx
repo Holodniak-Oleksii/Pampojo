@@ -31,7 +31,7 @@ afterEach(async () => {
 });
 
 describe('TodayProgress', () => {
-  it('shows the week with links to the calendar and the month adherence', async () => {
+  it('shows the week with links to the calendar, without the plan adherence', async () => {
     respond([getScheduleRuleMock()]);
     const screen = await render(<TodayProgress />);
     await expect.element(screen.getByRole('heading', { name: 'This week' })).toBeVisible();
@@ -40,8 +40,8 @@ describe('TodayProgress', () => {
       .element(screen.getByRole('link').first())
       .toHaveAttribute('href', `/calendar?date=${monday}`);
     expect(screen.getByRole('link').elements()).toHaveLength(7);
-    await expect.element(screen.getByRole('heading', { name: 'Plan adherence' })).toBeVisible();
     await expect.element(screen.getByText(/^0 of \d done$/)).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Plan adherence' }).elements()).toHaveLength(0);
   });
 
   it('is hidden with no plan', async () => {

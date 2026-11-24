@@ -61,8 +61,30 @@ describe('TodayPlan (spec 11 AC6)', () => {
     await expect
       .element(screen.getByRole('link', { name: 'View summary' }))
       .toHaveAttribute('href', `/session/${localSession().id}`);
-    const names = screen.getByRole('heading', { level: 2 }).elements();
+    const names = screen
+      .getByRole('region', { name: 'Planned for today' })
+      .getByRole('heading', { level: 2 })
+      .elements();
     expect(names.map((node) => node.textContent)).toEqual(['Push Day', 'Legs']);
+  });
+
+  it('shows the next workout under the workouts of today', async () => {
+    respond([getScheduleRuleMock()]);
+    const screen = await render(<TodayPlan hasWorkouts />);
+    await expect.element(screen.getByRole('heading', { name: 'Planned for today' })).toBeVisible();
+    await expect.element(screen.getByText('Next workout')).toBeVisible();
+    expect(
+      screen.getByRole('heading', { name: 'Nothing planned for today' }).elements(),
+    ).toHaveLength(0);
+  });
+
+  it('hides the getting-started card when the calendar has only a past plan', async () => {
+    const lastWeek = addDays(deviceToday(), -7);
+    respond([getScheduleRuleMock({ startDate: lastWeek, endDate: lastWeek })]);
+    const screen = await render(<TodayPlan hasWorkouts />);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(screen.getByRole('heading', { name: 'Workout ready' }).elements()).toHaveLength(0);
+    expect(screen.getByRole('heading', { name: 'Next workout' }).elements()).toHaveLength(0);
   });
 
   it('shows the next planned workout when today is free', async () => {

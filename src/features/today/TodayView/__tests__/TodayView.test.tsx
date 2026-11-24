@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getGymMock } from '@/test/mocks';
 import { render } from '@/test/render';
 import { TodayView } from '../TodayView';
@@ -17,8 +17,22 @@ vi.mock('@/api/gym', async () => {
 
 const PROPS = { displayName: 'John Smith', initialGym: getGymMock(), hasWorkouts: false } as const;
 
+// No plan: the getting-started card shows only when the calendar is known to be empty.
+beforeEach(() => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = new URL(String(input), 'http://localhost');
+      if (url.pathname === '/api/v1/sessions')
+        return Response.json({ items: [], nextCursor: null });
+      return Response.json({ items: [] });
+    }),
+  );
+});
+
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe('TodayView', () => {

@@ -6,8 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { dayLabel, markersOf } from '@/features/calendar/utils';
 import {
   dayMonth,
-  monthIn,
-  MonthSummary,
   StatusMarker,
   useCalendarDays,
   usePlanToday,
@@ -15,35 +13,22 @@ import {
 } from '@/features/plan';
 import { useLocale } from '@/i18n/client';
 import { cn } from '@/lib/utils';
-import { addDays, maxDate, minDate, mondayOf } from '@/shared/plan/occurrences';
+import { addDays, mondayOf } from '@/shared/plan/occurrences';
 import { summarize } from '@/shared/plan/statuses';
 
-const monthEndOf = (date: string) => {
-  const [y, m] = date.split('-').map(Number);
-  return new Date(Date.UTC(y ?? 0, m ?? 1, 0)).toISOString().slice(0, 10);
-};
-
-/** "Цей тиждень" and "Дотримання плану" on Today; hidden when the user has no plan. */
+/** "Цей тиждень" on Today; hidden when the user has no plan. */
 export function TodayProgress({ className }: { className?: string }) {
   const { t } = useTranslation();
   const locale = useLocale();
   const today = usePlanToday();
   const monday = mondayOf(today);
   const sunday = addDays(monday, 6);
-  const monthStart = `${today.slice(0, 7)}-01`;
-  const monthEnd = monthEndOf(today);
-  const from = minDate(monthStart, monday);
-  const to = maxDate(monthEnd, sunday);
-  const calendar = useCalendarDays(from, to);
+  const calendar = useCalendarDays(monday, sunday);
   const { days } = calendar;
 
   const week = useMemo(
     () => summarize(days.values(), monday, sunday, today),
     [days, monday, sunday, today],
-  );
-  const month = useMemo(
-    () => summarize(days.values(), monthStart, monthEnd, today),
-    [days, monthStart, monthEnd, today],
   );
 
   if (calendar.status !== 'ready' || calendar.rules.length === 0) return null;
@@ -109,15 +94,6 @@ export function TodayProgress({ className }: { className?: string }) {
           })}
         </ol>
       </section>
-      {calendar.historyKnown ? (
-        <MonthSummary
-          summary={month}
-          variant="sentence"
-          monthLabel={monthIn(t, today.slice(0, 7))}
-          headingId="today-adherence"
-          className="rounded-lg bg-card p-4"
-        />
-      ) : null}
     </div>
   );
 }
