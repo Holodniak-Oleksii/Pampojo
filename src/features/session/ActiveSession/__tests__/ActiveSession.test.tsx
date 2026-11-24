@@ -292,6 +292,35 @@ describe('ActiveSession', () => {
     await expect.element(records().getByText('12 × 80 kg')).toBeVisible();
   });
 
+  it('deletes a finished workout from the summary after a confirm', async () => {
+    const finishedAt = new Date().toISOString();
+    await seedLocal(localSession({ status: 'completed', finishedAt }), [
+      localSet({ completedAt: finishedAt }),
+    ]);
+    vi.mocked(fetch).mockImplementation(async () => new Response(null, { status: 204 }));
+    const screen = await render(<ActiveSession sessionId={SESSION} />, { localDb: true });
+    await screen.getByRole('button', { name: 'Delete workout' }).click();
+    await expect
+      .element(
+        screen
+          .getByRole('dialog', { name: 'Delete this workout?' })
+          .getByText('It disappears from your history, calendar and progress.'),
+      )
+      .toBeVisible();
+    await screen
+      .getByRole('dialog', { name: 'Delete this workout?' })
+      .getByRole('button', { name: 'Delete' })
+      .click();
+
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/calendar'));
+    expect(fetch).toHaveBeenCalledWith(
+      `/api/v1/sessions/${SESSION}`,
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+    expect(await db().sessions.get(SESSION)).toBeUndefined();
+    expect(await db().setLogs.where('sessionId').equals(SESSION).count()).toBe(0);
+  });
+
   it('hides the records row when the session has none', async () => {
     const finishedAt = new Date().toISOString();
     await seedLocal(localSession({ status: 'completed', finishedAt, newRecords: [] }), [

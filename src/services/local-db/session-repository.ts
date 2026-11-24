@@ -304,6 +304,15 @@ export function createSessionRepository(db: PampojoDb) {
       });
     },
 
+    /** Removes a session the server deleted, with its sets and the "last time" built from it. */
+    async forget(sessionId: string): Promise<void> {
+      await db.transaction('rw', [db.sessions, db.setLogs, db.lastPerformance], async () => {
+        await db.sessions.delete(sessionId);
+        await db.setLogs.where('sessionId').equals(sessionId).delete();
+        await db.lastPerformance.filter((item) => item.sessionId === sessionId).delete();
+      });
+    },
+
     findInProgress(): Promise<LocalSession | undefined> {
       return findActiveSession(db);
     },

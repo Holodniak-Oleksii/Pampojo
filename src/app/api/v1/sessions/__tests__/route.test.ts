@@ -8,7 +8,7 @@ import type { Tx } from '@/server/plan/queries';
 import { deleteUsersByEmail, testPrefix } from '@/test/db';
 import { insertSessionWithSets } from '@/test/progress-fixtures';
 import { GET as LAST } from '../../exercises/[id]/last-performance/route';
-import { GET, PATCH, PUT } from '../[id]/route';
+import { DELETE, GET, PATCH, PUT } from '../[id]/route';
 import { GET as LIST } from '../route';
 
 const PREFIX = testPrefix('sessions-route');
@@ -19,8 +19,8 @@ vi.setConfig({ testTimeout: 30_000 });
 const BASE = 'http://localhost/api/v1/sessions';
 let bench: string;
 
-const send = (method: 'GET' | 'PUT' | 'PATCH', id: string, payload?: unknown) =>
-  ({ GET, PUT, PATCH })[method](
+const send = (method: 'GET' | 'PUT' | 'PATCH' | 'DELETE', id: string, payload?: unknown) =>
+  ({ GET, PUT, PATCH, DELETE })[method](
     new Request(`${BASE}/${id}`, {
       method,
       headers: { 'content-type': 'application/json' },
@@ -151,6 +151,26 @@ describe('/api/v1/sessions', () => {
     expect(done.status).toBe(200);
     const late = await send('PATCH', id, { notes: 'late' });
     expect(late.status).toBe(409);
+  });
+
+  it('DELETE removes a finished session from the history; a repeat is 204, another user 404', async () => {
+    const owner = await createUser();
+    signIn(owner);
+    const id = randomUUID();
+    await send('PUT', id, body(await createWorkout(owner)));
+    await send('PATCH', id, { status: 'completed', finishedAt: new Date().toISOString() });
+
+    signIn(await createUser());
+    expect((await send('DELETE', id)).status).toBe(404);
+
+    signIn(owner);
+    expect((await send('DELETE', id)).status).toBe(204);
+    expect((await send('DELETE', id)).status).toBe(204);
+    expect((await send('GET', id)).status).toBe(404);
+    const listed = (await (await LIST(new Request(`${BASE}?status=completed`))).json()) as {
+      items: { id: string }[];
+    };
+    expect(listed.items.map((item) => item.id)).not.toContain(id);
   });
 
   it('rejects an invalid body with 400', async () => {
