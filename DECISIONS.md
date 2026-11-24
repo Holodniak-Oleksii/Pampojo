@@ -1161,6 +1161,12 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** The `evaluate` job runs only if the PR head branch is in this repository. For a PR from a fork, GitHub skips the job.
 **Why:** A fork can change the setup action and the install scripts, and then read `ANTHROPIC_API_KEY` and the write token. The `allow-forks` check of the action runs after the setup step.
 
+## 2026-11-22 — Review Evals skips Claude reviews
+
+**Context:** `claude[bot]` posts each inline comment as a separate review. On PR #31, its 4 reviews started 4 `pull_request_review` runs, and `concurrency` cancelled 3 of them.
+**Decision:** The `pull_request_review` trigger skips reviews by `claude[bot]`, and `workflow_run` evaluates them after Claude Auto Review ends. Reviews by people and other bots still start the job.
+**Why:** Lead's choice. Fewer cancelled runs in Actions and in the PR checks, and one evaluation of the full Claude review.
+
 ## 2026-11-24 — Delete a finished workout, and a quieter Today
 
 **Context:** Lead's request after the offline fix in PR #31.
