@@ -260,4 +260,52 @@ test.describe('offline pages on the installed app', () => {
     await expect(next.getByRole('textbox', { name: 'Name' })).toHaveValue('Update Day');
     await context.setOffline(false);
   });
+
+  test('a language switch leaves no cached page in the old language', async ({ page }) => {
+    await signUp(page);
+    await openReady(page, '/profile');
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((resolve) =>
+          navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true }),
+        );
+      }
+    });
+    const cachedLanguages = () =>
+      page.evaluate(async () => {
+        const cache = await caches.open('pampojo-pages');
+        const languages = new Set<string>();
+        for (const request of await cache.keys()) {
+          const html = await (await cache.match(request))!.text();
+          languages.add(/<html[^>]* lang="([a-z]+)"/.exec(html)?.[1] ?? '?');
+        }
+        return [...languages];
+      });
+    // A warm-up that ran during the switch is replaced by the next one.
+    await expect.poll(cachedLanguages, { timeout: 2 * NETWORK_TIMEOUT }).toEqual(['en']);
+    await expect
+      .poll(
+        () => page.evaluate(async () => (await (await caches.open('pampojo-pages')).keys()).length),
+        { timeout: NETWORK_TIMEOUT },
+      )
+      .toBeGreaterThan(5);
+
+    // The cached copy wins when the network is slow, so it must not keep the old language.
+    await page.getByRole('button', { name: /^Language/ }).click();
+    await page.getByRole('menuitemradio', { name: 'Українська' }).click();
+    await expect(page.getByRole('button', { name: 'Вийти' }).first()).toBeVisible({
+      timeout: NETWORK_TIMEOUT,
+    });
+    // A warm-up that ran during the switch is replaced by the next one.
+    await expect.poll(cachedLanguages, { timeout: 2 * NETWORK_TIMEOUT }).toEqual(['uk']);
+
+    await page.getByRole('button', { name: /^Мова/ }).click();
+    await page.getByRole('menuitemradio', { name: 'English' }).click();
+    await expect(page.getByRole('button', { name: 'Log out' }).first()).toBeVisible({
+      timeout: NETWORK_TIMEOUT,
+    });
+    // A warm-up that ran during the switch is replaced by the next one.
+    await expect.poll(cachedLanguages, { timeout: 2 * NETWORK_TIMEOUT }).toEqual(['en']);
+  });
 });
