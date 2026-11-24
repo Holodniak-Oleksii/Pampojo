@@ -188,6 +188,8 @@ async function promoteStagedPages(): Promise<void> {
     if (!keep.has(request.url)) await pages.delete(request);
   }
   await caches.delete(STAGED_PAGES_CACHE);
+  // A logout during the copy came after the check above.
+  if (!(await stagedPagesValid())) await caches.delete(PAGES_CACHE);
 }
 
 self.addEventListener('install', (event) => {

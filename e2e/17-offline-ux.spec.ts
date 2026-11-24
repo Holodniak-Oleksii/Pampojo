@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { deleteE2eUsers, e2eRunPrefix } from './helpers/db';
 import { completeOnboardingViaApi } from './helpers/onboarding';
 
@@ -56,6 +56,28 @@ async function openReady(page: Page, path: string) {
   await expect(page.getByRole('heading', { name: 'Preparing your data for the gym' })).toBeHidden({
     timeout: NETWORK_TIMEOUT,
   });
+}
+
+/**
+ * Opens `path` once the waiting service worker with `version` is active. It activates only when no
+ * page of the app is open, so each try closes the page and waits on a blank one.
+ */
+async function relaunchOn(context: BrowserContext, path: string, version: string): Promise<Page> {
+  let page: Page | undefined;
+  await expect(async () => {
+    await page?.close();
+    const idle = await context.newPage();
+    await idle.waitForTimeout(500);
+    page = await context.newPage();
+    await idle.close();
+    await page.goto(path);
+    expect(
+      await page.evaluate(
+        async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL,
+      ),
+    ).toContain(`version=${version}`);
+  }).toPass({ timeout: NETWORK_TIMEOUT });
+  return page!;
 }
 
 test.describe('offline UX', () => {
@@ -229,17 +251,7 @@ test.describe('offline pages on the installed app', () => {
 
     await context.setOffline(true);
     await page.close();
-    // The waiting version activates when no page of the app is open.
-    const idle = await context.newPage();
-    await idle.waitForTimeout(2000);
-    const next = await context.newPage();
-    await idle.close();
-    await next.goto('/today');
-    expect(
-      await next.evaluate(
-        async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL,
-      ),
-    ).toContain('version=next');
+    const next = await relaunchOn(context, '/today', 'next');
 
     const start =
       testInfo.project.name === 'mobile'
@@ -288,16 +300,7 @@ test.describe('offline pages on the installed app', () => {
     });
 
     await page.close();
-    const idle = await context.newPage();
-    await idle.waitForTimeout(2000);
-    const next = await context.newPage();
-    await idle.close();
-    await next.goto('/offline');
-    expect(
-      await next.evaluate(
-        async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL,
-      ),
-    ).toContain('version=logout');
+    const next = await relaunchOn(context, '/offline', 'logout');
     const late = await next.evaluate(async () => {
       const cached = await caches.match('/today', { cacheName: 'pampojo-pages' });
       return cached ? await cached.text() : null;

@@ -16,7 +16,8 @@ async function markPagesReset(): Promise<void> {
 export async function deletePageCaches(): Promise<void> {
   try {
     if ('caches' in window) {
-      await markPagesReset();
+      // The mark is extra safety; the deletes must run even if it fails.
+      await markPagesReset().catch(() => undefined);
       await Promise.all(
         [PAGES_CACHE, STAGED_PAGES_CACHE, IMAGES_CACHE].map((name) => caches.delete(name)),
       );
@@ -33,7 +34,8 @@ export async function deletePageCaches(): Promise<void> {
 export async function deleteAppPages(): Promise<void> {
   try {
     if ('caches' in window) {
-      await markPagesReset();
+      // The mark is extra safety; the deletes must run even if it fails.
+      await markPagesReset().catch(() => undefined);
       await Promise.all([PAGES_CACHE, STAGED_PAGES_CACHE].map((name) => caches.delete(name)));
     }
   } catch {
