@@ -121,6 +121,9 @@ const STAGE_CONCURRENCY = 4;
  * version only after it downloads it. The first launch after an update can be offline.
  */
 async function stagePages(): Promise<void> {
+  // First, so a logout at any later point is newer than this mark.
+  const meta = await caches.open(PWA_META_CACHE);
+  await meta.put(STAGED_AT_KEY, new Response(String(Date.now())));
   const current = await caches.open(PAGES_CACHE);
   const paths = new Set<string>(WARM_PAGE_PATHS);
   for (const request of await current.keys()) {
@@ -128,8 +131,6 @@ async function stagePages(): Promise<void> {
     paths.add(url.pathname + url.search);
   }
   await caches.delete(STAGED_PAGES_CACHE);
-  const meta = await caches.open(PWA_META_CACHE);
-  await meta.put(STAGED_AT_KEY, new Response(String(Date.now())));
   const staged = await caches.open(STAGED_PAGES_CACHE);
   const queue = [...paths];
   const worker = async () => {
