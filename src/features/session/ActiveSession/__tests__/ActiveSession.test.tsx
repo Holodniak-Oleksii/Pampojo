@@ -18,6 +18,10 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 const SESSION = localSession().id;
 const db = () => openLocalDb(TEST_USER_ID);
+// The summary shows before `finish` stores the last performance.
+// Wait for it, or the teardown closes the database during the write.
+const finishSettled = () =>
+  expect.poll(async () => db().lastPerformance.count()).toBeGreaterThan(0);
 const outboxMethods = async () =>
   (await db().outbox.orderBy('seq').toArray()).map((entry) => entry.type);
 
@@ -231,6 +235,7 @@ describe('ActiveSession', () => {
     await expect.element(screen.getByText('1,105 kg')).toBeVisible();
     await expect.element(screen.getByText('2 × 80 kg')).toBeVisible();
     expect((await db().sessions.get(SESSION))?.status).toBe('completed');
+    await finishSettled();
   });
 
   it('offers to discard when nothing is checked, and discarding goes to Today (AC8, AC9)', async () => {
@@ -263,6 +268,7 @@ describe('ActiveSession', () => {
       .click();
     await expect.element(screen.getByRole('heading', { name: 'Workout finished' })).toBeVisible();
     expect((await db().sessions.get(SESSION))?.finishedAt).toBe(set.completedAt);
+    await finishSettled();
   });
 
   it('lists the new records in the summary, and hides the row without them (spec 13 AC2)', async () => {
