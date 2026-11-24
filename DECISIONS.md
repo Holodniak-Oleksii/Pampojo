@@ -1178,6 +1178,12 @@ This supersedes the expanding row in "Workout builder rules".
 - Today no longer shows "Дотримання плану". "Цей тиждень" and "Останнє тренування" stay.
 **Why:** Lead's choices: a new DELETE endpoint over a PATCH, and the next workout always.
 
+## 2026-11-24 — No side labels on the body diagram
+
+**Context:** Lead's request for the Profile page.
+**Decision:** The body diagram no longer shows "Права сторона" and "Ліва сторона" over the chip columns. The column of a chip tells the side. The link name keeps the full type name with the side.
+**Why:** Lead's choice. Less text on the diagram.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

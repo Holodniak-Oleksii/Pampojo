@@ -176,7 +176,7 @@ The boards show 7 girths for each figure. The 6 new types follow the same rules 
     | Thigh, right / left | 330: 49–93 / 107–152 | 320: 51–94 / 105–149 |
     | Calf, right / left | 398: 52–85 / 115–148 | 394: 57–88 / 112–143 |
 - **Labels:** a chip on `--card` with a 4px radius and 4×8px padding. The short type name is on top (11px, muted), and the value is under it (13/700). Neither line wraps.
-  - The chip shows the short name ("Біцепс", "Передпліччя", "Стегно", "Литка"). Over the columns, "Права сторона" and "Ліва сторона" (11px, `--planned`) tell the side.
+  - The chip shows the short name ("Біцепс", "Передпліччя", "Стегно", "Литка"). The column of the chip tells the side. The diagram has no side labels (lead's decision, 2026-11-24).
   - Left column, top to bottom: neck, chest, right biceps, right forearm, hips, right thigh, right calf. Right column: shoulders, left biceps, waist, left forearm, left thigh, left calf.
   - Each chip sits at the height of its ring. If two chips come closer than 42px, the lower one moves down.
   - The widest value is "122,25 см" and it fits the column.
@@ -249,7 +249,6 @@ The lead approved this copy on the canvas.
 | Section title | Measurements | Виміри |
 | Types | Weight / Neck / Shoulders / Chest / Waist / Hips / Biceps, left / Biceps, right / Forearm, left / Forearm, right / Thigh, left / Thigh, right / Calf, left / Calf, right / Body fat | Вага / Шия / Плечі / Груди / Талія / Стегна / Біцепс, лівий / Біцепс, правий / Передпліччя, ліве / Передпліччя, праве / Стегно, ліве / Стегно, праве / Литка, ліва / Литка, права / Жир |
 | Short chip names | Biceps / Forearm / Thigh / Calf | Біцепс / Передпліччя / Стегно / Литка |
-| Column headers | Right side / Left side | Права сторона / Ліва сторона |
 | No girths | No measurements yet / Measure your chest, waist, hips, arms and legs. The values will appear on the figure. | Ще немає вимірів / Заміряй груди, талію, стегна, руки й ноги. Значення зʼявляться на схемі. |
 | History chart header | {{type}} now | {{type}} зараз |
 | History list title | All measurements | Усі виміри |
