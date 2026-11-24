@@ -14,7 +14,12 @@ export function PasswordInput({ showLabel, hideLabel, className, ...props }: Pas
   const [visible, setVisible] = useState(false);
   return (
     <div className="relative">
-      <Input {...props} type={visible ? 'text' : 'password'} className={cn('pr-14', className)} />
+      <Input
+        {...props}
+        type={visible ? 'text' : 'password'}
+        // iOS Safari keeps an autofilled value masked after the switch to text, so unmask it too.
+        className={cn('pr-14', visible && '[-webkit-text-security:none]!', className)}
+      />
       <button
         type="button"
         aria-label={visible ? hideLabel : showLabel}

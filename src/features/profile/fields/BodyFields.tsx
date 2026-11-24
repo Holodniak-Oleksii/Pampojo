@@ -88,7 +88,12 @@ export function BodyFields({ form, idPrefix }: FieldsProps) {
       if (value !== undefined) form.setValue(key, value, { shouldDirty: false });
     }
     onChange(next);
-    if (form.formState.isSubmitted) void form.trigger(['heightCm', 'heightFt', 'weight']);
+    // Re-check only the fields that already show an error: a unit switch is not an entry, so it
+    // must not show errors on empty fields.
+    const shown = (['heightCm', 'heightFt', 'heightIn', 'weight'] as const).filter(
+      (name) => form.getFieldState(name).invalid,
+    );
+    if (shown.length > 0) void form.trigger(['heightCm', 'heightFt', 'weight']);
   };
 
   const shared = { form, idPrefix };

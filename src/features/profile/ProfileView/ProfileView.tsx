@@ -78,10 +78,13 @@ export function ProfileView({ initialProfile, initialGym }: ProfileViewProps) {
               <span className="text-muted-foreground">{t('Language')}</span>
               <LanguageSwitcher />
             </div>
-            <fieldset className="flex min-w-0 flex-col gap-2.5 rounded-lg bg-card px-2 pt-3.5 pb-2">
-              <legend className="float-left px-3 text-muted-foreground">{t('Theme')}</legend>
-              <ThemeSwitch variant="labels" className="clear-both" />
-            </fieldset>
+            {/* No fieldset: iOS Safari draws a legend on the top edge. The radio group has the name. */}
+            <div className="flex min-w-0 flex-col gap-2.5 rounded-lg bg-card px-2 pt-3.5 pb-2">
+              <p aria-hidden="true" className="px-3 text-muted-foreground">
+                {t('Theme')}
+              </p>
+              <ThemeSwitch variant="labels" />
+            </div>
             <InstallRow />
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
