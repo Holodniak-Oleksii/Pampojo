@@ -35,6 +35,7 @@ export const toStatusRule = (rule: ScheduleRule): StatusRule => ({
   endDate: rule.endDate,
   weekdays: rule.weekdays,
   intervalWeeks: rule.intervalWeeks,
+  workoutDeleted: rule.workout.deleted,
 });
 
 /**

@@ -1184,6 +1184,14 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** The body diagram no longer shows "Права сторона" and "Ліва сторона" over the chip columns. The column of a chip tells the side. The link name keeps the full type name with the side.
 **Why:** Lead's choice. Less text on the diagram.
 
+## 2026-11-25 — Deleted workouts in the calendar, and the picker rows
+
+**Context:** Lead's bug reports on the calendar and the exercise picker.
+**Decision:**
+- An occurrence of a deleted workout shows only while a completed session fulfils it. After that session is deleted, the day is empty and not "missed". Missed days of a deleted workout also go out of the month summary.
+- In the exercise picker, the image and the name open the exercise page. The diamond on the right selects the exercise. The page change drops the unsaved editor draft and the picks.
+**Why:** Lead's choices. A deleted workout leaves no trace, and a page change is simpler than a preview in the sheet.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

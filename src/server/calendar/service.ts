@@ -27,6 +27,7 @@ export async function getCalendar(
     endDate: row.end_date,
     weekdays: row.weekdays,
     intervalWeeks: row.interval_weeks,
+    workoutDeleted: row.workout_deleted,
   }));
   const rows = await listCalendarSessionRows(db, userId, { ...instantRange(from, to), from, to });
   const sessions = rows.map((row) => ({
