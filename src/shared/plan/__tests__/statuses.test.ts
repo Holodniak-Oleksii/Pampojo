@@ -79,6 +79,13 @@ describe('lateWindowEnd', () => {
 });
 
 describe('computeCalendar', () => {
+  it('keeps only the fulfilled occurrences of a deleted workout', () => {
+    const done = session({ scheduledFor: '2026-11-05', startedAt: '2026-11-05T17:00:00Z' });
+    const days = run([done], { rules: [rule({ workoutDeleted: true, endDate: '2026-11-16' })] });
+    expect(days.get('2026-11-02')?.occurrences).toEqual([]);
+    expect(days.get('2026-11-05')?.occurrences.map((item) => item.status)).toEqual(['on_time']);
+  });
+
   it('marks an occurrence done on time when the session starts on its date', () => {
     const done = session({ scheduledFor: '2026-11-02' });
     const days = run([done]);
