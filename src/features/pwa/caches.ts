@@ -1,9 +1,23 @@
-import { IMAGES_CACHE, PAGES_CACHE, STAGED_PAGES_CACHE } from './constants';
+import {
+  IMAGES_CACHE,
+  PAGES_CACHE,
+  PAGES_RESET_KEY,
+  PWA_META_CACHE,
+  STAGED_PAGES_CACHE,
+} from './constants';
+
+/** A waiting version drops its staged pages when they started before this mark (`src/app/sw.ts`). */
+async function markPagesReset(): Promise<void> {
+  const meta = await caches.open(PWA_META_CACHE);
+  await meta.put(PAGES_RESET_KEY, new Response(String(Date.now())));
+}
 
 /** Cached pages and own exercise images hold the signed-in user's data, so they go with the session. */
 export async function deletePageCaches(): Promise<void> {
   try {
     if ('caches' in window) {
+      // The mark is extra safety; the deletes must run even if it fails.
+      await markPagesReset().catch(() => undefined);
       await Promise.all(
         [PAGES_CACHE, STAGED_PAGES_CACHE, IMAGES_CACHE].map((name) => caches.delete(name)),
       );
@@ -20,6 +34,8 @@ export async function deletePageCaches(): Promise<void> {
 export async function deleteAppPages(): Promise<void> {
   try {
     if ('caches' in window) {
+      // The mark is extra safety; the deletes must run even if it fails.
+      await markPagesReset().catch(() => undefined);
       await Promise.all([PAGES_CACHE, STAGED_PAGES_CACHE].map((name) => caches.delete(name)));
     }
   } catch {

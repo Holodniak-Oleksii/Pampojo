@@ -63,7 +63,7 @@ export function ExerciseHeader({
           className="size-16 shrink-0 rounded-sm lg:size-20"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h1 className="text-[22px] leading-tight font-extrabold lg:text-4xl">
+          <h1 className="text-lg leading-tight font-extrabold lg:text-3xl">
             {entry.exercise.name}
           </h1>
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground">

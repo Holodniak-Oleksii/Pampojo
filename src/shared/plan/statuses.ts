@@ -13,6 +13,8 @@ export interface StatusRule extends RuleShape {
   id: string;
   workoutId: string;
   workoutName: string;
+  /** A deleted workout keeps only the occurrences that a completed session fulfils. */
+  workoutDeleted?: boolean;
 }
 
 export interface StatusSession {
@@ -149,6 +151,7 @@ export function computeCalendar({
 
   const occurrences: CalendarOccurrence[] = [];
   const occurrenceDates = new Map<CalendarOccurrence, string>();
+  const deletedOccurrences = new Set<CalendarOccurrence>();
   const occurrenceKeys = new Set<string>();
   for (const rule of rules) {
     for (const date of expandOccurrences(rule, from, to)) {
@@ -162,6 +165,7 @@ export function computeCalendar({
       };
       occurrences.push(occurrence);
       occurrenceDates.set(occurrence, date);
+      if (rule.workoutDeleted) deletedOccurrences.add(occurrence);
       occurrenceKeys.add(keyOf(rule.workoutId, date));
     }
   }
@@ -197,6 +201,8 @@ export function computeCalendar({
       occurrence.sessionId = session.id;
       occurrence.status =
         session.kind === SESSION_KIND.ON_TIME ? OCCURRENCE_STATUS.ON_TIME : OCCURRENCE_STATUS.LATE;
+    } else if (deletedOccurrences.has(occurrence)) {
+      continue;
     } else if (date < today) {
       occurrence.status = OCCURRENCE_STATUS.MISSED;
     }

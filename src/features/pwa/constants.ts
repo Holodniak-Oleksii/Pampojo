@@ -6,6 +6,13 @@ export const INSTALL_CARD_SNOOZE_DAYS = 7;
 export const PAGES_CACHE = 'pampojo-pages';
 /** The pages of a new version, loaded at install and moved into `PAGES_CACHE` at activation. */
 export const STAGED_PAGES_CACHE = 'pampojo-pages-next';
+/**
+ * Times that decide whether staged pages are still valid: when staging started, and when logout or
+ * a language switch last cleared the pages. The values hold no user data.
+ */
+export const PWA_META_CACHE = 'pampojo-meta';
+export const STAGED_AT_KEY = '/pampojo/staged-at';
+export const PAGES_RESET_KEY = '/pampojo/pages-reset';
 export const IMAGES_CACHE = 'pampojo-images';
 export const IMAGES_CACHE_MAX_ENTRIES = 600;
 /** The exercise image URLs of Supabase Storage, public and signed. */
