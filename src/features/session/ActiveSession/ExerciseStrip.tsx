@@ -31,7 +31,10 @@ export function ExerciseStrip({ exercises, setLogs, currentId, onOpen }: Exercis
       onClick={onOpen}
       className="mx-4 flex h-12 w-[calc(100%-2rem)] items-center gap-3.5 rounded-md border border-border pr-3 pl-3.5 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
     >
-      <span aria-hidden="true" className="flex max-w-[55%] items-center gap-2.5 overflow-hidden">
+      <span
+        aria-hidden="true"
+        className="flex max-w-[55%] items-center gap-2.5 overflow-hidden p-1"
+      >
         {exercises.map((entry) => {
           const current = entry.id === currentId;
           const done = isEntryDone(entry, setLogs);
