@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OfflineNotice } from '@/components/OfflineNotice';
@@ -78,6 +79,10 @@ function PickerBody({ room, onAdd }: Pick<ExercisePickerProps, 'room' | 'onAdd'>
 
   const full = picked.length >= room;
 
+  function blurSearch() {
+    if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
+  }
+
   return (
     <>
       <SheetHeader className="px-4 pt-4 pb-1">
@@ -103,7 +108,11 @@ function PickerBody({ room, onAdd }: Pick<ExercisePickerProps, 'room' | 'onAdd'>
           onClear={catalog.resetFilters}
         />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-4 pb-28">
+      <div
+        // iOS keeps the keyboard over the list and does not scroll it, so a drag closes the keyboard.
+        onTouchMove={blurSearch}
+        className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain px-4 pb-28"
+      >
         {localCatalog ? <OfflineCatalogHint className="mb-1" /> : null}
         {localCatalog &&
         catalog.query.data &&
@@ -124,13 +133,11 @@ function PickerBody({ room, onAdd }: Pick<ExercisePickerProps, 'room' | 'onAdd'>
                 const order = picked.findIndex((pick) => pick.id === item.id);
                 const selected = order >= 0;
                 return (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      aria-pressed={selected}
-                      disabled={!selected && full}
-                      onClick={() => toggle(item)}
-                      className="flex min-h-[72px] w-full items-center gap-3 py-2.5 pr-4 pl-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-50"
+                  <li key={item.id} className="flex min-h-[72px] items-center">
+                    <Link
+                      href={`/library/exercises/${item.id}`}
+                      aria-label={t('How to do {{name}}', { name: item.name })}
+                      className="flex min-w-0 flex-1 items-center gap-3 self-stretch py-2.5 pl-2.5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                     >
                       <ExerciseImage
                         src={item.thumbnailUrl}
@@ -143,17 +150,26 @@ function PickerBody({ room, onAdd }: Pick<ExercisePickerProps, 'room' | 'onAdd'>
                         <span className="text-base font-bold">{item.name}</span>
                         <span className="text-sm text-muted-foreground">{line(item)}</span>
                       </span>
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label={item.name}
+                      aria-pressed={selected}
+                      disabled={!selected && full}
+                      onClick={() => toggle(item)}
+                      className="flex size-14 shrink-0 items-center justify-center self-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-50"
+                    >
                       {selected ? (
                         <span
                           aria-hidden="true"
-                          className="mr-1 flex size-6 shrink-0 rotate-45 items-center justify-center rounded-[4px] bg-primary text-primary-foreground"
+                          className="flex size-6 rotate-45 items-center justify-center rounded-[4px] bg-primary text-primary-foreground"
                         >
                           <span className="-rotate-45 text-xs font-extrabold">{order + 1}</span>
                         </span>
                       ) : (
                         <span
                           aria-hidden="true"
-                          className="mr-1.5 size-5 shrink-0 rotate-45 rounded-[4px] border-[1.5px] border-planned"
+                          className="size-5 rotate-45 rounded-[4px] border-[1.5px] border-planned"
                         />
                       )}
                     </button>

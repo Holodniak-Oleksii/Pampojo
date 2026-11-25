@@ -49,6 +49,18 @@ afterEach(async () => {
 });
 
 describe('ExercisePicker', () => {
+  it('links the image and name to the exercise and keeps the pick on the diamond', async () => {
+    const screen = await render(
+      <ExercisePicker open onOpenChange={vi.fn()} room={30} onAdd={vi.fn()} />,
+    );
+    await expect
+      .element(screen.getByRole('link', { name: 'How to do Bench Press' }))
+      .toHaveAttribute('href', '/library/exercises/00000000-0000-4000-8000-000000000001');
+    await expect
+      .element(screen.getByRole('button', { name: 'Bench Press', exact: true }))
+      .toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('numbers picks in order, renumbers on unpick and adds them in that order (AC9)', async () => {
     const onAdd = vi.fn();
     const screen = await render(
