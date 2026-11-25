@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Select } from '@/components/Select';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { useVisitKey } from '@/hooks/useVisitKey';
 import {
   DESCRIPTION_MAX,
   MISTAKES_MAX_COUNT,
@@ -103,7 +104,11 @@ function initialSlots(exercise: Exercise | undefined, source: Exercise | undefin
 
 const MISTAKES_TOO_MANY = 'mistakes_too_many';
 
-export function ExerciseForm({ mode, exercise, source }: ExerciseFormProps) {
+export function ExerciseForm(props: ExerciseFormProps) {
+  return <ExerciseFormBody key={useVisitKey()} {...props} />;
+}
+
+function ExerciseFormBody({ mode, exercise, source }: ExerciseFormProps) {
   const { t } = useTranslation();
   const labels = useExerciseLabels();
   const router = useRouter();
