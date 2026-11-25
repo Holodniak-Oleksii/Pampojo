@@ -1184,6 +1184,14 @@ This supersedes the expanding row in "Workout builder rules".
 **Decision:** The body diagram no longer shows "Права сторона" and "Ліва сторона" over the chip columns. The column of a chip tells the side. The link name keeps the full type name with the side.
 **Why:** Lead's choice. Less text on the diagram.
 
+## 2026-11-25 — A simpler workout card, and empty forms on each visit
+
+**Context:** Lead's requests for Library → Workouts and the create forms.
+**Decision:**
+- The workout card in the list no longer shows the muscle tags. The name and the exercise count use a smaller font.
+- The workout and exercise forms start again on each visit. Cache Components keeps a left page in a hidden Activity, so the forms remount when the page hides.
+**Why:** Lead's choices. Less noise in the list, and a new form must not show the last workout.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.
