@@ -1192,6 +1192,14 @@ This supersedes the expanding row in "Workout builder rules".
 - In the exercise picker, the image and the name open the exercise page. The diamond on the right selects the exercise. The page change drops the unsaved editor draft and the picks.
 **Why:** Lead's choices. A deleted workout leaves no trace, and a page change is simpler than a preview in the sheet.
 
+## 2026-11-25 — A simpler workout card, and empty forms on each visit
+
+**Context:** Lead's requests for Library → Workouts and the create forms.
+**Decision:**
+- The workout card in the list no longer shows the muscle tags. The name and the exercise count use a smaller font.
+- The workout and exercise forms start again on each visit. Cache Components keeps a left page in a hidden Activity, so the forms remount when the page hides.
+**Why:** Lead's choices. Less noise in the list, and a new form must not show the last workout.
+
 ## Open questions
 
 Raise these during `/grilling` of the listed spec.

@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe('WorkoutList', () => {
-  it('shows name, count and up to 3 muscles, and the empty tag for a workout without exercises', async () => {
+  it('shows name and count, and the empty tag for a workout without exercises', async () => {
     respond(() =>
       Response.json({
         items: [
@@ -55,7 +55,7 @@ describe('WorkoutList', () => {
     await expect
       .element(push)
       .toHaveAttribute('href', '/library/workouts/00000000-0000-4000-8000-00000000a001');
-    expect(push.element().textContent).toBe('Push Day5 exercisesChestShouldersTriceps');
+    expect(push.element().textContent).toBe('Push Day5 exercises');
     const stretch = screen.getByRole('link', { name: /Stretch/ });
     expect(stretch.element().textContent).toBe('Stretch0 exercisesAdd exercises');
   });

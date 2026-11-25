@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useWorkoutQuery } from '@/api/workouts';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useVisitKey } from '@/hooks/useVisitKey';
 import { draftFromWorkout, emptyDraft } from '../utils';
 import { WorkoutEditorForm } from './WorkoutEditorForm';
 
@@ -76,5 +77,10 @@ function ExistingWorkout({ id }: { id: string }) {
 }
 
 export function WorkoutEditor(props: WorkoutEditorProps) {
-  return props.mode === 'new' ? <NewWorkout /> : <ExistingWorkout id={props.id} />;
+  const visit = useVisitKey();
+  return props.mode === 'new' ? (
+    <NewWorkout key={visit} />
+  ) : (
+    <ExistingWorkout key={visit} id={props.id} />
+  );
 }

@@ -24,10 +24,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MUSCLE_FAMILY_OF } from '@/constants/exercise';
 import { WORKOUT_NAME_MAX } from '@/constants/workout';
 import { ExerciseImage } from '@/features/exercises/ExerciseImage';
-import { useExerciseLabels } from '@/features/exercises/hooks/useExerciseLabels';
 import { usePlanToday } from '@/features/plan';
 import { useStartSession } from '@/features/session/hooks/useStartSession';
 import { showNeedsInternet } from '@/features/offline/OnlineOnly';
@@ -42,7 +40,6 @@ export function WorkoutList() {
   const router = useRouter();
   const online = useIsOnline();
   const needsInternet = () => showNeedsInternet(t('Needs internet'));
-  const labels = useExerciseLabels();
   const queryClient = useQueryClient();
   const query = useWorkoutsQuery();
   const rules = useScheduleRulesQuery();
@@ -111,7 +108,7 @@ export function WorkoutList() {
               {item.exerciseCount === 0 ? (
                 <span
                   aria-hidden="true"
-                  className="size-[52px] shrink-0 rounded-sm border-[1.5px] border-dashed border-planned lg:hidden"
+                  className="size-12 shrink-0 rounded-sm border-[1.5px] border-dashed border-planned lg:hidden"
                 />
               ) : (
                 <ExerciseImage
@@ -119,30 +116,20 @@ export function WorkoutList() {
                   name={item.name}
                   alt=""
                   compact
-                  className="size-[52px] shrink-0 rounded-sm lg:hidden"
+                  className="size-12 shrink-0 rounded-sm lg:hidden"
                 />
               )}
-              {/* From lg the text block dissolves so the card can put the thumbnails between count and muscles. */}
-              <span className="flex min-w-0 flex-1 flex-col items-start gap-1 lg:contents">
-                <span className="text-base font-bold break-words lg:order-1 lg:text-lg lg:font-extrabold">
+              {/* From lg the text block dissolves so the card can put the thumbnails below the count. */}
+              <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5 lg:contents">
+                <span className="text-[15px] font-bold break-words lg:order-1 lg:text-base lg:font-extrabold">
                   {item.name}
                 </span>
-                <span className="text-muted-foreground lg:order-2 lg:-mt-2.5">
+                <span className="text-[13px] text-muted-foreground lg:order-2 lg:-mt-2.5 lg:text-sm">
                   {t('{{count}} exercises', { count: item.exerciseCount })}
                 </span>
                 {item.exerciseCount === 0 ? (
                   <span className="mt-1 inline-flex h-6 items-center rounded-md bg-primary px-2 text-[13px] font-bold text-primary-foreground lg:order-3">
                     {t('Add exercises tag')}
-                  </span>
-                ) : null}
-                {item.primaryMuscles.length > 0 ? (
-                  <span className="flex flex-wrap gap-x-3 gap-y-1 text-sm font-semibold lg:order-5">
-                    {item.primaryMuscles.map((muscle) => (
-                      <span key={muscle} className="inline-flex items-center gap-1.5">
-                        <Diamond tone="muscle" family={MUSCLE_FAMILY_OF[muscle]} />
-                        {labels.muscle[muscle]}
-                      </span>
-                    ))}
                   </span>
                 ) : null}
               </span>
